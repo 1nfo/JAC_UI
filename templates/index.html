@@ -67,51 +67,79 @@
         <div id="page-content-wrapper">
             <div class="container-fluid">
             	<div class="row">
-            		<a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle >>> </a>
-                    <h1>{{title}}</h1>
-    			</div>        	
+            		<div class="col-md-2"><a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle >>> </a></div>
+                   <div class="col-md-4"><h1 class="text-center">{{title}}</h1></div>
+                    {% for p in paragraph%}
+                    <p>{{p}}</p>
+                    {% endfor %}
+    			</div>  
+                <br/>      	
                 <div class="row">
-                    <div class="col-lg-6">    	
-                        {% for p in paragraph%}
-                        <p>{{p}}</p>
-                        {% endfor %}
-                        <div>
-                        	<div class="row">
-                        		<div class="col-md-3"><label>Task Name</label></div>
-                        		<div class="col-md-3"><input id="jac_taskName" /></div>
-                        	</div>
-                         	<div class="row">
-                         		<div class="col-md-3"><label>Slave Num</label></div>
-                         		<div class="col-md-1"><input id="slave_num" /></div>
-                         	</div>
-                         	<div class="row">
-                         		<div class="col-md-3"><label>Upload Path</label></div>
-                         		<div class="col-md-1"><input id="test_path" type="file" /></div>
-                         	</div>
-                         	<div class="row">
-                         		<div class="col-md-3"><label>JMX to run</label></div>
-                         		<div class="col-md-1"><input id="exec_jmx" /></div>
-                         	</div>
-                         </div>
-                         <br/>
-                         <div>
-                         	<div class="row">
-                         		<div class="btn-group">
-								  <a href="#" class="btn btn-default">create</a>
-								  <a href="#" class="btn btn-default">resume</a>
-								</div>
-								<div class="btn-group">
-								  <a href="#" class="btn btn-default">run</a>
-								</div>
-								<div class="btn-group">
-								  <a href="#" class="btn btn-default">cleanup</a>
-								</div>
-                         	</div>
+                    <div class="col-lg-6"> 
+                        <div class="row panel">
+                            <div class="btn-group">
+                              <a href="#" class="btn btn-default" id="btn_createTask">create</a>
+                              <a href="#" class="btn btn-default" id="btn_resumeTask">resume</a>
+                            </div>
+                        </div>   
+                        <div id="InputBlock_task" style="display: none;">	
+                            <div class="row panel">
+                                <div class="col-md-3"><label>Task Name</label></div>
+                                <div class="col-md-3"><input id="jac_taskName" value="dummy"/></div>
+                            </div>
+                            <div class="row panel" id="InputRow_taskID" style="display: none;">
+                                <div class="col-md-3"><label>Task ID</label></div>
+                                <div class="col-md-1"><input id="jac_taskID" /></div>
+                            </div>
+                            <div class="row panel">
+                                <a href="#" class="btn btn-default" id='btn_taskConfirm'>confirm</a>
+                            </div>
+                        </div>
+                        <div id="InputBlock_slaveNem" style="display: none;">   
+                            <div class="row panel">
+                                <div class="col-md-3"><label>Slave Num</label></div>
+                                <div class="col-md-1"><input id="jac_slaveNum" value='3' /></div>
+                            </div>
+                            <div class="row panel">
+                                <div class="btn-group">
+                                  <a href="#" class="btn btn-default" id="btn_setSlaveNum" >update number</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="InputBlock_uploadFiles" style="display: none;">
+                            <div class="row panel">
+                                <div class="col-md-3"><label>Upload Path</label></div>
+                                <div class="col-md-1"><input id="jac_uploadFiles" type="file" name="file" multiple /></div>
+                            </div>
+                            <div class="row panel">
+                                <div class="btn-group">
+                                  <a href="#" class="btn btn-default" id="btn_uploadTask" >upload</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="InputBlock_execJMX" style="display: none;">
+                            <div class="row panel" >
+                                <div class="col-md-3"><label>JMX to run</label></div>
+                                <div class="col-md-1"><input id="jac_JMXName" value="smoke.jmx"/></div>
+                            </div>
+                            <div class="row panel">
+                                <div class="btn-group">
+                                  <a href="#" class="btn btn-default" id="btn_runTask">run</a>
+                                </div>
+                                <div class="btn-group">
+                                  <a href="#" class="btn btn-default" id="btn_cleanupTask">cleanup</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-lg-6">   
-                    	<div class="row">
+                        <div class="row">
+                           <a href="#" class="btn btn-sm btn-default" id = "btn_clear">clear</a>   
+                        </div>
+                    	<div class="row panel">
+                            <div id="output">
                     		output
+                            </div>
                     	</div>
                     </div>
                 </div>
@@ -134,11 +162,9 @@
         e.preventDefault();
         $("#wrapper").toggleClass("toggled");
     });
-    $(exec_jmx).change(function(event){
-    	console.log(event)
-    	console.log(document.getElementById("exec_jmx"))
-    })
     </script>
+
+    <script src="{{ url_for('static',filename = 'js/btnEvent.js') }}"></script>
 
 </body>
 
