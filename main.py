@@ -27,7 +27,7 @@ taskMngrs = {}
 
 
 def flushPasuse():
-	socketio.sleep(.01)
+	socketio.sleep(1e-3)
 
 jredirector = JAC.Redirector(pauseFunc=flushPasuse)
 
@@ -36,7 +36,7 @@ def background_thread():
 	count = 0
 	while True:
 		# count+=1
-		socketio.sleep(.01)
+		socketio.sleep(1e-3)
 		
 		socketio.emit('redirect',
 					{'msg': jredirector.flush().replace("\n","<br/>")},
@@ -88,7 +88,6 @@ def setSlaveNum():
 	taskID = request.form["taskID"]
 	with jredirector:
 		taskMngrs[taskID].setSlaveNumber(num)
-		socketio.sleep(3)
 	return "from server: "+str(num)
 
 
