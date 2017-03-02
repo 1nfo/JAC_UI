@@ -88,6 +88,7 @@ def setSlaveNum():
 	taskID = request.form["taskID"]
 	with jredirector:
 		taskMngrs[taskID].setSlaveNumber(num)
+		taskMngrs[taskID].setupInstances()
 	return "from server: "+str(num)
 
 
@@ -110,7 +111,6 @@ def runTest():
 	jmxName = request.form["jmx_name"]
 	taskMngr = taskMngrs[taskID]
 	with jredirector:
-		taskMngrs[taskID].setupInstances()
 		if taskMngr.checkStatus(): 
 			taskMngr.refreshConnections()
 			taskMngr.uploadFiles()
@@ -130,14 +130,17 @@ def cleanup():
 	return json.dumps({"success":True}), 200
 
 
-@socketio.on('connect', namespace='/redirect')
+@socketio.on('connect', namespace='')
 def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
     emit('redirect', {'msg': 'Connected\n', 'count': 0})
 
-
+@app.route("/post/getTaskIDs",methods=["POST"])
+def getTaskIDs():
+	li = JAC.TaskManager(config=JAC.CONFIG).instMngr.getDupTaskIds()
+	return json.dumps(li)
 
 if __name__ == "__main__":
     #app.run()

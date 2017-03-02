@@ -83,7 +83,7 @@
                             </div>
                         </div>   
                         <div id="InputBlock_task" style="display: none;">	
-                            <div class="row panel">
+                            <div class="row panel" id="InputRow_task" style="display: none;">
                                 <div class="col-md-3"><label>Task Name</label></div>
                                 <div class="col-md-3"><input id="jac_taskName" value="dummy"/></div>
                                 <div class="col-md-1" id="cleaup_btn_div" style="display: none";>
@@ -93,6 +93,8 @@
                             <div class="row panel" id="InputRow_taskID" style="display: none;">
                                 <div class="col-md-3"><label>Task ID</label></div>
                                 <div class="col-md-1"><input id="jac_taskID" /></div>
+                            </div>
+                            <div class="row panel" id="InputRow_resumeTasks" style="display: none;">
                             </div>
                             <div class="row panel">
                                 <a href="#" class="btn btn-default" id='btn_taskConfirm'>confirm</a>
@@ -164,15 +166,17 @@
             // Socket.IO will multiplex all those connections on a single
             // physical channel. If you don't care about multiple channels, you
             // can set the namespace to an empty string.
-            namespace = '/redirect';
+            namespace = '';
 
             // Connect to the Socket.IO server.
             // The connection URL has the following format:
             //     http[s]://<domain>:<port>[/<namespace>]
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
             socket.on('redirect', function(d) {
                 $('#output').append(d.msg.replace("\n","<br/>"));
             });
+
         });
     </script>
 

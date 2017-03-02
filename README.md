@@ -19,6 +19,7 @@ Front-end:
 ### todo
 resume button  
 config window  
+jmx list
 css
 stop running task  
 

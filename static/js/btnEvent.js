@@ -3,6 +3,8 @@ var GLOBAL_JAC_taskID = '';
 $("#btn_createTask").click(function(e){
 	$(".btn").addClass("disabled")
 	document.getElementById("InputBlock_task").style.display = "block";
+	document.getElementById("InputRow_task").style.display = "block";
+	document.getElementById("InputRow_resumeTasks").style.display = "none";
 	// document.getElementById("InputRow_taskID").style.display = "none";
 	task_to_create = 1;
 	$(".btn").removeClass("disabled")
@@ -11,9 +13,19 @@ $("#btn_createTask").click(function(e){
 $("#btn_resumeTask").click(function(e){
 	$(".btn").addClass("disabled")
 	document.getElementById("InputBlock_task").style.display = "block";
+	document.getElementById("InputRow_task").style.display = "none";
+	document.getElementById("InputRow_resumeTasks").style.display = "block";
 	// document.getElementById("InputRow_taskID").style.display = "block";
 	task_to_create = 0;
-	$(".btn").removeClass("disabled")
+	$.post("/post/getTaskIDs","",function(data){
+		data = JSON.parse(data)
+		console.log(data)
+		$.each(data,function(i,d){
+			$("#InputRow_resumeTasks").append("<div>"+d.split("_")[0]+"</div>")
+		})
+		$(".btn").removeClass("disabled")
+	})
+	
 })
 
 $("#btn_taskConfirm").click(function(e){
