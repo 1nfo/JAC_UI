@@ -19,11 +19,10 @@ Front-end:
 ### todo
 resume button  
 config window  
-jmx list
-css
+jmx list  
+css  
 stop running task  
 
-??? stop running ???
 
 ### deployment step
 

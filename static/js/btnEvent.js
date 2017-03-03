@@ -2,7 +2,7 @@ var GLOBAL_JAC_taskID = '';
 
 $("#btn_createTask").click(function(e){
 	$(".btn").addClass("disabled")
-	document.getElementById("InputBlock_task").style.display = "block";
+	document.getElementById("InputRow_confirmBtn").style.display = "block";
 	document.getElementById("InputRow_task").style.display = "block";
 	document.getElementById("InputRow_resumeTasks").style.display = "none";
 	// document.getElementById("InputRow_taskID").style.display = "none";
@@ -12,16 +12,27 @@ $("#btn_createTask").click(function(e){
 
 $("#btn_resumeTask").click(function(e){
 	$(".btn").addClass("disabled")
-	document.getElementById("InputBlock_task").style.display = "block";
+	$("#jac_taskName").val("")
+	document.getElementById("InputRow_confirmBtn").style.display = "block";
 	document.getElementById("InputRow_task").style.display = "none";
 	document.getElementById("InputRow_resumeTasks").style.display = "block";
 	// document.getElementById("InputRow_taskID").style.display = "block";
 	task_to_create = 0;
+	$("#InputRow_resumeTasks").text("")
 	$.post("/post/getTaskIDs","",function(data){
-		data = JSON.parse(data)
-		console.log(data)
+		var data = JSON.parse(data)
+		if (data.length==0) $("#InputRow_resumeTasks").append("<div>No task running</div>")
 		$.each(data,function(i,d){
-			$("#InputRow_resumeTasks").append("<div>"+d.split("_")[0]+"</div>")
+			var inputToAdd = " <input class='btn btn-default taskToResume' value='"+
+				d.split("_")[0]+
+				"'>"
+			var divToAdd = "<div class='panel'> </div>"
+			$(divToAdd).append($(inputToAdd).data("id",d)).appendTo("#InputRow_resumeTasks")
+		})
+		$(".taskToResume").click(function(e){
+			var taskID = $(e.target).data()["id"]
+			$("#jac_taskID").val(taskID)
+			$("#jac_taskName").val($(e.target).val())
 		})
 		$(".btn").removeClass("disabled")
 	})
@@ -30,10 +41,14 @@ $("#btn_resumeTask").click(function(e){
 
 $("#btn_taskConfirm").click(function(e){
 	if(!$("#jac_taskName").val().match(/^[a-zA-Z]+$/)){
-		alert("Name needs to be letters only");
+		if(task_to_create==1)alert("Name needs to be letters only");
+		else alert("Select one taskToResume")
 	}
 	else {
 		$(".btn").addClass("disabled")
+		document.getElementById("InputRow_task").style.display = "block";
+		document.getElementById("InputRow_resumeTasks").style.display = "none";
+		document.getElementById("InputRow_confirmBtn").style.display = "none";
 		var res = $.post("/post/taskName",{
 			"taskName":$("#jac_taskName").val(),
 			"taskID":$("#jac_taskID").val(),

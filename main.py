@@ -69,7 +69,7 @@ def createTask():
 			if createOrNot:
 				print(exception.args[0])
 				print(exception.args[1])
-				# print(exception.args[2])
+				print("Try another name or click resume\n")
 			else:
 				print("Resuming "+exception.args[1][0])
 				taskMngr.startTask(taskName,exception.args[1][0])
@@ -79,6 +79,7 @@ def createTask():
 			taskMngrs[taskID] = taskMngr
 			taskMngr.instMngr.mute()
 			taskMngr.connMngr.mute()
+		print('')
 	return json.dumps({"taskID":taskID}),200 if successOrNot else 400
 
 
@@ -130,12 +131,12 @@ def cleanup():
 	return json.dumps({"success":True}), 200
 
 
-@socketio.on('connect', namespace='')
+@socketio.on('connect', namespace='/redirect')
 def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    emit('redirect', {'msg': 'Connected\n', 'count': 0})
+    emit('redirect', {'msg': 'Connected<br/><br/>', 'count': 0})
 
 @app.route("/post/getTaskIDs",methods=["POST"])
 def getTaskIDs():
