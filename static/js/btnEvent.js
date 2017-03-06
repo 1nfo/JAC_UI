@@ -2,9 +2,14 @@ var GLOBAL_JAC_taskID = '';
 
 $("#btn_createTask").click(function(e){
 	$(".btn").addClass("disabled")
+	$("#jac_taskName").prop('disabled', false);
 	document.getElementById("InputRow_confirmBtn").style.display = "block";
+	document.getElementById("cleaup_btn_div").style.display = "none";
 	document.getElementById("InputRow_task").style.display = "block";
 	document.getElementById("InputRow_resumeTasks").style.display = "none";
+	document.getElementById("InputBlock_slaveNem").style.display = "none";
+	document.getElementById("InputBlock_uploadFiles").style.display = "none";
+	document.getElementById("InputBlock_execJMX").style.display = "none";
 	// document.getElementById("InputRow_taskID").style.display = "none";
 	task_to_create = 1;
 	$(".btn").removeClass("disabled")
@@ -13,29 +18,37 @@ $("#btn_createTask").click(function(e){
 $("#btn_resumeTask").click(function(e){
 	$(".btn").addClass("disabled")
 	$("#jac_taskName").val("")
-	document.getElementById("InputRow_confirmBtn").style.display = "block";
+	document.getElementById("InputRow_confirmBtn").style.display = "none";
+	document.getElementById("cleaup_btn_div").style.display = "none";
 	document.getElementById("InputRow_task").style.display = "none";
 	document.getElementById("InputRow_resumeTasks").style.display = "block";
+	document.getElementById("InputBlock_slaveNem").style.display = "none";
+	document.getElementById("InputBlock_uploadFiles").style.display = "none";
+	document.getElementById("InputBlock_execJMX").style.display = "none";
 	// document.getElementById("InputRow_taskID").style.display = "block";
 	task_to_create = 0;
 	$("#InputRow_resumeTasks").text("")
 	$.post("/post/getTaskIDs","",function(data){
 		var data = JSON.parse(data)
-		if (data.length==0) $("#InputRow_resumeTasks").append("<div>No task running</div>")
-		$.each(data,function(i,d){
-			var inputToAdd = " <input class='btn btn-default taskToResume' value='"+
-				d.split("_")[0]+
-				"'>"
-			var divToAdd = "<div class='panel'> </div>"
-			$(divToAdd).append($(inputToAdd).data("id",d)).appendTo("#InputRow_resumeTasks")
-		})
-		$(".taskToResume").click(function(e){
-			var taskID = $(e.target).data()["id"]
-			$("#jac_taskID").val(taskID)
-			$("#jac_taskName").val($(e.target).val())
-		})
+		if (data.length==0) {
+			$("#InputRow_resumeTasks").append("<div>No task running</div>")
+		} else {
+			$.each(data,function(i,d){
+				var inputToAdd = " <input class='btn btn-default taskToResume' value='"+
+					d.split("_")[0]+
+					"'>"
+				var divToAdd = "<div class='panel'> </div>"
+				$(divToAdd).append($(inputToAdd).data("id",d)).appendTo("#InputRow_resumeTasks")
+			})
+			$(".taskToResume").click(function(e){
+				var taskID = $(e.target).data()["id"]
+				$("#jac_taskID").val(taskID)
+				$("#jac_taskName").val($(e.target).val())
+				$("#btn_taskConfirm").trigger("click")
+			})	
+		}
 		$(".btn").removeClass("disabled")
-	})
+	}).error(function(){$(".btn").removeClass("disabled")})
 	
 })
 
@@ -56,11 +69,15 @@ $("#btn_taskConfirm").click(function(e){
 		},function(data){
 			data = JSON.parse(data)
 			GLOBAL_JAC_taskID = data["taskID"]
-			// buff = data["buffer"].replace("\n","<br/>")
-			// console.log(buff)
-			// $("#output").append(buff)
+			$("#jac_slaveNum").val(data["slaveNum"])
+			$.each(data["jmxList"],function(i,d){
+				$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"<option>")
+			})
 			document.getElementById("InputBlock_slaveNem").style.display = "block";
 			document.getElementById("cleaup_btn_div").style.display = "block";
+			document.getElementById("InputBlock_uploadFiles").style.display = "block";
+			document.getElementById("InputBlock_execJMX").style.display = "block";
+			$("#jac_taskName").prop('disabled', true);
 			$(".btn").removeClass("disabled");
 		}).error(function(){$(".btn").removeClass("disabled");})
 	}
@@ -108,17 +125,22 @@ $("#btn_uploadTask").click(function(e){
 
 $("#btn_runTask").click(function(e){
 	var jmx_to_run = $("#jac_JMXName").val()
-	$(".btn").addClass("disabled")
-	$.post("/post/run",{"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID},
-		function(data){
-			$(".btn").removeClass("disabled");
-		}).error(function(){$(".btn").removeClass("disabled");})
+	if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
+		alert("Invaild JMX file");
+	}else{
+		$(".btn").addClass("disabled")
+		$.post("/post/run",{"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID},
+			function(data){
+				$(".btn").removeClass("disabled");
+			}).error(function(){$(".btn").removeClass("disabled");})
+	}
 })
 
 $("#btn_cleanupTask").click(function(e){
 	$(".btn").addClass("disabled")
 	$.post("/post/cleanup",{"taskID":GLOBAL_JAC_taskID},
 		function(data){
+			document.getElementById("InputRow_task").style.display = "none";
 			document.getElementById("cleaup_btn_div").style.display = "none";
 			document.getElementById("InputBlock_slaveNem").style.display = "none";
 			document.getElementById("InputBlock_uploadFiles").style.display = "none";

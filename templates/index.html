@@ -68,21 +68,21 @@
             <div class="container-fluid">
             	<div class="row">
             		<div class="col-md-2"><a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle >>> </a></div>
-                   <div class="col-md-4"><h1 class="text-center">{{title}}</h1></div>
+                    <div class="col-md-4"><h1 class="text-center">{{title}}</h1></div>
                     {% for p in paragraph%}
                     <p>{{p}}</p>
                     {% endfor %}
     			</div>  
                 <br/>      	
                 <div class="row">
-                    <div class="col-lg-6"> 
-                        <div class="row panel">
+                    <div class="col-lg-6" id="btn_op_area"> 
+                        <div class="row panel" id="InputBlock_startTask" >
                             <div class="btn-group">
                               <a href="#" class="btn btn-default" id="btn_createTask">create</a>
                               <a href="#" class="btn btn-default" id="btn_resumeTask">resume</a>
                             </div>
                         </div>   
-                        <div>	
+                        <div id="InputBlock_taskInfo">	
                             <div class="row panel" id="InputRow_task" style="display: none;">
                                 <div class="col-md-3"><label>Task Name</label></div>
                                 <div class="col-md-3"><input id="jac_taskName" value="dummy"/></div>
@@ -103,29 +103,29 @@
                         <div id="InputBlock_slaveNem" style="display: none;">   
                             <div class="row panel">
                                 <div class="col-md-3"><label>Slave Num</label></div>
-                                <div class="col-md-1"><input id="jac_slaveNum" value='3' /></div>
-                            </div>
-                            <div class="row panel">
-                                <div class="btn-group">
-                                  <a href="#" class="btn btn-default" id="btn_setSlaveNum" >update number</a>
+                                <div class="col-md-3"><input id="jac_slaveNum" value='0' /></div>
+                                <div class="col-md-1">
+                                    <div class="btn-group">
+                                        <a href="#" class="btn btn-default btn-sm" id="btn_setSlaveNum" >update number</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div id="InputBlock_uploadFiles" style="display: none;">
                             <div class="row panel">
                                 <div class="col-md-3"><label>Upload Path</label></div>
-                                <div class="col-md-1"><input id="jac_uploadFiles" type="file" name="file" multiple /></div>
-                            </div>
-                            <div class="row panel">
-                                <div class="btn-group">
-                                  <a href="#" class="btn btn-default" id="btn_uploadTask" >upload</a>
+                                <div class="col-md-3"><input id="jac_uploadFiles" type="file" name="file" multiple /></div>
+                                <div class="col-md-1">
+                                    <div class="btn-group">
+                                        <a href="#" class="btn btn-default btn-sm" id="btn_uploadTask" >upload</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div id="InputBlock_execJMX" style="display: none;">
                             <div class="row panel" >
                                 <div class="col-md-3"><label>JMX to run</label></div>
-                                <div class="col-md-1"><input id="jac_JMXName" value="smoke.jmx"/></div>
+                                <div class="col-md-1"><select id="jac_JMXName"></select></div>
                             </div>
                             <div class="row panel">
                                 <div class="btn-group">

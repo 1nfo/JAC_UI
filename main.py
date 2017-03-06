@@ -58,6 +58,8 @@ def user(user):
 def createTask():
 	taskName = request.form["taskName"]
 	taskID = request.form["taskID"]
+	slaveNum = 0
+	jmxList = []
 	createOrNot = int(request.form["create"])
 	taskMngr = JAC.TaskManager(config=JAC.CONFIG)
 	successOrNot = False;
@@ -79,8 +81,16 @@ def createTask():
 			taskMngrs[taskID] = taskMngr
 			taskMngr.instMngr.mute()
 			taskMngr.connMngr.mute()
+			slaveNum = len(taskMngr.instMngr.slaves)
+			try:
+				path_to_upload = os.path.join(os.getcwd(),app.config['UPLOAD_FOLDER'],taskID)
+				tmp = os.listdir(path_to_upload)
+				taskMngr.setUploadDir(path_to_upload)
+			except:
+				tmp = []
+			jmxList = [f for f in tmp if f.endswith(".jmx")]
 		print('')
-	return json.dumps({"taskID":taskID}),200 if successOrNot else 400
+	return json.dumps({"taskID":taskID,"slaveNum":slaveNum,"jmxList":jmxList}),200 if successOrNot else 400
 
 
 @app.route("/post/slaveNum",methods = ['POST'])
@@ -113,12 +123,15 @@ def runTest():
 	taskMngr = taskMngrs[taskID]
 	with jredirector:
 		if taskMngr.checkStatus(): 
-			taskMngr.refreshConnections()
-			taskMngr.uploadFiles()
-			taskMngr.updateRemotehost()
-			taskMngr.startSlavesServer()
-			taskMngr.runTest(jmxName,"output.csv")
-			taskMngr.stopSlavesServer()	
+			if taskMngr.instMngr.master is None: print("No Master running!")
+			else:
+				taskMngr.refreshConnections()
+				taskMngr.uploadFiles()
+				taskMngr.updateRemotehost()
+				taskMngr.startSlavesServer()
+				taskMngr.runTest(jmxName,"output.csv")
+				taskMngr.stopSlavesServer()	
+		else: print("Time out, please check instances status on AWS web console or try again")
 	return json.dumps({"success":True}), 200
 
 
