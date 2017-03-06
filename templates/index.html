@@ -66,12 +66,23 @@
         <!-- Page Content -->
         <div id="page-content-wrapper">
             <div class="container-fluid">
-            	<div class="row">
-            		<div class="col-md-2"><a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle >>> </a></div>
-                    <div class="col-md-4"><h1 class="text-center">{{title}}</h1></div>
-                    {% for p in paragraph%}
-                    <p>{{p}}</p>
-                    {% endfor %}
+            	<div >
+            		<div class="row"><a href="#menu-toggle" class="btn btn-default" id="menu-toggle">Toggle >>> </a></div>
+                    <div class="row"><h1 class="text-center">{{title}}</h1></div>
+                    <div>
+                        {% for p in paragraph%}
+                        <p>{{p}}</p>
+                        {% endfor %}
+                    </div>
+                    <div  id="jac_config_area">                  
+                        <button class="jac_configJson_open">Configuration Json</button>
+                        <div id="jac_configJson">
+                            <textarea cols="100" rows="25" id="jac_config_testArea"></textarea>
+                            <br/>
+                            <button id="jac_config_save">save and fresh</button>
+                            <button class="jac_configJson_close">close</button>
+                        </div>
+                    </div>
     			</div>  
                 <br/>      	
                 <div class="row">
@@ -139,9 +150,7 @@
                            <a href="#" class="btn btn-sm btn-default" id = "btn_clear">clear</a>   
                         </div>
                     	<div class="row panel">
-                            <div id="output">
-                    		
-                            </div>
+                            <div id="output"></div>
                     	</div>
                     </div>
                 </div>
@@ -159,26 +168,10 @@
     <script src="{{ url_for('static',filename = 'js/bootstrap.min.js') }}"></script>
 
     <script src="{{ url_for('static',filename = 'js/socket.io.min.js') }}"></script>
-    <script type="text/javascript" charset="utf-8">
-        $(document).ready(function() {
-            // Use a "/test" namespace.
-            // An application can open a connection on multiple namespaces, and
-            // Socket.IO will multiplex all those connections on a single
-            // physical channel. If you don't care about multiple channels, you
-            // can set the namespace to an empty string.
-            namespace = '/redirect';
 
-            // Connect to the Socket.IO server.
-            // The connection URL has the following format:
-            //     http[s]://<domain>:<port>[/<namespace>]
-            var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+    <script src="{{ url_for('static',filename = 'js/jquery.popupoverlay.js') }}"></script>
 
-            socket.on('redirect', function(d) {
-                $('#output').append(d.msg.replace("\n","<br/>"));
-            });
-
-        });
-    </script>
+    <script src="{{ url_for('static',filename = 'js/afterReady.js') }}"></script>
 
     <!-- Menu Toggle Script -->
     <script>

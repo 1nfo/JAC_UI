@@ -29,18 +29,17 @@ taskMngrs = {}
 def flushPasuse():
 	socketio.sleep(1e-3)
 
+
 jredirector = JAC.Redirector(pauseFunc=flushPasuse)
 
 
 def background_thread():
-	count = 0
 	while True:
-		# count+=1
 		socketio.sleep(1e-3)
-		
 		socketio.emit('redirect',
 					{'msg': jredirector.flush().replace("\n","<br/>")},
 					namespace='/redirect')
+
 
 @app.route("/")
 def index():
@@ -52,6 +51,14 @@ def user(user):
 	title = "Jmeter Cloud Testing"
 	paragraph = ['']
 	return render_template("index.html",title=title,paragraph=paragraph,async_mode=socketio.async_mode)
+
+
+@app.route("/post/config",methods = ['POST'])
+def refreshConfig():
+	config = request.form["config"]
+	JAC.CONFIG.update(json.loads(config))
+	print(JAC.CONFIG)
+	return ""
 
 
 @app.route("/post/taskName",methods = ['POST'])
@@ -149,7 +156,8 @@ def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    emit('redirect', {'msg': 'Connected<br/><br/>', 'count': 0})
+    emit('redirect', {'msg': 'Connected<br/><br/>'})
+    emit('initial_config',{'config':json.dumps(JAC.CONFIG,indent="\t")})
 
 @app.route("/post/getTaskIDs",methods=["POST"])
 def getTaskIDs():
@@ -157,6 +165,4 @@ def getTaskIDs():
 	return json.dumps(li)
 
 if __name__ == "__main__":
-    #app.run()
     socketio.run(app, debug=True)
-

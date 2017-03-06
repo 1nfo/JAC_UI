@@ -61,7 +61,6 @@ $("#btn_taskConfirm").click(function(e){
 		$(".btn").addClass("disabled")
 		document.getElementById("InputRow_task").style.display = "block";
 		document.getElementById("InputRow_resumeTasks").style.display = "none";
-		document.getElementById("InputRow_confirmBtn").style.display = "none";
 		var res = $.post("/post/taskName",{
 			"taskName":$("#jac_taskName").val(),
 			"taskID":$("#jac_taskID").val(),
@@ -77,6 +76,7 @@ $("#btn_taskConfirm").click(function(e){
 			document.getElementById("cleaup_btn_div").style.display = "block";
 			document.getElementById("InputBlock_uploadFiles").style.display = "block";
 			document.getElementById("InputBlock_execJMX").style.display = "block";
+			document.getElementById("InputRow_confirmBtn").style.display = "none";
 			$("#jac_taskName").prop('disabled', true);
 			$(".btn").removeClass("disabled");
 		}).error(function(){$(".btn").removeClass("disabled");})
@@ -115,8 +115,13 @@ $("#btn_uploadTask").click(function(e){
 		data: form_data,
 		type: "post",
 		success:function(data){
-			alert("succeed");
+			$.each(filesList,function(i,d){
+				d = d.name
+				if(d.match(/^[\s\S]*\.jmx$/))
+					$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"<option>")
+			})
 			document.getElementById("InputBlock_execJMX").style.display = "block";
+			alert("succeed");
 		},
 		error:function(err){alert("failed")},
 		complete:function(){$(".btn").removeClass("disabled");}
@@ -129,6 +134,7 @@ $("#btn_runTask").click(function(e){
 		alert("Invaild JMX file");
 	}else{
 		$(".btn").addClass("disabled")
+		$("#btn_clear").removeClass("disabled");
 		$.post("/post/run",{"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID},
 			function(data){
 				$(".btn").removeClass("disabled");
