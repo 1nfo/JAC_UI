@@ -35,9 +35,9 @@ $("#btn_resumeTask").click(function(e){
 		} else {
 			$.each(data,function(i,d){
 				var inputToAdd = " <input class='btn btn-default taskToResume' value='"+
-					d.split("_")[0]+
-					"'>"
-				var divToAdd = "<div class='panel'> </div>"
+					d.split("_",1)+
+					"' title='"+d+"'>"
+				var divToAdd = "<div class='row panel'> </div>"
 				$(divToAdd).append($(inputToAdd).data("id",d)).appendTo("#InputRow_resumeTasks")
 			})
 			$(".taskToResume").click(function(e){
@@ -45,7 +45,9 @@ $("#btn_resumeTask").click(function(e){
 				$("#jac_taskID").val(taskID)
 				$("#jac_taskName").val($(e.target).val())
 				$("#btn_taskConfirm").trigger("click")
-			})	
+			})
+			$(".taskToResume").tooltip();	
+			
 		}
 		$(".btn").removeClass("disabled")
 	}).error(function(){$(".btn").removeClass("disabled")})
@@ -92,7 +94,6 @@ $("#btn_setSlaveNum").click(function(e){
 		var res = $.post("/post/slaveNum",
 			{"slaveNum":$("#jac_slaveNum").val(),"taskID":GLOBAL_JAC_taskID},
 			function(data){
-				// console.log(data)
 				document.getElementById("InputBlock_uploadFiles").style.display = "block";
 				$(".btn").removeClass("disabled");
 			})
@@ -136,9 +137,8 @@ $("#btn_runTask").click(function(e){
 		$(".btn").addClass("disabled")
 		$("#btn_clear").removeClass("disabled");
 		$.post("/post/run",{"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID},
-			function(data){
-				$(".btn").removeClass("disabled");
-			}).error(function(){$(".btn").removeClass("disabled");})
+			function(data){$("#btn_stopRunning").removeClass("disabled")})
+			.error(function(){$(".btn").removeClass("disabled");})
 	}
 })
 
@@ -152,7 +152,6 @@ $("#btn_cleanupTask").click(function(e){
 			document.getElementById("InputBlock_uploadFiles").style.display = "none";
 			document.getElementById("InputBlock_execJMX").style.display = "none";
 			$(".btn").removeClass("disabled")
-			
 		}).error(function(){$(".btn").removeClass("disabled")})
 })
 

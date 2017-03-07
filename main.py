@@ -24,6 +24,7 @@ socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 
 taskMngrs = {}
+processes = {}
 
 
 def flushPasuse():
@@ -80,14 +81,16 @@ def createTask():
 				print(exception.args[1])
 				print("Try another name or click resume\n")
 			else:
-				print("Resuming "+exception.args[1][0])
-				taskMngr.startTask(taskName,exception.args[1][0])
+				print("Resuming "+taskID)
+				taskMngr.startTask(taskName,taskID)
 				successOrNot = True
 		if successOrNot:
 			taskID = taskMngr.instMngr.taskID
 			taskMngrs[taskID] = taskMngr
 			taskMngr.instMngr.mute()
 			taskMngr.connMngr.mute()
+			taskMngr.instMngr.addMaster()
+			if createOrNot: print("Master added.")
 			slaveNum = len(taskMngr.instMngr.slaves)
 			try:
 				path_to_upload = os.path.join(os.getcwd(),app.config['UPLOAD_FOLDER'],taskID)
@@ -125,20 +128,26 @@ def uploadFiles():
 
 @app.route("/post/run",methods = ["POST"])
 def runTest():
+	from multiprocessing import Process as P
 	taskID = request.form["taskID"]
 	jmxName = request.form["jmx_name"]
 	taskMngr = taskMngrs[taskID]
-	with jredirector:
-		if taskMngr.checkStatus(): 
-			if taskMngr.instMngr.master is None: print("No Master running!")
-			else:
-				taskMngr.refreshConnections()
-				taskMngr.uploadFiles()
-				taskMngr.updateRemotehost()
-				taskMngr.startSlavesServer()
-				taskMngr.runTest(jmxName,"output.csv")
-				taskMngr.stopSlavesServer()	
-		else: print("Time out, please check instances status on AWS web console or try again")
+	def wrapper():
+		with jredirector:
+			if taskMngr.checkStatus(): 
+				if taskMngr.instMngr.master is None: print("No Master running!")
+				else:
+					taskMngr.refreshConnections()
+					taskMngr.uploadFiles()
+					taskMngr.updateRemotehost()
+					taskMngr.startSlavesServer()
+					taskMngr.runTest(jmxName,"output.csv")
+					taskMngr.stopSlavesServer()	
+			else: print("Time out, please check instances status on AWS web console or try again")
+	p = P(target=wrapper)
+	p.start()
+	processes[taskID]=p
+	socketio.sleep(5)
 	return json.dumps({"success":True}), 200
 
 
@@ -159,10 +168,23 @@ def test_connect():
     emit('redirect', {'msg': 'Connected<br/><br/>'})
     emit('initial_config',{'config':json.dumps(JAC.CONFIG,indent="\t")})
 
+
 @app.route("/post/getTaskIDs",methods=["POST"])
 def getTaskIDs():
 	li = JAC.TaskManager(config=JAC.CONFIG).instMngr.getDupTaskIds()
 	return json.dumps(li)
+
+
+@socketio.on("stopRunning",namespace='/redirect')
+def stopRunning(msg):
+	with jredirector:
+		taskID = msg["taskID"]
+		taskMngr = taskMngrs[taskID]
+		if taskID in processes:processes[taskID].terminate()
+		taskMngr.stopSlavesServer(verbose=False)
+		socketio.sleep(.5)
+		print("Stopped")
+		emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

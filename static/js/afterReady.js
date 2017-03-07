@@ -19,6 +19,14 @@ $(document).ready(function() {
                 JAC_CONFIG = d.config;
             })
 
+            socket.on("taskFinished",function(d){
+                $(".btn").removeClass("disabled")
+            })
+
+            $("#btn_stopRunning").click(function(e){
+                socket.emit('stopRunning', {'taskID': GLOBAL_JAC_taskID})
+            })
+
             $("#jac_config_save").on("click",function(e){
                 var jsonToSave = $("#jac_config_testArea").val()
                 var IS_JSON = true;
