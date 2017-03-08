@@ -70,6 +70,7 @@ $("#btn_taskConfirm").click(function(e){
 		},function(data){
 			data = JSON.parse(data)
 			GLOBAL_JAC_taskID = data["taskID"]
+			GLOBAL_JAC_SLAVENUM = data["slaveNum"]
 			$("#jac_slaveNum").val(data["slaveNum"])
 			$.each(data["jmxList"],function(i,d){
 				$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"<option>")
@@ -96,6 +97,7 @@ $("#btn_setSlaveNum").click(function(e){
 			function(data){
 				document.getElementById("InputBlock_uploadFiles").style.display = "block";
 				$(".btn").removeClass("disabled");
+				GLOBAL_JAC_SLAVENUM = $("#jac_slaveNum").val();
 			})
 			.error(function(){$(".btn").removeClass("disabled");})
 	}
@@ -131,8 +133,11 @@ $("#btn_uploadTask").click(function(e){
 
 $("#btn_runTask").click(function(e){
 	var jmx_to_run = $("#jac_JMXName").val()
-	if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
-		alert("Invaild JMX file");
+	if(GLOBAL_JAC_SLAVENUM<1){
+		alert("No slave running, please update slave number")
+	}
+	else if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
+		alert("Invaild JMX file, please upload and select jmx file");
 	}else{
 		$(".btn").addClass("disabled")
 		$("#btn_clear").removeClass("disabled");
