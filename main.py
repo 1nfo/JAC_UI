@@ -28,7 +28,7 @@ processes = {}
 
 
 def flushPasuse():
-	socketio.sleep(1e-3)
+	socketio.sleep(1e-1)
 
 
 jredirector = JAC.Redirector(pauseFunc=flushPasuse)
@@ -36,7 +36,7 @@ jredirector = JAC.Redirector(pauseFunc=flushPasuse)
 
 def background_thread():
 	while True:
-		socketio.sleep(1e-3)
+		socketio.sleep(1e-1)
 		socketio.emit('redirect',
 					{'msg': jredirector.flush().replace("\n","<br/>")},
 					namespace='/redirect')
@@ -165,7 +165,7 @@ def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    emit('redirect', {'msg': 'Connected<br/><br/>'})
+    emit('redirect', {'msg': '<br/>Connected<br/><br/>'})
     emit('initial_config',{'config':json.dumps(JAC.CONFIG,indent="\t")})
 
 
@@ -183,7 +183,7 @@ def stopRunning(msg):
 		if taskID in processes:processes[taskID].terminate()
 		taskMngr.stopSlavesServer(verbose=False)
 		socketio.sleep(.5)
-		print("Stopped")
+		print("\nStopped")
 		emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
 
 if __name__ == "__main__":
