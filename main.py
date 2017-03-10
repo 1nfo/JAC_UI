@@ -32,14 +32,15 @@ def flushPasuse():
 
 
 jredirector = JAC.Redirector(pauseFunc=flushPasuse)
-msg_to_emit=""
+# msg_to_emit=""
 
 
 def background_thread():
 	while True:
-		socketio.sleep(1)
+		socketio.sleep(1e-3)
 		# if msg_to_emit or len(jredirector.buff.getvalue()): 
-		socketio.emit('redirect',{'msg': jredirector.flush().replace("\n","<br/>")}, namespace='/redirect')
+		if len(jredirector.buff.getvalue()):
+			socketio.emit('redirect',{'msg': jredirector.flush()}, namespace='/redirect')
 
 
 # @socketio.on("ack",namespace="/redirect")
@@ -149,11 +150,11 @@ def uploadFiles():
 	return json.dumps({"success":False}), 400
 
 
-@app.route("/post/run",methods = ["POST"])
-def runTest():
+@socketio.on("startRunning",namespace='/redirect')
+def runTest(data):
 	# from multiprocessing import Process as P
-	taskID = request.form["taskID"]
-	jmxName = request.form["jmx_name"]
+	taskID = data["taskID"]
+	jmxName = data["jmx_name"]
 	taskMngr = taskMngrs[taskID]
 	def wrapper():
 			# if taskMngr.checkStatus(): 
@@ -173,7 +174,6 @@ def runTest():
 		wrapper()
 	# processes[taskID]=p
 	emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
-	return json.dumps({"success":True}), 200
 
 
 @app.route("/post/cleanup",methods = ["POST"])
@@ -190,7 +190,7 @@ def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    emit('redirect', {'msg': '<br/>Connected<br/><br/>'})
+    emit('redirect', {'msg': '\nConnected\n\n'})
     emit('initial_config',{'config':json.dumps(JAC.CONFIG,indent="\t")})
 
 

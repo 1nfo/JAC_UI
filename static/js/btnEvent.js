@@ -143,22 +143,6 @@ $("#btn_uploadTask").click(function(e){
 	})
 })
 
-$("#btn_runTask").click(function(e){
-	var jmx_to_run = $("#jac_JMXName").val()
-	if(GLOBAL_JAC_SLAVENUM<1){
-		alert("No slave running, please update slave number")
-	}
-	else if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
-		alert("Invaild JMX file, please upload and select jmx file");
-	}else{
-		$(".btn").addClass("disabled")
-		$("#btn_clear").removeClass("disabled");
-		$.post("/post/run",{"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID},
-			function(data){$("#btn_stopRunning").removeClass("disabled")})
-			.error(function(){$(".btn").removeClass("disabled");})
-	}
-})
-
 $("#btn_cleanupTask").click(function(e){
 	$(".btn").addClass("disabled")
 	$.post("/post/cleanup",{"taskID":GLOBAL_JAC_taskID},
