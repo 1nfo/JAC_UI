@@ -98,8 +98,17 @@
                                 <div class="col-md-3"><label>Task Name</label></div>
                                 <div class="col-md-3"><input id="jac_taskName" value="dummy"/></div>
                                 <div class="col-md-1" id="cleaup_btn_div" style="display: none";>
-                                   <a href="#" class="btn btn-default btn-sm" id="btn_cleanupTask">cleanup</a>
+                                   <a href="#" class="btn btn-default btn-sm" id="btn_cleanupTask">Del Task</a>
                                 </div>
+                            </div> 
+                            <div class="row panel" id="InputRow_slaveNem" style="display: none;">
+                                <div class="col-md-3"><label>Slave Num</label></div>
+                                <div class="col-md-3"><input id="jac_slaveNum" value='1' /></div>
+                               <!--  <div class="col-md-1">
+                                    <div class="btn-group">
+                                        <a href="#" class="btn btn-default btn-sm" id="btn_setSlaveNum" >update number</a>
+                                    </div>
+                                </div> --> 
                             </div>
                             <div class="row panel" id="InputRow_taskID" style="display: none;">
                                 <div class="col-md-3"><label>Task ID</label></div>
@@ -111,25 +120,17 @@
                                 <a href="#" class="btn btn-default" id='btn_taskConfirm'>confirm</a>
                             </div>
                         </div>
-                        <div id="InputBlock_slaveNem" style="display: none;">   
-                            <div class="row panel">
-                                <div class="col-md-3"><label>Slave Num</label></div>
-                                <div class="col-md-3"><input id="jac_slaveNum" value='0' /></div>
-                                <div class="col-md-1">
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-default btn-sm" id="btn_setSlaveNum" >update number</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                         <div id="InputBlock_uploadFiles" style="display: none;">
                             <div class="row panel">
                                 <div class="col-md-3"><label>Upload Path</label></div>
-                                <div class="col-md-3"><input id="jac_uploadFiles" type="file" name="file" multiple /></div>
-                                <div class="col-md-1">
-                                    <div class="btn-group">
-                                        <a href="#" class="btn btn-default btn-sm" id="btn_uploadTask" >upload</a>
-                                    </div>
+                                <div class="col-md-4 input-group">
+                                    <label class="input-group-btn">
+                                        <label class="btn btn-default">
+                                           Browse<input id="jac_uploadFiles" type="file" name="file" multiple style="display:none;"/>
+                                        </label>
+                                        <a href="#" class="btn btn-default" id="btn_uploadTask" >Upload</a>  
+                                    </label>
+                                    <input id="uploaded_files_status" type="text" class="form-control col-md-1" readonly> 
                                 </div>
                             </div>
                         </div>

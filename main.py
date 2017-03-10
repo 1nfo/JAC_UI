@@ -66,31 +66,33 @@ def refreshConfig():
 def createTask():
 	taskName = request.form["taskName"]
 	taskID = request.form["taskID"]
-	slaveNum = 0
+	slaveNum = int(request.form["slaveNum"])
 	jmxList = []
 	createOrNot = int(request.form["create"])
 	taskMngr = JAC.TaskManager(config=JAC.CONFIG)
 	successOrNot = False;
 	with jredirector:
-		try:
-			taskMngr.startTask(taskName)
-			successOrNot = True
-		except Exception as exception:
-			if createOrNot:
-				print(exception.args[0])
-				print(exception.args[1])
-				print("Try another name or click resume\n")
-			else:
-				print("Resuming "+taskID)
-				taskMngr.startTask(taskName,taskID)
+		if createOrNot:
+			try:
+				taskMngr.startTask(taskName)
+				taskMngr.instMngr.mute()
+				taskMngr.connMngr.mute()
+				taskMngr.setSlaveNumber(slaveNum)
+				taskMngr.setupInstances()
 				successOrNot = True
+			except JAC.DupTaskException as exception:
+				print(exception.args)
+				print("Try another name or click resume\n")
+		else:
+			taskMngr.startTask(taskName,taskID)
+			successOrNot = True
+
 		if successOrNot:
 			taskID = taskMngr.instMngr.taskID
 			taskMngrs[taskID] = taskMngr
 			taskMngr.instMngr.mute()
 			taskMngr.connMngr.mute()
 			taskMngr.instMngr.addMaster()
-			if createOrNot: print("Master added.")
 			slaveNum = len(taskMngr.instMngr.slaves)
 			try:
 				path_to_upload = os.path.join(os.getcwd(),app.config['UPLOAD_FOLDER'],taskID)
@@ -100,17 +102,17 @@ def createTask():
 				tmp = []
 			jmxList = [f for f in tmp if f.endswith(".jmx")]
 		print('')
-	return json.dumps({"taskID":taskID,"slaveNum":slaveNum,"jmxList":jmxList}),200 if successOrNot else 400
+	return json.dumps({"taskID":taskID,"slaveNum":slaveNum,"jmxList":jmxList,"files":tmp}),200 if successOrNot else 400
 
 
-@app.route("/post/slaveNum",methods = ['POST'])
-def setSlaveNum():
-	num = int(request.form["slaveNum"])
-	taskID = request.form["taskID"]
-	with jredirector:
-		taskMngrs[taskID].setSlaveNumber(num)
-		taskMngrs[taskID].setupInstances()
-	return "from server: "+str(num)
+# @app.route("/post/slaveNum",methods = ['POST'])
+# def setSlaveNum():
+# 	num = int(request.form["slaveNum"])
+# 	taskID = request.form["taskID"]
+# 	with jredirector:
+# 		taskMngrs[taskID].setSlaveNumber(num)
+# 		taskMngrs[taskID].setupInstances()
+# 	return "from server: "+str(num)
 
 
 @app.route("/uploadFiles",methods = ['POST'])
@@ -122,8 +124,21 @@ def uploadFiles():
 		filename = secure_filename(file.filename)
 		file.save(os.path.join(app.config['UPLOAD_FOLDER']+taskID+"/", filename))
 	with jredirector:
-		taskMngrs[taskID].setUploadDir(os.getcwd()+"/"+app.config['UPLOAD_FOLDER']+taskID)
-	return json.dumps({"success":True}), 200
+		taskMngr = taskMngrs[taskID]
+		taskMngr.setUploadDir(os.getcwd()+"/"+app.config['UPLOAD_FOLDER']+taskID)
+		if taskMngr.checkStatus(): 
+			taskMngr.refreshConnections()
+			taskMngr.uploadFiles()
+			try:
+				path_to_upload = os.path.join(os.getcwd(),app.config['UPLOAD_FOLDER'],taskID)
+				tmp = os.listdir(path_to_upload)
+				taskMngr.setUploadDir(path_to_upload)
+			except:
+				tmp = []
+			jmxList = [f for f in tmp if f.endswith(".jmx")]
+			return json.dumps({"success":True,"jmxList":jmxList,"files":tmp}), 200
+		else: print("Time out, please check instances status on AWS web console or try again")
+	return json.dumps({"success":False}), 400
 
 
 @app.route("/post/run",methods = ["POST"])
@@ -134,16 +149,16 @@ def runTest():
 	taskMngr = taskMngrs[taskID]
 	def wrapper():
 		with jredirector:
-			if taskMngr.checkStatus(): 
-				if taskMngr.instMngr.master is None: print("No Master running!")
-				else:
-					taskMngr.refreshConnections()
-					taskMngr.uploadFiles()
+			# if taskMngr.checkStatus(): 
+				# if taskMngr.instMngr.master is None: print("No Master running!")
+				# else:
+					# taskMngr.refreshConnections()
+					# taskMngr.uploadFiles()
 					taskMngr.updateRemotehost()
 					taskMngr.startSlavesServer()
 					taskMngr.runTest(jmxName,"output.csv")
 					taskMngr.stopSlavesServer()	
-			else: print("Time out, please check instances status on AWS web console or try again")
+			# else: print("Time out, please check instances status on AWS web console or try again")
 	p = P(target=wrapper)
 	p.start()
 	# wrapper()
