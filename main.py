@@ -146,6 +146,7 @@ def runTest():
 			else: print("Time out, please check instances status on AWS web console or try again")
 	p = P(target=wrapper)
 	p.start()
+	# wrapper()
 	processes[taskID]=p
 	socketio.sleep(5)
 	return json.dumps({"success":True}), 200
@@ -181,7 +182,9 @@ def stopRunning(msg):
 		taskID = msg["taskID"]
 		taskMngr = taskMngrs[taskID]
 		if taskID in processes:processes[taskID].terminate()
-		taskMngr.stopSlavesServer(verbose=False)
+		taskMngr.refreshConnections(verbose=False)
+		taskMngr.stopMasterJmeter()
+		taskMngr.stopSlavesServer()
 		socketio.sleep(.5)
 		print("\nStopped")
 		emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
