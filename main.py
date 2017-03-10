@@ -24,22 +24,30 @@ socketio = SocketIO(app, async_mode=async_mode)
 thread = None
 
 taskMngrs = {}
-processes = {}
+# processes = {}
 
 
 def flushPasuse():
-	socketio.sleep(1e-1)
+	socketio.sleep(1e-3)
 
 
 jredirector = JAC.Redirector(pauseFunc=flushPasuse)
+msg_to_emit=""
 
 
 def background_thread():
 	while True:
-		socketio.sleep(1e-1)
-		socketio.emit('redirect',
-					{'msg': jredirector.flush().replace("\n","<br/>")},
-					namespace='/redirect')
+		socketio.sleep(1)
+		# if msg_to_emit or len(jredirector.buff.getvalue()): 
+		socketio.emit('redirect',{'msg': jredirector.flush().replace("\n","<br/>")}, namespace='/redirect')
+
+
+# @socketio.on("ack",namespace="/redirect")
+# def ackCallBack():
+# 	global msg_to_emit
+# 	# sys.__stdout__.write("\n\nack last msg --> "+msg_to_emit+"\n\n")
+# 	msg_to_emit = jredirector.flush()
+	
 
 
 @app.route("/")
@@ -143,27 +151,28 @@ def uploadFiles():
 
 @app.route("/post/run",methods = ["POST"])
 def runTest():
-	from multiprocessing import Process as P
+	# from multiprocessing import Process as P
 	taskID = request.form["taskID"]
 	jmxName = request.form["jmx_name"]
 	taskMngr = taskMngrs[taskID]
 	def wrapper():
-		with jredirector:
 			# if taskMngr.checkStatus(): 
 				# if taskMngr.instMngr.master is None: print("No Master running!")
 				# else:
 					# taskMngr.refreshConnections()
 					# taskMngr.uploadFiles()
+					taskMngr.refreshConnections(verbose=False)
 					taskMngr.updateRemotehost()
 					taskMngr.startSlavesServer()
 					taskMngr.runTest(jmxName,"output.csv")
 					taskMngr.stopSlavesServer()	
 			# else: print("Time out, please check instances status on AWS web console or try again")
-	p = P(target=wrapper)
-	p.start()
-	# wrapper()
-	processes[taskID]=p
-	socketio.sleep(5)
+	# p = P(target=wrapper)
+	with jredirector:
+		# p.start()
+		wrapper()
+	# processes[taskID]=p
+	emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
 	return json.dumps({"success":True}), 200
 
 
@@ -196,7 +205,7 @@ def stopRunning(msg):
 	with jredirector:
 		taskID = msg["taskID"]
 		taskMngr = taskMngrs[taskID]
-		if taskID in processes:processes[taskID].terminate()
+		# if taskID in processes:processes[taskID].terminate()
 		taskMngr.refreshConnections(verbose=False)
 		taskMngr.stopMasterJmeter()
 		taskMngr.stopSlavesServer()

@@ -12,13 +12,24 @@ $(document).ready(function() {
             //     http[s]://<domain>:<port>[/<namespace>]
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 
+            
+            socket.on("connect",function(){
+                socket.on('disconnect', function() {
+                    $('#output').append("<br/>Disconnected<br/>");
+                });
+            })
+
+
             socket.on('redirect', function(d) {
-                $('#output').append(d.msg.replace("\n","<br/>"));
+                $('#output').append(d.msg);
+                // socket.emit("ack")
             });
+
 
             socket.on("initial_config",function(d){
                 JAC_CONFIG = d.config;
             })
+
 
             socket.on("taskFinished",function(d){
                 $(".btn").removeClass("disabled")
