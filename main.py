@@ -115,7 +115,7 @@ def createTask():
                 files = []
             jmxList = [f for f in files if f.endswith(".jmx")]
         print('')
-    return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files}), 200
+    return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files}), 200 if successOrNot else 400
 
 
 # @app.route("/post/slaveNum",methods = ['POST'])
