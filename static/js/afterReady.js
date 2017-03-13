@@ -12,14 +12,28 @@ $(document).ready(function() {
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
             
             socket.on("connect",function(){
+                $('#connIcon').removeClass();
+                $('#connIcon').addClass("glyphicon glyphicon-ok")
+                $('#connIcon').empty()
+                $('#connIcon').append(" Connected")
                 socket.on('disconnect', function() {
-                    $('#output').append("<br/>Disconnected<br/>");
+                    $('#connIcon').removeClass();
+                    $('#connIcon').addClass("glyphicon glyphicon-remove")
+                    $('#connIcon').empty()
+                    $('#connIcon').append(" Disconnected")
+                });
+                socket.on('connect_timeout', function() {
+                    $('#output').append("<br/>Connection Timeout<br/>");
                 });
             })
 
             socket.on('redirect', function(d) {
                 $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g,"<br/>"));
                 // socket.emit("ack")
+            });
+
+            socket.on('reconnect_attempt', function(){
+                $('#output').append("... ")
             });
 
             socket.on("initial_config",function(d){
@@ -46,10 +60,6 @@ $(document).ready(function() {
                 }
             })
 
-            // stop button
-            $("#btn_stopRunning").click(function(e){
-                socket.emit('stopRunning', {'taskID': GLOBAL_JAC_taskID})
-            })
 
             // config json save button
             $("#jac_config_save").on("click",function(e){

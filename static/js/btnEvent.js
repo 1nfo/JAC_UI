@@ -77,9 +77,9 @@ $("#btn_taskConfirm").click(function(e){
 			GLOBAL_JAC_SLAVENUM = data["slaveNum"]
 			$("#jac_slaveNum").val(data["slaveNum"])
 			$("#uploaded_files_status").val(data["files"].length+" file(s) uploaded")
+			$("#jac_JMXName").empty()
 			$.each(data["jmxList"],function(i,d){
-				$("#jac_JMXName").empty()
-				$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"<option>")
+				$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
 			})
 			document.getElementById("InputRow_task").style.display = "block";
 			document.getElementById("InputRow_slaveNem").style.display = "block";
@@ -129,11 +129,11 @@ $("#btn_uploadTask").click(function(e){
 		success:function(data){
 			data = JSON.parse(data)
 			$("#uploaded_files_status").val(data["files"].length+" file(s) uploaded")
+			$("#jac_JMXName").empty()
 			$.each(data["jmxList"],function(i,d){
 				// d = d.name
 				// if(d.match(/^[\s\S]*\.jmx$/))
-				$("#jac_JMXName").empty()
-				$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"<option>")
+				$("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
 			})
 			// document.getElementById("InputBlock_execJMX").style.display = "block";
 			alert("succeed");
@@ -154,6 +154,14 @@ $("#btn_cleanupTask").click(function(e){
 			document.getElementById("InputBlock_execJMX").style.display = "none";
 			$(".btn").removeClass("disabled")
 		}).error(function(){$(".btn").removeClass("disabled")})
+})
+
+// stop button
+$("#btn_stopRunning").click(function(e){
+	$(".btn").addClass("disabled")
+    $.post("/post/stop",{"taskID":GLOBAL_JAC_taskID},function(data){
+    	$(".btn").removeClass("disabled")
+    }).error(function(){$(".btn").removeClass("disabled")})
 })
 
 $("#btn_clear").click(function(){

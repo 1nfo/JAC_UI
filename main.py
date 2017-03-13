@@ -20,11 +20,11 @@ app.config.update(
 async_mode = None
 
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, async_mode=async_mode)
+socketio = SocketIO(app, async_mode=async_mode,ping_timeout=6000)
 thread = None
 
 taskMngrs = {}
-# processes = {}
+processes = {}
 
 
 def flushPasuse():
@@ -152,7 +152,7 @@ def uploadFiles():
 
 @socketio.on("startRunning",namespace='/redirect')
 def runTest(data):
-	# from multiprocessing import Process as P
+	from multiprocessing import Process as P
 	taskID = data["taskID"]
 	jmxName = data["jmx_name"]
 	taskMngr = taskMngrs[taskID]
@@ -168,11 +168,11 @@ def runTest(data):
 					taskMngr.runTest(jmxName,"output.csv")
 					taskMngr.stopSlavesServer()	
 			# else: print("Time out, please check instances status on AWS web console or try again")
-	# p = P(target=wrapper)
+	p = P(target=wrapper)
 	with jredirector:
-		# p.start()
-		wrapper()
-	# processes[taskID]=p
+		p.start()
+		# wrapper()
+	processes[taskID]=p
 	emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
 
 
@@ -190,7 +190,6 @@ def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    emit('redirect', {'msg': '\nConnected\n\n'})
     emit('initial_config',{'config':json.dumps(JAC.CONFIG,indent="\t")})
 
 
@@ -200,18 +199,19 @@ def getTaskIDs():
 	return json.dumps(li)
 
 
-@socketio.on("stopRunning",namespace='/redirect')
-def stopRunning(msg):
+@app.route("/post/stop",methods=["POST"])
+def stopRunning():
 	with jredirector:
-		taskID = msg["taskID"]
+		taskID = request.form["taskID"]
 		taskMngr = taskMngrs[taskID]
-		# if taskID in processes:processes[taskID].terminate()
+		if taskID in processes:processes[taskID].terminate()
 		taskMngr.refreshConnections(verbose=False)
 		taskMngr.stopMasterJmeter()
 		taskMngr.stopSlavesServer()
 		socketio.sleep(.5)
 		print("\nStopped")
-		emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
+	return json.dumps({"success":True}), 200
+
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
