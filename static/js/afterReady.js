@@ -48,7 +48,7 @@ $(document).ready(function() {
             $("#btn_runTask").click(function(e){
                 var jmx_to_run = $("#jac_JMXName").val()
                 if(GLOBAL_JAC_SLAVENUM<1){
-                    alert("No slave running, please update slave number")
+                    alert("No slave running!")
                 }
                 else if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
                     alert("Invaild JMX file, please upload and select jmx file");

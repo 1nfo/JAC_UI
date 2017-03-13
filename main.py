@@ -76,6 +76,7 @@ def createTask():
 	taskName = request.form["taskName"]
 	taskID = request.form["taskID"]
 	slaveNum = int(request.form["slaveNum"])
+	files = []
 	jmxList = []
 	createOrNot = int(request.form["create"])
 	taskMngr = JAC.TaskManager(config=JAC.CONFIG)
@@ -89,9 +90,11 @@ def createTask():
 				taskMngr.setSlaveNumber(slaveNum)
 				taskMngr.setupInstances()
 				successOrNot = True
-			except JAC.DupTaskException as exception:
-				print(exception.args)
-				print("Try another name or click resume\n")
+			except Exception as exception:
+				print(exception)
+				taskMngr.instMngr.mute()
+				taskMngr.mute()
+				taskMngr.cleanup()
 		else:
 			taskMngr.startTask(taskName,taskID)
 			successOrNot = True
@@ -105,13 +108,13 @@ def createTask():
 			slaveNum = len(taskMngr.instMngr.slaves)
 			try:
 				path_to_upload = os.path.join(os.getcwd(),app.config['UPLOAD_FOLDER'],taskID)
-				tmp = os.listdir(path_to_upload)
+				files = os.listdir(path_to_upload)
 				taskMngr.setUploadDir(path_to_upload)
 			except:
-				tmp = []
-			jmxList = [f for f in tmp if f.endswith(".jmx")]
+				files = []
+			jmxList = [f for f in files if f.endswith(".jmx")]
 		print('')
-	return json.dumps({"taskID":taskID,"slaveNum":slaveNum,"jmxList":jmxList,"files":tmp}),200 if successOrNot else 400
+	return json.dumps({"taskID":taskID,"slaveNum":slaveNum,"jmxList":jmxList,"files":files}),200
 
 
 # @app.route("/post/slaveNum",methods = ['POST'])

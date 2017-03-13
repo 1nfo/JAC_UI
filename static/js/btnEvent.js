@@ -61,7 +61,7 @@ $("#btn_taskConfirm").click(function(e){
 		if(task_to_create==1)alert("Name needs to be letters and number only");
 		else alert("Select one taskToResume")
 	}
-	else if(!$("#jac_slaveNum").val().match(/^[1-9]+[0-9]*$/)){
+	else if(!$("#jac_slaveNum").val().match(/^[1-9]+[0-9]*$/)&&task_to_create == 1){
 		alert("Number must be greater than 0");
 	}
 	else {
