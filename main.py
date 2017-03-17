@@ -13,7 +13,7 @@ app.config.update(
     UPLOAD_FOLDER='uploads/'
 )
 
-# new part 
+# new part
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
@@ -54,11 +54,16 @@ def background_thread():
 
 @app.route("/")
 def index():
-    return redirect("/admin")
+    return redirect("/react")
 
 
-@app.route("/<user>")
-def user(user):
+@app.route("/react")
+def index_react():
+    return render_template("index_react.html", async_mode=socketio.async_mode)
+
+
+@app.route("/admin")
+def user():
     title = "Jmeter Cloud Testing"
     paragraph = ['']
     return render_template("index.html", title=title, paragraph=paragraph, async_mode=socketio.async_mode)
@@ -76,7 +81,7 @@ def refreshConfig():
 def createTask():
     taskName = request.form["taskName"]
     taskID = request.form["taskID"]
-    slaveNum = int(request.form["slaveNum"])
+    slaveNum = int(request.form["slaveNum"] if request.form["slaveNum"] else 0)
     files = []
     jmxList = []
     createOrNot = int(request.form["create"])
@@ -211,7 +216,8 @@ def stopRunning():
     with jredirector:
         taskID = request.form["taskID"]
         taskMngr = taskMngrs[taskID]
-        if taskID in processes: processes[taskID].terminate()
+        if taskID in processes:
+            processes[taskID].terminate()
         taskMngr.refreshConnections(verbose=False)
         taskMngr.stopMasterJmeter()
         taskMngr.stopSlavesServer()
