@@ -10,7 +10,7 @@ $(document).ready(function() {
             // The connection URL has the following format:
             //     http[s]://<domain>:<port>[/<namespace>]
             var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
-            
+
             socket.on("connect",function(){
                 $('#connIcon').removeClass();
                 $('#connIcon').addClass("glyphicon glyphicon-ok")
@@ -60,33 +60,6 @@ $(document).ready(function() {
                 }
             })
 
-
-            // config json save button
-            $("#jac_config_save").on("click",function(e){
-                var jsonToSave = $("#jac_config_testArea").val()
-                var IS_JSON = true;
-                try{
-                       var json = $.parseJSON(jsonToSave);
-                }catch(err){
-                       IS_JSON = false;
-                }
-                if(!IS_JSON) alert("Invaild JSON format")
-                else{
-                    $.post("/post/config",{"config":jsonToSave},function(){
-                        location.reload()
-                    })
-                }
-            })
-
-            // config json pop up
-            $('#jac_configJson').popup({
-                opacity: 0.3,
-                transition: 'all 0.5s',
-                onopen: function() {
-                    $("#jac_config_testArea").val(JAC_CONFIG)
-                }
-            })
-
             // file select button
             $(document).on('change', ':file', function() {
                 var input = $(this),
@@ -96,7 +69,6 @@ $(document).ready(function() {
               });
 
             $(':file').on('fileselect', function(event, numFiles, label) {
-
                   var input = $(this).parents('.input-group').find(':text'),
                       log = numFiles > 1 ? numFiles + ' files selected' : label;
 

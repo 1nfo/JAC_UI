@@ -1,26 +1,34 @@
-const React = require('react');
+import React from "react";
+import JacConfigPopup from "./JacConfigPopup"
 
-const toggleButton = <a href="#menu-toggle" className="btn btn-default" id="menu-toggle" style={{display: "none"}}>Toggle</a>;
-const title = <div className="row"><h1 className="text-center">Jmeter Cloud Testing</h1></div>;
 
-// work with jquery popup
-const jacConfigPopup = (<div  id="jac_config_area">                  
-                            <button className="jac_configJson_open">Configuration Json</button>
-                            <div id="jac_configJson">
-                                <textarea cols="100" rows="25" id="jac_config_testArea"></textarea>
-                                <br/>
-                                <button id="jac_config_save">save and fresh</button>
-                                <button className="jac_configJson_close">close</button>
-                            </div>
-                        </div>)
+const ToggleButton = React.createClass({
+    render(){
+        return (
+                <a href="#menu-toggle" className="btn btn-default" style={{display: "none"}}>
+                    Toggle
+                </a>
+            );
+    }
+})
+const Title = React.createClass({
+    render(){
+        return(
+                <div className="row">
+                    <h1 className="text-center">{this.props.title}</h1>
+                </div>
+            );
+    }
+})
+
 
 var Header = React.createClass({
     render() {
         return (
             <div >
-                {toggleButton}
-                {title}
-                {jacConfigPopup}
+                <ToggleButton />
+                <Title title="Jmeter Cloud Testing" />
+                <JacConfigPopup />
             </div> )
     }
 });

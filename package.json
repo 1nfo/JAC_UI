@@ -1,6 +1,6 @@
 {
   "name": "starter-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "start": "python main.py"
   },
   "author": "Vincent",
-  "license": "",
+  "license": "pp",
   "devDependencies": {
     "babel-core": "^6.4.5",
     "babel-loader": "^6.2.1",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "react": "^0.14.7",
-    "react-dom": "^0.14.7"
+    "react-dom": "^0.14.7",
+    "react-skylight": "^0.4.1"
   }
 }
