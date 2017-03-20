@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "react": "^0.14.7",
+    "react-autobind": "^1.0.6",
     "react-dom": "^0.14.7",
     "react-skylight": "^0.4.1"
   }

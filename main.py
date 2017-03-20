@@ -178,6 +178,8 @@ def runTest(data):
         taskMngr.startSlavesServer()
         taskMngr.runTest(jmxName, "output.csv")
         taskMngr.stopSlavesServer()
+        emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
+        print("Finished")
 
     # else: print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
@@ -185,7 +187,6 @@ def runTest(data):
         p.start()
     # wrapper()
     processes[taskID] = p
-    emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
 
 
 @app.route("/post/cleanup", methods=["POST"])

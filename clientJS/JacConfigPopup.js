@@ -40,7 +40,7 @@ const JacConfigPopup = React.createClass({
         return (
                <div id="jac_config_area">
                     <section>
-                        <button onClick={this.show}>Configuration Json</button>
+                        <button className="btn btn-primary" onClick={this.show}>Configuration</button>
                     </section>
                     <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Config Json">
                         <textarea   defaultValue={this.state.json}
@@ -49,7 +49,7 @@ const JacConfigPopup = React.createClass({
                                     style={{"minWidth": "100%","minHeight":"80%"}}>
                         </textarea>
                         <br/>
-                        <button className="btn btn-danger" ref="save" onClick={this.save}>save and fresh</button>
+                        <button className="btn btn-danger" ref="save" onClick={this.save}>save</button>
                     </SkyLight>
                 </div>
             );

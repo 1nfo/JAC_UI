@@ -1,3 +1,6 @@
+GLOBAL_JAC_taskID = ''
+GLOBAL_JAC_SLAVENUM = 0
+
 $(document).ready(function() {
             // Use a "/test" namespace.
             // An application can open a connection on multiple namespaces, and
@@ -55,8 +58,9 @@ $(document).ready(function() {
                 }else{
                     $(".btn").addClass("disabled")
                     $("#btn_clear").removeClass("disabled");
+                     $("#btn_stopRunning").removeClass("disabled")
                     socket.emit('startRunning', {"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID})
-                    $("#btn_stopRunning").removeClass("disabled")
+
                 }
             })
 
