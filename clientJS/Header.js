@@ -1,5 +1,4 @@
 import React from "react";
-import JacConfigPopup from "./JacConfigPopup"
 
 
 const ToggleButton = React.createClass({
@@ -28,7 +27,6 @@ var Header = React.createClass({
             <div >
                 <ToggleButton />
                 <Title title="Jmeter Cloud Testing" />
-                <JacConfigPopup />
             </div> )
     }
 });

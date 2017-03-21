@@ -1,15 +1,18 @@
 import React from "react";
 import SkyLight from 'react-skylight';
+import autoBind from 'react-autobind';
 
-const JacConfigPopup = React.createClass({
-    getInitialState(){
-        return {"json":""};
-    },
+export default class JacConfigPopup extends React.Component{
+    constructor(props){
+      super(props);
+      this.state = {"json":""};
+      autoBind(this);
+    }
 
     show(){
         this.setState({"json":JAC_CONFIG});
         this.refs.jac_configJson.show();
-    },
+    }
 
     save(){
         var jsonToSave = this.refs.textarea.value;
@@ -22,11 +25,9 @@ const JacConfigPopup = React.createClass({
         }
         if(!IS_JSON) alert("Invaild JSON format")
         else{
-            $.post("/post/config",{"config":jsonToSave},function(){
-                location.reload()
-            })
+            $.post("/post/config",{"config":jsonToSave})
         }
-    },
+    }
 
     render(){
         var myBigGreenDialog = {
@@ -38,9 +39,11 @@ const JacConfigPopup = React.createClass({
           marginLeft: '-35%',
         };
         return (
-               <div id="jac_config_area">
+               <div id="jac_config_area" style={this.props.style}>
                     <section>
-                        <button className="btn btn-primary" onClick={this.show}>Configuration</button>
+                        <button className="btn btn-primary btn-sm"
+                                onClick={this.show}> Configuration
+                        </button>
                     </section>
                     <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Config Json">
                         <textarea   defaultValue={this.state.json}
@@ -49,11 +52,14 @@ const JacConfigPopup = React.createClass({
                                     style={{"minWidth": "100%","minHeight":"80%"}}>
                         </textarea>
                         <br/>
-                        <button className="btn btn-danger" ref="save" onClick={this.save}>save</button>
+                        <button className="btn btn-danger"
+                                ref="save"
+                                onClick={this.save}
+                                style={this.props.saveBtnStyle}>
+                            save
+                        </button>
                     </SkyLight>
                 </div>
             );
     }
-})
-
-export default JacConfigPopup;
+}

@@ -59,14 +59,8 @@ def index():
 
 @app.route("/react")
 def index_react():
-    return render_template("index_react.html", async_mode=socketio.async_mode)
-
-
-@app.route("/admin")
-def user():
     title = "Jmeter Cloud Testing"
-    paragraph = ['']
-    return render_template("index.html", title=title, paragraph=paragraph, async_mode=socketio.async_mode)
+    return render_template("index_react.html", async_mode=socketio.async_mode, title=title)
 
 
 @app.route("/post/config", methods=['POST'])

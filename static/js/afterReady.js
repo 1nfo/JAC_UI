@@ -45,6 +45,7 @@ $(document).ready(function() {
 
             socket.on("taskFinished",function(d){
                 $(".btn").removeClass("disabled")
+                $("#btn_stopRunning").addClass("disabled")
             })
 
             // run task button
@@ -58,7 +59,7 @@ $(document).ready(function() {
                 }else{
                     $(".btn").addClass("disabled")
                     $("#btn_clear").removeClass("disabled");
-                     $("#btn_stopRunning").removeClass("disabled")
+                    $("#btn_stopRunning").removeClass("disabled")
                     socket.emit('startRunning', {"jmx_name":jmx_to_run,"taskID":GLOBAL_JAC_taskID})
 
                 }

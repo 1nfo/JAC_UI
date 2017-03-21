@@ -1,17 +1,19 @@
 import React from "react";
 import autoBind from 'react-autobind';
+import JacConfigPopup from "./JacConfigPopup"
 
-function disCls(dis){
-    if (dis>0) return " disabled";
-    return "";
-}
 
 const InputBlock_startTask = React.createClass({
+    disCls(){
+        if (this.props.btnDisabled>0) return " disabled";
+        return "";
+    },
+
     render(){
         return (<div className="row panel" id="InputBlock_startTask" >
                     <div className="btn-group">
-                        <a href="#" className={"btn btn-default"+disCls(this.props.btnDis)} onClick={this.props.createFunc}>create</a>
-                        <a href="#" className={"btn btn-default"+disCls(this.props.btnDis)} onClick={this.props.resumeFunc}>resume</a>
+                        <a href="#" className={"btn btn-default"+this.disCls()} onClick={this.props.createFunc}>create</a>
+                        <a href="#" className={"btn btn-default"+this.disCls()} onClick={this.props.resumeFunc}>resume</a>
                     </div>
                 </div>);
     }
@@ -20,62 +22,76 @@ const InputBlock_startTask = React.createClass({
 const InputBlock_taskInfo = React.createClass({
     calc(bit){
         if(((1<<bit)&this.props.display)>0) return "block";
-        return "none"
+        return "none";
+    },
+
+    disCls(){
+        if (this.props.btnDisabled>0) return " disabled";
+        return "";
     },
 
     render(){
-        return (<div id="InputBlock_taskInfo">
-                    <div className="row panel" id="InputRow_task" style={{display: this.calc(0)}}>
-                        <div className="col-md-3"><label>Task Name</label></div>
-                        <div className="col-md-3"><input id="jac_taskName"/></div>
-                        <div className="col-md-1" id="cleaup_btn_div" style={{display: this.calc(1)}}>
-                            <a href="#" className={"btn btn-default btn-sm"+disCls(this.props.btnDis)} id="btn_cleanupTask" onClick={this.props.deleteFunc}>Del Task</a>
+        var This = this;
+        return (<div key="taskInfo">
+                    <div id="InputBlock_taskInfo">
+                        <JacConfigPopup style={{display: this.calc(0)}} saveBtnStyle={{display:this.calc(7)}}/>
+                        <br/>
+                        <div className="row panel" id="InputRow_task" style={{display: this.calc(1)}}>
+                            <div className="col-md-3"><label>Task Name</label></div>
+                            <div className="col-md-3" >
+                                <input id="jac_taskName" type="text" className="form-control" onChange={this.props.nameChange}
+                                       value={this.props.JAC_taskName} readOnly={this.props.readonly}/>
+                            </div>
+                            <div className="col-md-1" id="cleaup_btn_div" style={{display: this.calc(2)}}>
+                                <a href="#" className={"btn btn-danger btn-sm"+this.disCls()} id="btn_cleanupTask" onClick={this.props.deleteFunc}>Del Task</a>
+                            </div>
+                        </div>
+                        <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(3)}}>
+                            <div className="col-md-3"><label>Slave Num</label></div>
+                            <div className="col-md-3">
+                                <input id="jac_slaveNum" type="text" className="form-control" onChange={this.props.numChange}
+                                       value={this.props.JAC_SLAVENUM} readOnly={this.props.readonly}/></div>
+                        </div>
+                        <div className="row panel" id="InputRow_resumeTasks" style={{display: this.calc(4)}}>
+                            {this.props.taskList.map(function(d){
+                                return (
+                                        <div className='row panel' key={d}>
+                                            <input className='btn btn-default taskToResume'
+                                                   value={d.split("_",1)}
+                                                   title={d}
+                                                   onClick={This.props.clickOnResumeTask}
+                                                   readOnly/>
+                                        </div>
+                                    );
+                            })}
+                        </div>
+                        <div className="row panel" id="InputRow_confirmBtn" style={{display: this.calc(5)}}>
+                            <a href="#" className={"btn btn-default"+this.disCls()} id='btn_taskConfirm' onClick={this.props.confirmFunc}>confirm</a>
                         </div>
                     </div>
-                    <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(2)}}>
-                        <div className="col-md-3"><label>Slave Num</label></div>
-                        <div className="col-md-3"><input id="jac_slaveNum"/></div>
-                    </div>
-                    <div className="row panel" id="InputRow_taskID" style={{display: "none"}}>
-                        <div className="col-md-3"><label>Task ID</label></div>
-                        <div className="col-md-1"><input id="jac_taskID" /></div>
-                    </div>
-                    <div className="row panel" id="InputRow_resumeTasks" style={{display: this.calc(3)}}></div>
-                    <div className="row panel" id="InputRow_confirmBtn" style={{display: this.calc(4)}}>
-                        <a href="#" className={"btn btn-default"+disCls(this.props.btnDis)} id='btn_taskConfirm' onClick={this.props.confirmFunc}>confirm</a>
-                    </div>
-                </div>);
-    }
-});
-
-const InputBlock_uploadFiles = React.createClass({
-    calc(bit){
-        if(((1<<bit)&this.props.display)>0) return "block";
-        return "none"
-    },
-
-    render(){
-        return (<div id="InputBlock_uploadFiles" style={{display: this.calc(5)}}>
-                    <div className="row panel">
-                        <div className="col-md-3"><label>Upload Path</label></div>
-                        <div className="col-md-4 input-group">
-                            <label className="input-group-btn">
-                                <label className={"btn btn-default"+disCls(this.props.btnDis)}>
-                                Browse<input id="jac_uploadFiles" type="file" name="file" multiple style={{display: "none"}}/>
+                    <div id="InputBlock_uploadFiles" style={{display: this.calc(6)}}>
+                        <div className="row panel">
+                            <div className="col-md-3"><label>Upload Path</label></div>
+                            <div className="col-md-4 input-group">
+                                <label className="input-group-btn">
+                                    <label className={"btn btn-default"+this.disCls()}>
+                                    Browse
+                                    <input id="jac_uploadFiles" type="file" name="file" multiple style={{display: "none"}}/>
+                                    </label>
+                                    <a href="#" className={"btn btn-default"+this.disCls()} id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</a>
                                 </label>
-                                <a href="#" className={"btn btn-default"+disCls(this.props.btnDis)} id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</a>
-                            </label>
-                            <input id="uploaded_files_status" type="text" className="form-control col-md-1" readOnly />
+                                <input id="uploaded_files_status" type="text" className="form-control col-md-1" readOnly />
+                            </div>
                         </div>
-                    </div>
-                    <div className="row panel" >
-                            <div className="col-md-3"><label>JMX to run</label></div>
-                            <div className="col-md-1"><select id="jac_JMXName"></select></div>
-                    </div>
-                    <div className="row panel">
-                        <div className="btn-group">
-                            <a href="#" className={"btn btn-default"+disCls(this.props.btnDis)} id="btn_runTask">run</a>
-                            <a href="#" className="btn btn-default disabled" id="btn_stopRunning" onClick={this.props.stopFunc}>stop</a>
+                        <div className="row panel" >
+                                <div className="col-md-3"><label>JMX to run</label></div>
+                                <div className="col-md-1"><select id="jac_JMXName"></select></div>
+                        </div>
+                        <div className="row panel">
+                            <div className="btn-group">
+                                <a href="#" className={"btn btn-default"+this.disCls()} id="btn_runTask">run</a>
+                                <a href="#" className="btn btn-default disabled" id="btn_stopRunning" onClick={this.props.stopFunc}>stop</a>
+                            </div>
                         </div>
                     </div>
                 </div>);
@@ -89,43 +105,50 @@ export default class DashBoard extends React.Component{
         this.state = {
             task_to_create:1,
             JAC_taskID:"",
-            JAC_SLAVENUM:0,
+            JAC_SLAVENUM:"",
+            JAC_taskName:"",
             display:0,
+            readonly:false,
             btnDisabled:0,
-            btnDisabled_stop:1
+            btnDisabled_stop:1,
+            taskList:[]
         };
-        autoBind(this)
+        var This = this;
+        this.handle = {
+            nameChange(e){ This.setState({JAC_taskName:e.target.value});},
+            numChange(e){ This.setState({JAC_SLAVENUM:e.target.value});}
+        }
+        autoBind(this);
     }
 
     create(){
-        $("#jac_taskName").prop('readonly', false);
-        $("#jac_slaveNum").prop('readonly', false);
-        this.setState({task_to_create:1,display:0b010101});
+        this.setState({
+            task_to_create:1,
+            JAC_taskName:"",
+            JAC_SLAVENUM:"",
+            display:0b10101011,
+            readonly:false,
+            taskList:[]
+
+        });
     }
 
     resume(){
         var This = this;
-        $("#jac_taskName").val("")
-        This.setState({task_to_create:0,display:0b001000,btnDisabled:1});
+        This.setState({
+            task_to_create:0,
+            display:0b00010000,
+            btnDisabled:1,
+            JAC_SLAVENUM:"",
+            taskList:[]
+        });
         $("#InputRow_resumeTasks").text("")
         $.post("/post/getTaskIDs","",function(data){
             var data = JSON.parse(data)
             if (data.length==0) {
                 $("#InputRow_resumeTasks").append("<div>No task running</div>")
             } else {
-                $.each(data,function(i,d){
-                    var inputToAdd = " <input class='btn btn-default taskToResume' value='"+
-                        d.split("_",1)+
-                        "' title='"+d+"'>"
-                    var divToAdd = "<div class='row panel'> </div>"
-                    $(divToAdd).append($(inputToAdd).data("id",d)).appendTo("#InputRow_resumeTasks")
-                })
-                $(".taskToResume").click(function(e){
-                    var taskID = $(e.target).data()["id"]
-                    $("#jac_taskID").val(taskID)
-                    $("#jac_taskName").val($(e.target).val())
-                    This.confirm();
-                })
+                This.setState({taskList:data})
                 $(".taskToResume").tooltip();
 
             }
@@ -133,35 +156,47 @@ export default class DashBoard extends React.Component{
         }).error(function(){This.setState({btnDisabled:0});})
     }
 
+    clickOnResumeTask(e){
+        this.setState({
+            JAC_taskID:$(e.target).attr("data-original-title"),
+            JAC_taskName:$(e.target).val(),
+            taskList:[]
+        },this.confirm)
+    }
+
     confirm(){
-        if(!$("#jac_taskName").val().match(/^[a-zA-Z][a-zA-Z0-9]+$/)){
-            if(this.state.task_to_create==1)alert("Name needs to be letters and number only");
-            else alert("Select one taskToResume")
+        var This = this;
+        if(!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]+$/)){
+            if(This.state.task_to_create==1)alert("Name needs to be letters and number only");
+            else alert("Select one task to Resume")
         }
-        else if(!$("#jac_slaveNum").val().match(/^[1-9]+[0-9]*$/)&&this.state.task_to_create == 1){
-            alert("Number must be greater than 0");
+        else if(!This.state.JAC_SLAVENUM.match(/^[1-9]+[0-9]*$/)&&This.state.task_to_create == 1){
+            alert("Invalid number, must be greater than 0");
         }
         else {
-            var This = this;
             This.setState({btnDisabled:1});
             var res = $.post("/post/taskName",{
-                "taskName":$("#jac_taskName").val(),
-                "taskID":$("#jac_taskID").val(),
-                "slaveNum":$("#jac_slaveNum").val(),
-                "create":this.state.task_to_create
+                "taskName":This.state.JAC_taskName,
+                "taskID":This.state.JAC_taskID,
+                "slaveNum":This.state.JAC_SLAVENUM,
+                "create":This.state.task_to_create
             },function(data){
                 data = JSON.parse(data)
                 GLOBAL_JAC_taskID = data["taskID"]
                 GLOBAL_JAC_SLAVENUM = data["slaveNum"]
-                $("#jac_slaveNum").val(data["slaveNum"])
                 $("#uploaded_files_status").val(data["files"].length+" file(s) uploaded")
                 $("#jac_JMXName").empty()
                 $.each(data["jmxList"],function(i,d){
                     $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
                 })
-                This.setState({btnDisabled:0,display:0b100111,JAC_taskID:GLOBAL_JAC_taskID,JAC_SLAVENUM:GLOBAL_JAC_SLAVENUM})
-                $("#jac_taskName").prop('readonly', true);
-                $("#jac_slaveNum").prop('readonly', true);
+                This.setState({
+                        btnDisabled:0,
+                        display:0b1001111|(This.state.task_to_create<<7),
+                        JAC_taskID:GLOBAL_JAC_taskID,
+                        JAC_SLAVENUM:GLOBAL_JAC_SLAVENUM,
+                        readonly:true,
+                        taskList:[]
+                    })
             }).error(function(){This.setState({btnDisabled:0});})
         }
     }
@@ -186,11 +221,8 @@ export default class DashBoard extends React.Component{
                 $("#uploaded_files_status").val(data["files"].length+" file(s) uploaded")
                 $("#jac_JMXName").empty()
                 $.each(data["jmxList"],function(i,d){
-                    // d = d.name
-                    // if(d.match(/^[\s\S]*\.jmx$/))
                     $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
                 })
-                // document.getElementById("InputBlock_execJMX").style.display = "block";
                 alert("succeed");
             },
             error:function(err){alert("failed")},
@@ -201,17 +233,19 @@ export default class DashBoard extends React.Component{
     delete(){
         var This = this;
         This.setState({btnDisabled:1});
-        $.post("/post/cleanup",{"taskID":this.state.JAC_taskID},
+        $.post("/post/cleanup",{"taskID":This.state.JAC_taskID},
             function(data){
                 This.setState({display:0,btnDisabled:0})
             }).error(function(){This.setState({btnDisabled:0})})
     }
 
     stop(){
-        this.setState({btnDisabled:1})
-        $.post("/post/stop",{"taskID":this.state.JAC_taskID},function(data){
-            this.setState({btnDisabled:0})
-        }).error(function(){this.setState({btnDisabled:0})})
+        var This = this;
+        $("#btn_stopRunning").addClass("disabled")
+        This.setState({btnDisabled:1})
+        $.post("/post/stop",{"taskID":This.state.JAC_taskID},function(data){
+            This.setState({btnDisabled:0})
+        }).error(function(){This.setState({btnDisabled:0});})
     }
 
     render(){
@@ -220,17 +254,17 @@ export default class DashBoard extends React.Component{
                     <InputBlock_startTask
                         createFunc={this.create}
                         resumeFunc={this.resume}
-                        btnDis={this.state.btnDisabled}/>
+                        {...this.state}
+                    />
                     <InputBlock_taskInfo
                         confirmFunc={this.confirm}
                         deleteFunc={this.delete}
-                        display={this.state.display}
-                        btnDis={this.state.btnDisabled}/>
-                    <InputBlock_uploadFiles
                         uploadFunc={this.upload}
                         stopFunc={this.stop}
-                        display={this.state.display}
-                        btnDis={this.state.btnDisabled}/>
+                        clickOnResumeTask={this.clickOnResumeTask}
+                        {...this.handle}
+                        {...this.state}
+                    />
                 </div>
             );
     }
