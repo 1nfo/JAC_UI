@@ -68,6 +68,7 @@ def refreshConfig():
     config = request.form["config"]
     JAC.CONFIG.update(json.loads(config))
     print(JAC.CONFIG)
+    socketio.emit('initial_config', {'config': json.dumps(JAC.CONFIG, indent="\t")},namespace='/redirect')
     return ""
 
 
