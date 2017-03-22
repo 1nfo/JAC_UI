@@ -41,7 +41,7 @@ export default class JacConfigPopup extends React.Component{
         return (
                <div id="jac_config_area" style={this.props.style}>
                     <section>
-                        <button className="btn btn-primary btn-sm"
+                        <button className={"btn btn-success btn-sm"+this.props.btnDis}
                                 onClick={this.show}> Configuration
                         </button>
                     </section>

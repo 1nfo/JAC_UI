@@ -9,9 +9,12 @@ class ConnectionStatus extends React.Component{
 
     render(){
         return( <div className="panel-heading">
-                    <span  id="connIcon" className="glyphicon" aria-hidden="true"></span>
-                    &nbsp;&nbsp;&nbsp;
-                    <a href="#" className="btn btn-sm btn-default" id="btn_clear" onClick={() => this.props.clearFunc()}>clear screen</a>
+                    <span  id="connIcon" className="glyphicon"
+                           style={{lineHeight:2}} aria-hidden="true"/>
+                    <a href="#" className="btn btn-default pull-right" id="btn_clear"
+                                onClick={() => this.props.clearFunc()}>
+                        clear screen
+                    </a>
                 </div>);
     }
 }
@@ -23,7 +26,7 @@ const Console = React.createClass({
 
     render(){
         GLOBAL_SCROLLDOWN = this.toBottom
-        return <div className="panel-body" style={{"min-height": 501}} id="output" />;
+        return <div className="panel-body" style={{"minHeight": 501}} id="output" />;
     }
 })
 
@@ -34,7 +37,7 @@ const Output = React.createClass({
 
     render(){
         var scrollbarStyles = {borderRadius: 5};
-        return (<div className="col-lg-6">
+        return (<div className="col-lg-5 pull-right">
                     <div className="panel panel-primary">
                         <ConnectionStatus clearFunc={this.clear}/>
                         <ScrollArea style={{height:500}}

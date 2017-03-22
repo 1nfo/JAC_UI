@@ -9,13 +9,10 @@ export default class Content extends React.Component{
     }
 
     render() {
-        return (
-            <div >
-                <div className="row">
+        return (<div className="row panel-body">
                     <DashBoard />
                     <Output />
-                </div>
-            </div>);
+                </div>);
     }
 }
 
