@@ -1,5 +1,6 @@
 GLOBAL_JAC_taskID = ''
 GLOBAL_JAC_SLAVENUM = 0
+GLOBAL_SCROLLDOWN = null
 
 $(document).ready(function() {
             // Use a "/test" namespace.
@@ -32,6 +33,7 @@ $(document).ready(function() {
 
             socket.on('redirect', function(d) {
                 $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g,"<br/>"));
+                GLOBAL_SCROLLDOWN()
                 // socket.emit("ack")
             });
 

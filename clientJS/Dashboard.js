@@ -56,7 +56,7 @@ const InputBlock_taskInfo = React.createClass({
                             {this.props.taskList.map(function(d){
                                 return (
                                         <div className='row panel' key={d}>
-                                            <input className='btn btn-default taskToResume'
+                                            <input className={"btn btn-default taskToResume"+This.disCls()}
                                                    value={d.split("_",1)}
                                                    title={d}
                                                    onClick={This.props.clickOnResumeTask}
@@ -127,9 +127,7 @@ export default class DashBoard extends React.Component{
             JAC_taskName:"",
             JAC_SLAVENUM:"",
             display:0b10101011,
-            readonly:false,
-            taskList:[]
-
+            readonly:false
         });
     }
 
@@ -139,10 +137,8 @@ export default class DashBoard extends React.Component{
             task_to_create:0,
             display:0b00010000,
             btnDisabled:1,
-            JAC_SLAVENUM:"",
-            taskList:[]
+            JAC_SLAVENUM:""
         });
-        $("#InputRow_resumeTasks").text("")
         $.post("/post/getTaskIDs","",function(data){
             var data = JSON.parse(data)
             if (data.length==0) {
@@ -150,7 +146,6 @@ export default class DashBoard extends React.Component{
             } else {
                 This.setState({taskList:data})
                 $(".taskToResume").tooltip();
-
             }
             This.setState({btnDisabled:0});
         }).error(function(){This.setState({btnDisabled:0});})
@@ -158,9 +153,9 @@ export default class DashBoard extends React.Component{
 
     clickOnResumeTask(e){
         this.setState({
+            btnDisabled:1,
             JAC_taskID:$(e.target).attr("data-original-title"),
             JAC_taskName:$(e.target).val(),
-            taskList:[]
         },this.confirm)
     }
 
