@@ -26,6 +26,8 @@ thread = None
 taskMngrs = {}
 processes = {}
 
+customConfig = {}
+
 
 def flushPasuse():
     socketio.sleep(1e-3)
@@ -64,11 +66,12 @@ def index_react():
 
 
 @app.route("/post/config", methods=['POST'])
-def refreshConfig():
+def updateConfig():
+    global customConfig
     config = request.form["config"]
-    JAC.CONFIG.update(json.loads(config))
-    print(JAC.CONFIG)
-    socketio.emit('initial_config', {'config': json.dumps(JAC.CONFIG, indent="\t")},namespace='/redirect')
+    customConfig.update(json.loads(config))
+    print(customConfig)
+    socketio.emit('initial_config', {'config': json.dumps(customConfig, indent="\t")},namespace='/redirect')
     return ""
 
 
@@ -80,16 +83,20 @@ def createTask():
     files = []
     jmxList = []
     createOrNot = int(request.form["create"])
-    taskMngr = JAC.TaskManager(config=JAC.CONFIG)
     successOrNot = False
     with jredirector:
         if createOrNot:
             try:
+                taskMngr = JAC.TaskManager(config=customConfig)
                 taskMngr.startTask(taskName)
+                taskID = taskMngr.instMngr.taskID
                 taskMngr.instMngr.mute()
                 taskMngr.connMngr.mute()
                 taskMngr.setSlaveNumber(slaveNum)
                 taskMngr.setupInstances()
+                os.system("cd %s && mkdir %s" % (app.config['UPLOAD_FOLDER'], taskID))
+                with open(app.config['UPLOAD_FOLDER']+taskID+"/config.json","w") as f:
+                    f.write(json.dumps(taskMngr.config))
                 successOrNot = True
             except Exception as exception:
                 print(exception)
@@ -97,15 +104,20 @@ def createTask():
                 taskMngr.mute()
                 taskMngr.cleanup()
         else:
+            try:
+                config = json.loads(open(app.config['UPLOAD_FOLDER']+taskID+"/config.json").read())
+            except Exception as e:
+                print(e)
+                config = JAC.CONFIG
+            taskMngr = JAC.TaskManager(config=config)
             taskMngr.startTask(taskName, taskID)
+            taskMngr.instMngr.mute()
+            taskMngr.connMngr.mute()
             successOrNot = True
 
         if successOrNot:
-            taskID = taskMngr.instMngr.taskID
             taskMngrs[taskID] = taskMngr
-            taskMngr.instMngr.mute()
-            taskMngr.connMngr.mute()
-            taskMngr.instMngr.addMaster()
+            taskMngr.instMngr.addMaster()#delete?
             slaveNum = len(taskMngr.instMngr.slaves)
             try:
                 path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], taskID)
@@ -114,7 +126,8 @@ def createTask():
             except:
                 files = []
             jmxList = [f for f in files if f.endswith(".jmx")]
-        print('')
+            socketio.emit('initial_config', {'config': json.dumps(taskMngr.config, indent="\t")},namespace='/redirect')
+        print("")
     return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files}), 200 if successOrNot else 400
 
 
@@ -132,7 +145,6 @@ def createTask():
 def uploadFiles():
     taskID = request.form["taskID"]
     files = request.files.getlist("file")
-    os.system("cd %s && mkdir %s" % (app.config['UPLOAD_FOLDER'], taskID))
     for file in files:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + taskID + "/", filename))
@@ -198,7 +210,14 @@ def test_connect():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    emit('initial_config', {'config': json.dumps(JAC.CONFIG, indent="\t")})
+
+
+@app.route("/get/defaultconfig", methods=["GET"])
+def refreshConfig():
+    global customConfig
+    customConfig.update(JAC.CONFIG)
+    socketio.emit('initial_config', {'config': json.dumps(customConfig, indent="\t")},namespace='/redirect')
+    return ""
 
 
 @app.route("/post/getTaskIDs", methods=["POST"])

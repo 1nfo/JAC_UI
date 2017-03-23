@@ -138,6 +138,7 @@ export default class DashBoard extends React.Component{
             display:0b10101011,
             readonly:false
         });
+        $.get("/get/defaultconfig")
     }
 
     resume(){
@@ -151,7 +152,7 @@ export default class DashBoard extends React.Component{
         $.post("/post/getTaskIDs","",function(data){
             var data = JSON.parse(data)
             if (data.length==0) {
-                $("#InputRow_resumeTasks").append("<div>No task running</div>")
+                alert("No running instance!")
             } else {
                 This.setState({taskList:data})
                 $(".taskToResume").tooltip();
@@ -170,7 +171,7 @@ export default class DashBoard extends React.Component{
 
     confirm(){
         var This = this;
-        if(!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]+$/)){
+        if(!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)){
             if(This.state.task_to_create==1)alert("Name needs to be letters and number only");
             else alert("Select one task to Resume")
         }
@@ -195,7 +196,7 @@ export default class DashBoard extends React.Component{
                 })
                 This.setState({
                         btnDisabled:0,
-                        display:0b1001111|(This.state.task_to_create<<7),
+                        display:0b01001111,
                         JAC_taskID:GLOBAL_JAC_taskID,
                         JAC_SLAVENUM:GLOBAL_JAC_SLAVENUM,
                         readonly:true,

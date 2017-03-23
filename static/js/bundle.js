@@ -22029,6 +22029,7 @@
 	                display: 171,
 	                readonly: false
 	            });
+	            $.get("/get/defaultconfig");
 	        }
 	    }, {
 	        key: "resume",
@@ -22043,7 +22044,7 @@
 	            $.post("/post/getTaskIDs", "", function (data) {
 	                var data = JSON.parse(data);
 	                if (data.length == 0) {
-	                    $("#InputRow_resumeTasks").append("<div>No task running</div>");
+	                    alert("No running instance!");
 	                } else {
 	                    This.setState({ taskList: data });
 	                    $(".taskToResume").tooltip();
@@ -22066,7 +22067,7 @@
 	        key: "confirm",
 	        value: function confirm() {
 	            var This = this;
-	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]+$/)) {
+	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
 	                if (This.state.task_to_create == 1) alert("Name needs to be letters and number only");else alert("Select one task to Resume");
 	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-9]+[0-9]*$/) && This.state.task_to_create == 1) {
 	                alert("Invalid number, must be greater than 0");
@@ -22088,7 +22089,7 @@
 	                    });
 	                    This.setState({
 	                        btnDisabled: 0,
-	                        display: 79 | This.state.task_to_create << 7,
+	                        display: 79,
 	                        JAC_taskID: GLOBAL_JAC_taskID,
 	                        JAC_SLAVENUM: GLOBAL_JAC_SLAVENUM,
 	                        readonly: true,
