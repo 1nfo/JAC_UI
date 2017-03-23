@@ -37,7 +37,7 @@ const Output = React.createClass({
 
     render(){
         var scrollbarStyles = {borderRadius: 5};
-        return (<div className="col-lg-5 pull-right">
+        return (<div className="col-lg-5">
                     <div className="panel panel-primary">
                         <ConnectionStatus clearFunc={this.clear}/>
                         <ScrollArea style={{height:500}}

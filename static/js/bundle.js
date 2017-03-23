@@ -21702,7 +21702,7 @@
 	        var scrollbarStyles = { borderRadius: 5 };
 	        return _react2.default.createElement(
 	            "div",
-	            { className: "col-lg-5 pull-right" },
+	            { className: "col-lg-5" },
 	            _react2.default.createElement(
 	                "div",
 	                { className: "panel panel-primary" },
