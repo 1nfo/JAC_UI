@@ -2,31 +2,24 @@
 
 UI for JmeterAwsConf package.
 
-Tech:
+For developer, webpack needs to be install to generate bundle.js.
 
-back-end:
+Front-end: Bootstrap, JQurey, React.js, and socket.io.js  
+Back-end: Flask, Flask-socketio, and [JmeterAwsConf](https://github.pydt.lan/szhao/JmeterAwsConf)
 
-1. flask
-2. flask_socketio
-3. eventlet
+## Potential Problem
 
-Front-end:
+### Concurrency
 
-1. JQuery
-2. Bootstrap
-3. socket.io.js
+JmeterAwsConf is designed as a single task/user API, so there is no consideration to handle multiple users. But the idea of this UI is to support multiple users.
 
-### todo
-resume button  
-config window  
-jmx list  
-css  
-stop running task  
+
+### React vs JQurey
+This UI are originally written in JQurey, then tranformed into react.js. Still some JQuery part are there, like socketio, and upload file. 
+
+Some situations is against the idea of how react uses state to manage the page. For example, streamming backend output to page. In react, needs to maintain all the history output, re-render them once new output coming, which is exhausted. Instead, JQurey only appends new output to div. 
 
 
 ### deployment step
 
-1. finish JmeterAwsConf deployment steps first
-2. switch to virtualenv for this project
-3. pip install flask / flask_socketio / eventlet
-4. python main.py
+check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)

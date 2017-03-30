@@ -95,7 +95,7 @@ def createTask():
                 taskMngr.setSlaveNumber(slaveNum)
                 taskMngr.setupInstances()
                 os.system("cd %s && mkdir %s" % (app.config['UPLOAD_FOLDER'], taskID))
-                with open(app.config['UPLOAD_FOLDER']+taskID+"/config.json","w") as f:
+                with open(app.config['UPLOAD_FOLDER']+taskID+"/.JAC_config.json","w") as f:
                     f.write(json.dumps(taskMngr.config))
                 successOrNot = True
             except Exception as exception:
@@ -105,7 +105,7 @@ def createTask():
                 taskMngr.cleanup()
         else:
             try:
-                config = json.loads(open(app.config['UPLOAD_FOLDER']+taskID+"/config.json").read())
+                config = json.loads(open(app.config['UPLOAD_FOLDER']+taskID+"/.JAC_config.json").read())
             except Exception as e:
                 print(e)
                 config = JAC.CONFIG
@@ -125,6 +125,7 @@ def createTask():
                 taskMngr.setUploadDir(path_to_upload)
             except:
                 files = []
+            files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
             socketio.emit('initial_config', {'config': json.dumps(taskMngr.config, indent="\t")},namespace='/redirect')
         print("")
@@ -160,6 +161,7 @@ def uploadFiles():
                 taskMngr.setUploadDir(path_to_upload)
             except:
                 tmp = []
+            tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
             return json.dumps({"success": True, "jmxList": jmxList, "files": tmp}), 200
         else:
