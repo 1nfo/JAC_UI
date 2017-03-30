@@ -185,7 +185,7 @@ def runTest(data):
         taskMngr.refreshConnections(verbose=False)
         taskMngr.updateRemotehost()
         taskMngr.startSlavesServer()
-        taskMngr.runTest(jmxName, "output.csv")
+        taskMngr.runTest(jmxName)
         taskMngr.stopSlavesServer()
         emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
         print("Finished")
