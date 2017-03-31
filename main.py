@@ -188,12 +188,12 @@ def runTest(data):
             taskMngr.refreshConnections(verbose=False)
             taskMngr.updateRemotehost()
             taskMngr.startSlavesServer()
+            taskMngr.esCheck()
             taskMngr.runTest(jmxName)
             taskMngr.stopSlavesServer()
             emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
             print("Finished")
-
-    # else: print("Time out, please check instances status on AWS web console or try again")
+        else: print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
     with jredirector:
         p.start()
@@ -242,7 +242,7 @@ def stopRunning():
         taskMngr.stopMasterJmeter()
         taskMngr.stopSlavesServer()
         socketio.sleep(.5)
-        print("\nStopped")
+        print("Stopped\n")
     return json.dumps({"success": True}), 200
 
 
