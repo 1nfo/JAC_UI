@@ -21821,7 +21821,7 @@
 	            _react2.default.createElement(
 	                "div",
 	                { id: "InputBlock_taskInfo" },
-	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, saveBtnStyle: { display: this.calc(7) }, btnDis: this.disCls() }),
+	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, saveBtnStyle: { display: this.calc(6) }, btnDis: this.disCls() }),
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
 	                    "div",
@@ -21853,7 +21853,7 @@
 	                ),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_slaveNem", style: { display: this.calc(3) } },
+	                    { className: "row panel", id: "InputRow_slaveNem", style: { display: this.calc(1) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-3" },
@@ -21872,18 +21872,38 @@
 	                ),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_resumeTasks", style: { display: this.calc(4) } },
+	                    { className: "row panel", style: { display: this.calc(1) } },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Task Description"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-5" },
+	                        _react2.default.createElement("textarea", { className: "form-control", readOnly: this.props.readonly,
+	                            value: this.props.JAC_taskDesc, onChange: this.props.descChange,
+	                            style: { "minWidth": "100%", "height": this.props.readonly ? "34px" : "100px" } })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel", id: "InputRow_resumeTasks", style: { display: this.calc(3) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-4" },
-	                        this.props.taskList.map(function (d) {
+	                        this.props.taskList.map(function (d, i) {
 	                            return _react2.default.createElement(
 	                                "div",
-	                                { className: "panel", key: d },
+	                                { className: "panel", key: d[0] },
 	                                _react2.default.createElement("input", { className: "btn btn-default taskToResume" + This.disCls(),
-	                                    value: d.split("_", 1),
-	                                    title: d,
-	                                    onClick: This.props.clickOnResumeTask,
+	                                    value: d[0].split("_", 1),
+	                                    title: d[1].length > 0 ? "Description: " + d[1] : "Task ID: " + d[0],
+	                                    onClick: This.props.clickOnResumeTask.bind(This, i),
 	                                    readOnly: true })
 	                            );
 	                        })
@@ -21891,7 +21911,7 @@
 	                ),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_confirmBtn", style: { display: this.calc(5) } },
+	                    { className: "row panel", id: "InputRow_confirmBtn", style: { display: this.calc(4) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-4" },
@@ -21905,7 +21925,7 @@
 	            ),
 	            _react2.default.createElement(
 	                "div",
-	                { id: "InputBlock_uploadFiles", style: { display: this.calc(6) } },
+	                { id: "InputBlock_uploadFiles", style: { display: this.calc(5) } },
 	                _react2.default.createElement(
 	                    "div",
 	                    { className: "row panel" },
@@ -22001,7 +22021,8 @@
 	            JAC_taskID: "",
 	            JAC_SLAVENUM: "",
 	            JAC_taskName: "",
-	            display: 0,
+	            JAC_taskDesc: "",
+	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
 	            readonly: false,
 	            btnDisabled: 0,
 	            taskList: []
@@ -22013,6 +22034,9 @@
 	            },
 	            numChange: function numChange(e) {
 	                This.setState({ JAC_SLAVENUM: e.target.value });
+	            },
+	            descChange: function descChange(e) {
+	                This.setState({ JAC_taskDesc: e.target.value });
 	            }
 	        };
 	        (0, _reactAutobind2.default)(_this);
@@ -22026,7 +22050,8 @@
 	                task_to_create: 1,
 	                JAC_taskName: "",
 	                JAC_SLAVENUM: "",
-	                display: 171,
+	                JAC_taskDesc: "",
+	                display: 83,
 	                readonly: false
 	            });
 	            $.get("/get/defaultconfig");
@@ -22037,7 +22062,7 @@
 	            var This = this;
 	            This.setState({
 	                task_to_create: 0,
-	                display: 16,
+	                display: 8,
 	                btnDisabled: 1,
 	                JAC_SLAVENUM: ""
 	            });
@@ -22056,10 +22081,10 @@
 	        }
 	    }, {
 	        key: "clickOnResumeTask",
-	        value: function clickOnResumeTask(e) {
+	        value: function clickOnResumeTask(index, e) {
 	            this.setState({
 	                btnDisabled: 1,
-	                JAC_taskID: $(e.target).attr("data-original-title"),
+	                JAC_taskID: this.state.taskList[index][0],
 	                JAC_taskName: $(e.target).val()
 	            }, this.confirm);
 	        }
@@ -22069,14 +22094,15 @@
 	            var This = this;
 	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
 	                if (This.state.task_to_create == 1) alert("Name needs to be letters and number only");else alert("Select one task to Resume");
-	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-9]+[0-9]*$/) && This.state.task_to_create == 1) {
-	                alert("Invalid number, must be greater than 0");
+	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]*$/) && This.state.task_to_create == 1) {
+	                alert("Invalid number, slave num should be from 1 to 5");
 	            } else {
 	                This.setState({ btnDisabled: 1 });
 	                var res = $.post("/post/taskName", {
 	                    "taskName": This.state.JAC_taskName,
 	                    "taskID": This.state.JAC_taskID,
 	                    "slaveNum": This.state.JAC_SLAVENUM,
+	                    "description": This.state.JAC_taskDesc,
 	                    "create": This.state.task_to_create
 	                }, function (data) {
 	                    data = JSON.parse(data);
@@ -22089,9 +22115,10 @@
 	                    });
 	                    This.setState({
 	                        btnDisabled: 0,
-	                        display: 79,
+	                        display: 39,
 	                        JAC_taskID: GLOBAL_JAC_taskID,
 	                        JAC_SLAVENUM: GLOBAL_JAC_SLAVENUM,
+	                        JAC_taskDesc: data["description"],
 	                        readonly: true,
 	                        taskList: []
 	                    });

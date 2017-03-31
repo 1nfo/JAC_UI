@@ -36,7 +36,7 @@ const InputBlock_taskInfo = React.createClass({
         var This = this;
         return (<div>
                     <div id="InputBlock_taskInfo">
-                        <JacConfigPopup style={{display: this.calc(0)}} saveBtnStyle={{display:this.calc(7)}} btnDis={this.disCls()}/>
+                        <JacConfigPopup style={{display: this.calc(0)}} saveBtnStyle={{display:this.calc(6)}} btnDis={this.disCls()}/>
                         <br/>
                         <div className="row panel" id="InputRow_task" style={{display: this.calc(1)}}>
                             <div className="col-md-3"><label>Task Name</label></div>
@@ -48,34 +48,42 @@ const InputBlock_taskInfo = React.createClass({
                                 <a href="#" className={"btn btn-danger btn-sm"+this.disCls()} id="btn_cleanupTask" onClick={this.props.deleteFunc}>Del Task</a>
                             </div>
                         </div>
-                        <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(3)}}>
+                        <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(1)}}>
                             <div className="col-md-3"><label>Slave Num</label></div>
                             <div className="col-md-3">
                                 <input id="jac_slaveNum" type="text" className="form-control" onChange={this.props.numChange}
                                        value={this.props.JAC_SLAVENUM} readOnly={this.props.readonly}/></div>
                         </div>
-                        <div className="row panel" id="InputRow_resumeTasks" style={{display: this.calc(4)}}>
+                        <div className="row panel" style={{display: this.calc(1)}}>
+                            <div className="col-md-3"><label>Task Description</label></div>
+                            <div className="col-md-5">
+                                <textarea className="form-control" readOnly={this.props.readonly}
+                                          value={this.props.JAC_taskDesc} onChange={this.props.descChange}
+                                          style={{"minWidth": "100%","height":this.props.readonly?"34px":"100px"}} />
+                            </div>
+                        </div>
+                        <div className="row panel" id="InputRow_resumeTasks" style={{display: this.calc(3)}}>
                             <div className="col-md-4" >
-                                {this.props.taskList.map(function(d){
+                                {this.props.taskList.map(function(d,i){
                                     return (
-                                            <div className='panel' key={d}>
+                                            <div className='panel' key={d[0]}>
                                                 <input className={"btn btn-default taskToResume"+This.disCls()}
-                                                       value={d.split("_",1)}
-                                                       title={d}
-                                                       onClick={This.props.clickOnResumeTask}
+                                                       value={d[0].split("_",1)}
+                                                       title={d[1].length>0?"Description: "+d[1]:"Task ID: "+d[0]}
+                                                       onClick={This.props.clickOnResumeTask.bind(This,i)}
                                                        readOnly/>
                                             </div>
                                         );
                                 })}
                             </div>
                         </div>
-                        <div className="row panel" id="InputRow_confirmBtn" style={{display: this.calc(5)}}>
+                        <div className="row panel" id="InputRow_confirmBtn" style={{display: this.calc(4)}}>
                             <div className="col-md-4">
                                 <a href="#" className={"btn btn-primary"+this.disCls()} id='btn_taskConfirm' onClick={this.props.confirmFunc}>confirm</a>
                             </div>
                         </div>
                     </div>
-                    <div id="InputBlock_uploadFiles" style={{display: this.calc(6)}}>
+                    <div id="InputBlock_uploadFiles" style={{display: this.calc(5)}}>
                         <div className="row panel">
                             <div className="col-md-3"><label>Upload Path</label></div>
                             <div className="col-md-5">
@@ -117,7 +125,8 @@ export default class DashBoard extends React.Component{
             JAC_taskID:"",
             JAC_SLAVENUM:"",
             JAC_taskName:"",
-            display:0,
+            JAC_taskDesc:"",
+            display:0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
             readonly:false,
             btnDisabled:0,
             taskList:[]
@@ -125,7 +134,8 @@ export default class DashBoard extends React.Component{
         var This = this;
         this.handle = {
             nameChange(e){ This.setState({JAC_taskName:e.target.value});},
-            numChange(e){ This.setState({JAC_SLAVENUM:e.target.value});}
+            numChange(e){ This.setState({JAC_SLAVENUM:e.target.value});},
+            descChange(e){ This.setState({JAC_taskDesc:e.target.value});}
         }
         autoBind(this);
     }
@@ -135,7 +145,8 @@ export default class DashBoard extends React.Component{
             task_to_create:1,
             JAC_taskName:"",
             JAC_SLAVENUM:"",
-            display:0b10101011,
+            JAC_taskDesc:"",
+            display:0b1010011,
             readonly:false
         });
         $.get("/get/defaultconfig")
@@ -145,7 +156,7 @@ export default class DashBoard extends React.Component{
         var This = this;
         This.setState({
             task_to_create:0,
-            display:0b00010000,
+            display:0b0001000,
             btnDisabled:1,
             JAC_SLAVENUM:""
         });
@@ -161,10 +172,10 @@ export default class DashBoard extends React.Component{
         }).error(function(){This.setState({btnDisabled:0});})
     }
 
-    clickOnResumeTask(e){
+    clickOnResumeTask(index,e){
         this.setState({
             btnDisabled:1,
-            JAC_taskID:$(e.target).attr("data-original-title"),
+            JAC_taskID:this.state.taskList[index][0],
             JAC_taskName:$(e.target).val(),
         },this.confirm)
     }
@@ -175,8 +186,8 @@ export default class DashBoard extends React.Component{
             if(This.state.task_to_create==1)alert("Name needs to be letters and number only");
             else alert("Select one task to Resume")
         }
-        else if(!This.state.JAC_SLAVENUM.match(/^[1-9]+[0-9]*$/)&&This.state.task_to_create == 1){
-            alert("Invalid number, must be greater than 0");
+        else if(!This.state.JAC_SLAVENUM.match(/^[1-5]*$/)&&This.state.task_to_create == 1){
+            alert("Invalid number, slave num should be from 1 to 5");
         }
         else {
             This.setState({btnDisabled:1});
@@ -184,6 +195,7 @@ export default class DashBoard extends React.Component{
                 "taskName":This.state.JAC_taskName,
                 "taskID":This.state.JAC_taskID,
                 "slaveNum":This.state.JAC_SLAVENUM,
+                "description":This.state.JAC_taskDesc,
                 "create":This.state.task_to_create
             },function(data){
                 data = JSON.parse(data)
@@ -196,9 +208,10 @@ export default class DashBoard extends React.Component{
                 })
                 This.setState({
                         btnDisabled:0,
-                        display:0b01001111,
+                        display:0b0100111,
                         JAC_taskID:GLOBAL_JAC_taskID,
                         JAC_SLAVENUM:GLOBAL_JAC_SLAVENUM,
+                        JAC_taskDesc:data["description"],
                         readonly:true,
                         taskList:[]
                     })

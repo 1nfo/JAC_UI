@@ -76,13 +76,14 @@ def updateConfig():
 
 
 @app.route("/post/taskName", methods=['POST'])
-def createTask():
+def startTask():
     taskName = request.form["taskName"]
     taskID = request.form["taskID"]
     slaveNum = int(request.form["slaveNum"] if request.form["slaveNum"] else 0)
     files = []
     jmxList = []
     createOrNot = int(request.form["create"])
+    description = request.form["description"]
     successOrNot = False
     with jredirector:
         if createOrNot:
@@ -92,6 +93,7 @@ def createTask():
                 taskID = taskMngr.instMngr.taskID
                 taskMngr.instMngr.mute()
                 taskMngr.connMngr.mute()
+                taskMngr.setTaskDesc(description)
                 taskMngr.setSlaveNumber(slaveNum)
                 taskMngr.setupInstances()
                 os.system("cd %s && mkdir %s" % (app.config['UPLOAD_FOLDER'], taskID))
@@ -117,7 +119,7 @@ def createTask():
 
         if successOrNot:
             taskMngrs[taskID] = taskMngr
-            taskMngr.instMngr.addMaster()#delete?
+            #taskMngr.instMngr.addMaster()#need this if resuming from no master
             slaveNum = len(taskMngr.instMngr.slaves)
             try:
                 path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], taskID)
@@ -125,11 +127,12 @@ def createTask():
                 taskMngr.setUploadDir(path_to_upload)
             except:
                 files = []
+            description = taskMngr.instMngr.getTaskDesc()
             files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
             socketio.emit('initial_config', {'config': json.dumps(taskMngr.config, indent="\t")},namespace='/redirect')
         print("")
-    return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files}), 200 if successOrNot else 400
+    return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "description":description}), 200 if successOrNot else 400
 
 
 # @app.route("/post/slaveNum",methods = ['POST'])
@@ -177,18 +180,18 @@ def runTest(data):
     taskMngr = taskMngrs[taskID]
 
     def wrapper():
-        # if taskMngr.checkStatus():
+        if taskMngr.checkStatus():
         # if taskMngr.instMngr.master is None: print("No Master running!")
         # else:
         # taskMngr.refreshConnections()
         # taskMngr.uploadFiles()
-        taskMngr.refreshConnections(verbose=False)
-        taskMngr.updateRemotehost()
-        taskMngr.startSlavesServer()
-        taskMngr.runTest(jmxName)
-        taskMngr.stopSlavesServer()
-        emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
-        print("Finished")
+            taskMngr.refreshConnections(verbose=False)
+            taskMngr.updateRemotehost()
+            taskMngr.startSlavesServer()
+            taskMngr.runTest(jmxName)
+            taskMngr.stopSlavesServer()
+            emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
+            print("Finished")
 
     # else: print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
