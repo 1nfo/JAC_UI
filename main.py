@@ -1,9 +1,7 @@
 from flask import Flask, render_template, request, redirect, session
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
-import uuid
-import json
-import os
+import json, os
 import JmeterAwsConf as JAC
 
 # old part before add socketio
@@ -28,8 +26,6 @@ taskMngrs = {} # session level
 processes = {} # task level
 customConfigs = {} # client level
 
-customConfig = {}### test
-
 
 def flushPasuse():
     socketio.sleep(1e-3)
@@ -49,11 +45,12 @@ def background_thread():
 
 @app.route("/")
 def index():
-    return redirect("/react")
+    return redirect("/command")
 
 
-@app.route("/react")
+@app.route("/command")
 def index_react():
+    import uuid
     title = "Jmeter Cloud Testing"
     #if not "sid" in session:# future work -- refresh but stay previous session
     session['sid'] = str(uuid.uuid4())
@@ -62,12 +59,12 @@ def index_react():
 
 @app.route("/post/config", methods=['POST'])
 def updateConfig():
-    global customConfig
+    global customConfigs
     config = request.form["config"]
-    customConfig.update(json.loads(config))
-    print(customConfig)
+    addr = request.remote_addr
+    customConfigs[addr].update(json.loads(config))
     socketio.emit('initial_config',
-                  {'config': json.dumps(customConfig, indent="\t")},
+                  {'config': json.dumps(customConfigs[addr], indent="\t")},
                   namespace='/redirect',
                   room=taskMngrs[session["sid"]].sid)
     return ""
@@ -75,6 +72,7 @@ def updateConfig():
 
 @app.route("/post/taskName", methods=['POST'])
 def startTask():
+    addr = request.remote_addr
     taskName = request.form["taskName"]
     taskID = request.form["taskID"]
     slaveNum = int(request.form["slaveNum"] if request.form["slaveNum"] else 0)
@@ -87,22 +85,19 @@ def startTask():
     with taskMngr.redirector:
         if createOrNot:
             try:
-                taskMngr.setConfig(customConfig)
+                taskMngr.setConfig(customConfigs[addr])
                 taskMngr.startTask(taskName)
                 taskID = taskMngr.instMngr.taskID
-                taskMngr.instMngr.mute()
-                taskMngr.connMngr.mute()
                 taskMngr.setTaskDesc(description)
                 taskMngr.setSlaveNumber(slaveNum)
                 taskMngr.setupInstances()
-                os.system("cd %s && mkdir %s" % (app.config['UPLOAD_FOLDER'], taskID))
-                with open(app.config['UPLOAD_FOLDER']+taskID+"/.JAC_config.json","w") as f:
+                taskDir = "%s%s" % (app.config['UPLOAD_FOLDER'], taskID)
+                if not os.path.exists(taskDir): os.mkdir(taskDir)
+                with open(os.path.join(app.config['UPLOAD_FOLDER'],taskID,".JAC_config.json"),"w") as f:
                     f.write(json.dumps(taskMngr.config))
                 successOrNot = True
             except Exception as exception:
                 print(exception)
-                taskMngr.instMngr.mute()
-                taskMngr.mute()
                 taskMngr.cleanup()
         else:
             try:
@@ -110,10 +105,13 @@ def startTask():
             except Exception as e:
                 print(e)
                 config = JAC.CONFIG
+                taskDir = "%s%s" % (app.config['UPLOAD_FOLDER'], taskID)
+                print(os.getcwd() )
+                if not os.path.exists(taskDir): os.mkdir(taskDir)
+                with open(os.path.join(app.config['UPLOAD_FOLDER'],taskID,".JAC_config.json"),"w") as f:
+                    f.write(json.dumps(config))
             taskMngr.setConfig(config)
             taskMngr.startTask(taskName, taskID)
-            taskMngr.instMngr.mute()
-            taskMngr.connMngr.mute()
             successOrNot = True
 
         if successOrNot:
@@ -142,14 +140,14 @@ def uploadFiles():
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + taskID + "/", filename))
     with taskMngr.redirector:
-        taskMngr.setUploadDir(os.getcwd() + "/" + app.config['UPLOAD_FOLDER'] + taskID)
+        path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], taskID)
         if taskMngr.checkStatus(socketio.sleep):
             taskMngr.refreshConnections()
             taskMngr.uploadFiles()
             try:
-                path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], taskID)
-                tmp = os.listdir(path_to_upload)
                 taskMngr.setUploadDir(path_to_upload)
+                tmp = os.listdir(path_to_upload)
+                # taskMngr.setUploadDir(path_to_upload)
             except:
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
@@ -165,14 +163,18 @@ def cleanup():
     taskMngr = taskMngrs[session["sid"]]
     with taskMngr.redirector:
         taskMngr.cleanup()
+        os.system("cd %s && rm -rf %s &"%(app.config['UPLOAD_FOLDER'],taskMngr.instMngr.taskID))
     return json.dumps({"success": True}), 200
 
 
-@app.route("/get/defaultconfig", methods=["GET"])
+@app.route("/post/defaultconfig", methods=["POST"])
 def refreshConfig():
-    global customConfig
-    customConfig.update(JAC.CONFIG)
-    socketio.emit('initial_config', {'config': json.dumps(customConfig, indent="\t")},namespace='/redirect',room=taskMngrs[session["sid"]].sid)
+    global customConfigs
+    addr = request.remote_addr
+    if not addr in customConfigs:
+        customConfigs[addr] = {}
+        customConfigs[addr].update(JAC.CONFIG)
+    socketio.emit('initial_config', {'config': json.dumps(customConfigs[addr], indent="\t")},namespace='/redirect',room=taskMngrs[session["sid"]].sid)
     return ""
 
 
@@ -189,6 +191,7 @@ def stopRunning():
         taskID = request.form["taskID"]
         if taskID in processes:
             processes[taskID].terminate()
+            del processes[taskID]
         taskMngr.refreshConnections(verbose=False)
         taskMngr.stopMasterJmeter()
         taskMngr.stopSlavesServer()
@@ -227,13 +230,13 @@ def connected():
     global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    # print("\nsession: %s -->%s\n"%(session['sid'],request.sid))### test
     # task manager session level
     taskMngrs[session['sid']] = JAC.TaskManager(pauseFunc=flushPasuse,sid=request.sid)
 
 @socketio.on("disconnect",namespace='/redirect')
 def disconnected():
     if session['sid'] in taskMngrs: del taskMngrs[session['sid']]
+
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

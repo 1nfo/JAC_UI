@@ -21805,6 +21805,9 @@
 
 	var InputBlock_taskInfo = _react2.default.createClass({
 	    displayName: "InputBlock_taskInfo",
+	    getInitialState: function getInitialState() {
+	        return { "fileStatus": "" };
+	    },
 	    calc: function calc(bit) {
 	        if ((1 << bit & this.props.display) > 0) return "block";
 	        return "none";
@@ -21812,6 +21815,14 @@
 	    disCls: function disCls() {
 	        if (this.props.btnDisabled > 0) return " disabled";
 	        return "";
+	    },
+	    fileChange: function fileChange(e) {
+	        var input = $(e.target),
+	            numFiles = input.get(0).files ? input.get(0).files.length : 1,
+	            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+	        log = numFiles > 1 ? numFiles + ' files selected' : label;
+	        var log = numFiles > 1 ? numFiles + ' files selected' : label;
+	        this.setState({ "fileStatus": log });
 	    },
 	    render: function render() {
 	        var This = this;
@@ -21951,15 +21962,18 @@
 	                                    "label",
 	                                    { className: "btn btn-default" + this.disCls() },
 	                                    "Browse",
-	                                    _react2.default.createElement("input", { id: "jac_uploadFiles", type: "file", name: "file", multiple: true, style: { display: "none" } })
+	                                    _react2.default.createElement("input", { id: "jac_uploadFiles", type: "file", onChange: this.fileChange,
+	                                        name: "file", style: { display: "none" }, multiple: true })
 	                                ),
 	                                _react2.default.createElement(
 	                                    "a",
-	                                    { href: "#", className: "btn btn-primary" + this.disCls(), id: "btn_uploadTask", onClick: this.props.uploadFunc },
+	                                    { href: "#", className: "btn btn-primary" + this.disCls(),
+	                                        id: "btn_uploadTask", onClick: this.props.uploadFunc },
 	                                    "Upload"
 	                                )
 	                            ),
-	                            _react2.default.createElement("input", { id: "uploaded_files_status", type: "text", className: "form-control", readOnly: true })
+	                            _react2.default.createElement("input", { id: "uploaded_files_status", type: "text", value: this.state.fileStatus,
+	                                className: "form-control", readOnly: true })
 	                        )
 	                    )
 	                ),
@@ -22054,7 +22068,7 @@
 	                display: 83,
 	                readonly: false
 	            });
-	            $.get("/get/defaultconfig");
+	            $.post("/post/defaultconfig", "");
 	        }
 	    }, {
 	        key: "resume",
@@ -22094,7 +22108,7 @@
 	            var This = this;
 	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
 	                if (This.state.task_to_create == 1) alert("Name needs to be letters and number only");else alert("Select one task to Resume");
-	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]*$/) && This.state.task_to_create == 1) {
+	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]$/) && This.state.task_to_create == 1) {
 	                alert("Invalid number, slave num should be from 1 to 5");
 	            } else {
 	                This.setState({ btnDisabled: 1 });
@@ -22108,7 +22122,7 @@
 	                    data = JSON.parse(data);
 	                    GLOBAL_JAC_taskID = data["taskID"];
 	                    GLOBAL_JAC_SLAVENUM = data["slaveNum"];
-	                    $("#uploaded_files_status").val(data["files"].length + " file(s) on cloud");
+	                    This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
 	                    $("#jac_JMXName").empty();
 	                    $.each(data["jmxList"], function (i, d) {
 	                        $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
@@ -22149,7 +22163,7 @@
 	                    type: "post",
 	                    success: function success(data) {
 	                        data = JSON.parse(data);
-	                        $("#uploaded_files_status").val(data["files"].length + " file(s) uploaded");
+	                        This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) uploaded" });
 	                        $("#jac_JMXName").empty();
 	                        $.each(data["jmxList"], function (i, d) {
 	                            $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
@@ -22198,7 +22212,7 @@
 	                    createFunc: this.create,
 	                    resumeFunc: this.resume
 	                }, this.state)),
-	                _react2.default.createElement(InputBlock_taskInfo, _extends({
+	                _react2.default.createElement(InputBlock_taskInfo, _extends({ ref: "taskInfo",
 	                    confirmFunc: this.confirm,
 	                    deleteFunc: this.delete,
 	                    uploadFunc: this.upload,

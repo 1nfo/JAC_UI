@@ -22,6 +22,10 @@ const InputBlock_startTask = React.createClass({
 });
 
 const InputBlock_taskInfo = React.createClass({
+    getInitialState(){
+        return {"fileStatus":""};
+    },
+
     calc(bit){
         if(((1<<bit)&this.props.display)>0) return "block";
         return "none";
@@ -30,6 +34,15 @@ const InputBlock_taskInfo = React.createClass({
     disCls(){
         if (this.props.btnDisabled>0) return " disabled";
         return "";
+    },
+
+    fileChange(e){
+        var input = $(e.target),
+                    numFiles = input.get(0).files ? input.get(0).files.length : 1,
+                    label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+                    log = numFiles > 1 ? numFiles + ' files selected' : label;
+        var log = numFiles > 1 ? numFiles + ' files selected' : label;
+        this.setState({"fileStatus":log})
     },
 
     render(){
@@ -91,11 +104,14 @@ const InputBlock_taskInfo = React.createClass({
                                     <label className="input-group-btn">
                                         <label className={"btn btn-default"+this.disCls()}>
                                         Browse
-                                        <input id="jac_uploadFiles" type="file" name="file" multiple style={{display: "none"}}/>
+                                        <input id="jac_uploadFiles" type="file" onChange={this.fileChange}
+                                               name="file" style={{display: "none"}} multiple />
                                         </label>
-                                        <a href="#" className={"btn btn-primary"+this.disCls()} id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</a>
+                                        <a href="#" className={"btn btn-primary"+this.disCls()}
+                                                    id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</a>
                                     </label>
-                                    <input id="uploaded_files_status" type="text" className="form-control" readOnly />
+                                    <input id="uploaded_files_status" type="text" value={this.state.fileStatus}
+                                           className="form-control" readOnly />
                                 </div>
                             </div>
                         </div>
@@ -149,7 +165,7 @@ export default class DashBoard extends React.Component{
             display:0b1010011,
             readonly:false
         });
-        $.get("/get/defaultconfig")
+        $.post("/post/defaultconfig","")
     }
 
     resume(){
@@ -201,7 +217,7 @@ export default class DashBoard extends React.Component{
                 data = JSON.parse(data)
                 GLOBAL_JAC_taskID = data["taskID"]
                 GLOBAL_JAC_SLAVENUM = data["slaveNum"]
-                $("#uploaded_files_status").val(data["files"].length+" file(s) on cloud")
+                This.refs.taskInfo.setState({"fileStatus":data["files"].length+" file(s) on cloud"})
                 $("#jac_JMXName").empty()
                 $.each(data["jmxList"],function(i,d){
                     $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
@@ -238,7 +254,7 @@ export default class DashBoard extends React.Component{
                 type: "post",
                 success:function(data){
                     data = JSON.parse(data)
-                    $("#uploaded_files_status").val(data["files"].length+" file(s) uploaded")
+                    This.refs.taskInfo.setState({"fileStatus":filesList.length+" file(s) uploaded"})
                     $("#jac_JMXName").empty()
                     $.each(data["jmxList"],function(i,d){
                         $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
@@ -277,7 +293,7 @@ export default class DashBoard extends React.Component{
                         resumeFunc={this.resume}
                         {...this.state}
                     />
-                    <InputBlock_taskInfo
+                    <InputBlock_taskInfo ref="taskInfo"
                         confirmFunc={this.confirm}
                         deleteFunc={this.delete}
                         uploadFunc={this.upload}
