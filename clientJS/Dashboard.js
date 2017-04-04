@@ -186,7 +186,7 @@ export default class DashBoard extends React.Component{
             if(This.state.task_to_create==1)alert("Name needs to be letters and number only");
             else alert("Select one task to Resume")
         }
-        else if(!This.state.JAC_SLAVENUM.match(/^[1-5]*$/)&&This.state.task_to_create == 1){
+        else if(!This.state.JAC_SLAVENUM.match(/^[1-5]$/)&&This.state.task_to_create == 1){
             alert("Invalid number, slave num should be from 1 to 5");
         }
         else {

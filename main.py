@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
+import uuid
 import json
 import os
 import JmeterAwsConf as JAC
@@ -23,35 +24,27 @@ app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode=async_mode, ping_timeout=6000)
 thread = None
 
-taskMngrs = {}
-processes = {}
+taskMngrs = {} # session level
+processes = {} # task level
+customConfigs = {} # client level
 
-customConfig = {}
+customConfig = {}### test
 
 
 def flushPasuse():
     socketio.sleep(1e-3)
 
 
-jredirector = JAC.Redirector(pauseFunc=flushPasuse)
-
-
-# msg_to_emit=""
-
-
 def background_thread():
     while True:
         socketio.sleep(1e-3)
-        # if msg_to_emit or len(jredirector.buff.getvalue()):
-        if len(jredirector.buff.getvalue()):
-            socketio.emit('redirect', {'msg': jredirector.flush()}, namespace='/redirect')
-
-
-# @socketio.on("ack",namespace="/redirect")
-# def ackCallBack():
-# 	global msg_to_emit
-# 	# sys.__stdout__.write("\n\nack last msg --> "+msg_to_emit+"\n\n")
-# 	msg_to_emit = jredirector.flush()
+        for sessionID in taskMngrs:
+            taskMngr = taskMngrs[sessionID]
+            if len(taskMngr.redirector.buff.getvalue()):
+                socketio.emit('redirect',
+                              {'msg': taskMngr.redirector.flush()},
+                              namespace='/redirect',
+                              room=taskMngr.sid)
 
 
 @app.route("/")
@@ -62,7 +55,9 @@ def index():
 @app.route("/react")
 def index_react():
     title = "Jmeter Cloud Testing"
-    return render_template("index_react.html", async_mode=socketio.async_mode, title=title)
+    #if not "sid" in session:# future work -- refresh but stay previous session
+    session['sid'] = str(uuid.uuid4())
+    return render_template("index_react.html", async_mode=socketio.async_mode, title=title, sessionID = session["sid"])
 
 
 @app.route("/post/config", methods=['POST'])
@@ -71,7 +66,10 @@ def updateConfig():
     config = request.form["config"]
     customConfig.update(json.loads(config))
     print(customConfig)
-    socketio.emit('initial_config', {'config': json.dumps(customConfig, indent="\t")},namespace='/redirect')
+    socketio.emit('initial_config',
+                  {'config': json.dumps(customConfig, indent="\t")},
+                  namespace='/redirect',
+                  room=taskMngrs[session["sid"]].sid)
     return ""
 
 
@@ -85,10 +83,11 @@ def startTask():
     createOrNot = int(request.form["create"])
     description = request.form["description"]
     successOrNot = False
-    with jredirector:
+    taskMngr=taskMngrs[session["sid"]]
+    with taskMngr.redirector:
         if createOrNot:
             try:
-                taskMngr = JAC.TaskManager(config=customConfig)
+                taskMngr.setConfig(customConfig)
                 taskMngr.startTask(taskName)
                 taskID = taskMngr.instMngr.taskID
                 taskMngr.instMngr.mute()
@@ -111,14 +110,13 @@ def startTask():
             except Exception as e:
                 print(e)
                 config = JAC.CONFIG
-            taskMngr = JAC.TaskManager(config=config)
+            taskMngr.setConfig(config)
             taskMngr.startTask(taskName, taskID)
             taskMngr.instMngr.mute()
             taskMngr.connMngr.mute()
             successOrNot = True
 
         if successOrNot:
-            taskMngrs[taskID] = taskMngr
             #taskMngr.instMngr.addMaster()#need this if resuming from no master
             slaveNum = len(taskMngr.instMngr.slaves)
             try:
@@ -130,32 +128,22 @@ def startTask():
             description = taskMngr.instMngr.getTaskDesc()
             files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
-            socketio.emit('initial_config', {'config': json.dumps(taskMngr.config, indent="\t")},namespace='/redirect')
+            socketio.emit('initial_config', {'config': json.dumps(taskMngr.config, indent="\t")},namespace='/redirect',room=taskMngr.sid)
         print("")
     return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "description":description}), 200 if successOrNot else 400
-
-
-# @app.route("/post/slaveNum",methods = ['POST'])
-# def setSlaveNum():
-# 	num = int(request.form["slaveNum"])
-# 	taskID = request.form["taskID"]
-# 	with jredirector:
-# 		taskMngrs[taskID].setSlaveNumber(num)
-# 		taskMngrs[taskID].setupInstances()
-# 	return "from server: "+str(num)
 
 
 @app.route("/uploadFiles", methods=['POST'])
 def uploadFiles():
     taskID = request.form["taskID"]
     files = request.files.getlist("file")
+    taskMngr = taskMngrs[session["sid"]]
     for file in files:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + taskID + "/", filename))
-    with jredirector:
-        taskMngr = taskMngrs[taskID]
+    with taskMngr.redirector:
         taskMngr.setUploadDir(os.getcwd() + "/" + app.config['UPLOAD_FOLDER'] + taskID)
-        if taskMngr.checkStatus():
+        if taskMngr.checkStatus(socketio.sleep):
             taskMngr.refreshConnections()
             taskMngr.uploadFiles()
             try:
@@ -172,70 +160,33 @@ def uploadFiles():
     return json.dumps({"success": False}), 400
 
 
-@socketio.on("startRunning", namespace='/redirect')
-def runTest(data):
-    from multiprocessing import Process as P
-    taskID = data["taskID"]
-    jmxName = data["jmx_name"]
-    taskMngr = taskMngrs[taskID]
-
-    def wrapper():
-        if taskMngr.checkStatus():
-        # if taskMngr.instMngr.master is None: print("No Master running!")
-        # else:
-        # taskMngr.refreshConnections()
-        # taskMngr.uploadFiles()
-            taskMngr.refreshConnections(verbose=False)
-            taskMngr.updateRemotehost()
-            taskMngr.startSlavesServer()
-            taskMngr.esCheck()
-            taskMngr.runTest(jmxName)
-            taskMngr.stopSlavesServer()
-            emit('taskFinished', {'msg': "finished"}, namespace='/redirect')
-            print("Finished")
-        else: print("Time out, please check instances status on AWS web console or try again")
-    p = P(target=wrapper)
-    with jredirector:
-        p.start()
-    # wrapper()
-    processes[taskID] = p
-
-
 @app.route("/post/cleanup", methods=["POST"])
 def cleanup():
-    taskID = request.form["taskID"]
-    with jredirector:
-        taskMngrs[taskID].cleanup()
-    del taskMngrs[taskID]
+    taskMngr = taskMngrs[session["sid"]]
+    with taskMngr.redirector:
+        taskMngr.cleanup()
     return json.dumps({"success": True}), 200
-
-
-@socketio.on('connect', namespace='/redirect')
-def test_connect():
-    global thread
-    if thread is None:
-        thread = socketio.start_background_task(target=background_thread)
 
 
 @app.route("/get/defaultconfig", methods=["GET"])
 def refreshConfig():
     global customConfig
     customConfig.update(JAC.CONFIG)
-    socketio.emit('initial_config', {'config': json.dumps(customConfig, indent="\t")},namespace='/redirect')
+    socketio.emit('initial_config', {'config': json.dumps(customConfig, indent="\t")},namespace='/redirect',room=taskMngrs[session["sid"]].sid)
     return ""
 
 
 @app.route("/post/getTaskIDs", methods=["POST"])
 def getTaskIDs():
-    li = JAC.TaskManager(config=JAC.CONFIG).instMngr.getDupTaskIds()
+    li = JAC.InstanceManager(JAC.AWSConfig(**JAC.CONFIG)).getDupTaskIds()
     return json.dumps(li)
 
 
 @app.route("/post/stop", methods=["POST"])
 def stopRunning():
-    with jredirector:
+    taskMngr = taskMngrs[session["sid"]]
+    with taskMngr.redirector:
         taskID = request.form["taskID"]
-        taskMngr = taskMngrs[taskID]
         if taskID in processes:
             processes[taskID].terminate()
         taskMngr.refreshConnections(verbose=False)
@@ -245,6 +196,44 @@ def stopRunning():
         print("Stopped\n")
     return json.dumps({"success": True}), 200
 
+
+@socketio.on("startRunning", namespace='/redirect')
+def runTest(data):
+    from multiprocessing import Process as P
+    taskID = data["taskID"]
+    jmxName = data["jmx_name"]
+    taskMngr = taskMngrs[session["sid"]]
+
+    def wrapper():
+        if taskMngr.checkStatus(socketio.sleep):
+            taskMngr.refreshConnections(verbose=False)
+            taskMngr.updateRemotehost()
+            taskMngr.startSlavesServer()
+            taskMngr.esCheck()
+            taskMngr.runTest(jmxName)
+            taskMngr.stopSlavesServer()
+            emit('taskFinished', {'msg': "finished"}, namespace='/redirect', room=taskMngr.sid)
+            print("Finished")
+        else: print("Time out, please check instances status on AWS web console or try again")
+    p = P(target=wrapper)
+    with taskMngr.redirector:
+        p.start()
+    # wrapper()
+    processes[taskID] = p
+
+
+@socketio.on('connect', namespace='/redirect')
+def connected():
+    global thread
+    if thread is None:
+        thread = socketio.start_background_task(target=background_thread)
+    # print("\nsession: %s -->%s\n"%(session['sid'],request.sid))### test
+    # task manager session level
+    taskMngrs[session['sid']] = JAC.TaskManager(pauseFunc=flushPasuse,sid=request.sid)
+
+@socketio.on("disconnect",namespace='/redirect')
+def disconnected():
+    if session['sid'] in taskMngrs: del taskMngrs[session['sid']]
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)
