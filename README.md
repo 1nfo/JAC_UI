@@ -5,9 +5,33 @@ UI for JmeterAwsConf package.
 For developer, webpack needs to be install to generate bundle.js.
 
 Front-end: Bootstrap, JQurey, React.js, and socket.io.js  
-Back-end: Flask, Flask-socketio, Flask-Session and [JmeterAwsConf](https://github.pydt.lan/szhao/JmeterAwsConf)
+Back-end: Flask, Flask-socketio, Flask-Session, Redis and [JmeterAwsConf](https://github.pydt.lan/szhao/JmeterAwsConf)
+
+## Deployment step
+
+check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
+
+socketio-flask embedded with eventlet/gevent, so it has wsgi.
+
+check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#deployment)
+
+
+## To do
+0. redis detect 
+1. thread blocking ..
+2. global variable
+3. task level info, ip >> id, more tag
+4. config.json / Config module refactor
+5. es part decouple
+3. deploy on aws
+6. pass users credentials (user login if sharing one credential)
+7. readonly task ( task locker / is exclusively accessing neccessary?)
 
 ## Potential Problem
+
+### global variable
+
+some global variables exist. It is find if running under singel process, but could be a problem in the future product env.
 
 ### aws credential
 share one credential or use user's credential
@@ -24,11 +48,6 @@ This UI are originally written in JQurey, then tranformed into react.js. Still s
 Some situations is against the idea of how react uses state to manage the page. For example, streamming backend output to page. In react, needs to maintain all the history output, re-render them once new output coming, which is exhausted. Instead, JQurey only appends new output to div. 
 
 
-### deployment step
-
-check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
-
-
 ## workflow & Request/Response
 
 0. redirect to /command:   
@@ -39,7 +58,7 @@ check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
 	1. create: call /get/defaultconfig   
 	   **function** init new jac config to a new ip: [ip] --> [socketio event init_config emit customconfig]  
 		i. save in popup config call /post/config    
-		**function** update jac config under: [ip,config] --> [socketio event init_config emit customconfig]
+	   **function** update jac config under: [ip,config] --> [socketio event init_config emit customconfig]
 	2. resume: call /post/getTaskIDs   
 	   **function** get a list of available tasks: [] --> [task list]
 3. click confirm /click task to resume: call /post/taskName   
