@@ -58,6 +58,7 @@ def index_react():
     title = "Jmeter Cloud Testing"
     #if not "sid" in session:# future work -- refresh but stay previous session
     session['sid'] = str(uuid.uuid4())
+    print(session["sid"])
     return render_template("index_react.html", async_mode=socketio.async_mode, title=title, sessionID = session["sid"])
 
 
@@ -131,19 +132,20 @@ def startTask():
             jmxList = [f for f in files if f.endswith(".jmx")]
             socketio.emit('initial_config', {'config': json.dumps(taskMngr.config, indent="\t")},namespace='/redirect',room=taskMngr.sid)
         print("")
-    taskMngrs[session["sid"]] = taskMngr  ####
+    taskMngrs[session["sid"]] = taskMngr
     return json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "description":description}), 200 if successOrNot else 400
 
 
 @app.route("/uploadFiles", methods=['POST'])
 def uploadFiles():
+    from multiprocessing import Process as P
     taskID = request.form["taskID"]
     files = request.files.getlist("file")
     taskMngr = taskMngrs[session["sid"]]
     for file in files:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + taskID + "/", filename))
-    with jredirectors[taskMngr.sid]:
+    def wrapper():
         path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], taskID)
         if taskMngr.checkStatus(socketio.sleep):
             taskMngr.refreshConnections()
@@ -151,15 +153,19 @@ def uploadFiles():
             try:
                 taskMngr.setUploadDir(path_to_upload)
                 tmp = os.listdir(path_to_upload)
-                # taskMngr.setUploadDir(path_to_upload)
             except:
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
-            return json.dumps({"success": True, "jmxList": jmxList, "files": tmp}), 200
+            emit('taskFinished', {'msg': "finished"}, namespace='/redirect', room=taskMngr.sid)
+            emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=taskMngr.sid)
+            print("")
         else:
             print("Time out, please check instances status on AWS web console or try again")
-    return json.dumps({"success": False}), 400
+    p = P(target=wrapper)
+    with jredirectors[taskMngr.sid]:
+        p.start()
+    return ""
 
 
 @app.route("/post/cleanup", methods=["POST"])
@@ -230,9 +236,9 @@ def runTest(data):
 
 @socketio.on('connect', namespace='/redirect')
 def connected():
+    global thread, jredirectors, taskMngrs
     taskMngr = JAC.TaskManager(pauseFunc=flushPasuse,sid=request.sid)
     jredirectors[request.sid] = JAC.Redirector(pauseFunc=flushPasuse)
-    global thread
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
     taskMngrs[session["sid"]]=taskMngr
@@ -240,7 +246,11 @@ def connected():
 
 @socketio.on("disconnect",namespace='/redirect')
 def disconnected():
-    if session['sid'] in taskMngrs: taskMngrs.delete([session["sid"]])
+    global jredirectors, taskMngrs
+    if session['sid'] in taskMngrs:
+        del taskMngrs[session["sid"]]
+    if request.sid in jredirectors:
+        del jredirectors[request.sid]
 
 
 if __name__ == "__main__":

@@ -50,6 +50,16 @@ $(document).ready(function() {
                 $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled")
             })
 
+            socket.on("upload_done", function(data){
+                data = JSON.parse(data)
+                // This.refs.taskInfo.setState({"fileStatus":filesList.length+" file(s) uploaded"})
+                $("#jac_JMXName").empty()
+                $.each(data["jmxList"],function(i,d){
+                    $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
+                })
+                alert("succeed");
+            })
+
             // run task button
             $("#btn_runTask").click(function(e){
                 var jmx_to_run = $("#jac_JMXName").val()

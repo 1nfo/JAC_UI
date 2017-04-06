@@ -22160,22 +22160,7 @@
 	                    contentType: false,
 	                    processData: false,
 	                    data: form_data,
-	                    type: "post",
-	                    success: function success(data) {
-	                        data = JSON.parse(data);
-	                        This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) uploaded" });
-	                        $("#jac_JMXName").empty();
-	                        $.each(data["jmxList"], function (i, d) {
-	                            $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
-	                        });
-	                        alert("succeed");
-	                    },
-	                    error: function error(err) {
-	                        alert("failed");
-	                    },
-	                    complete: function complete() {
-	                        This.setState({ btnDisabled: 0 });
-	                    }
+	                    type: "post"
 	                });
 	            }
 	        }

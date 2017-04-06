@@ -12,3 +12,9 @@ class RedisableManagers(object):
             del value.instMngr.__dict__["client"]
         self.redis.set(key,
             pickle.dumps(value))
+
+    def __delitem__(self, key):
+        self.redis.delete(key)
+
+    def __contains__(self, key):
+        return self.redis.get(key) is not None

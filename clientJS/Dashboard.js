@@ -251,18 +251,7 @@ export default class DashBoard extends React.Component{
                 contentType: false,
                 processData: false,
                 data: form_data,
-                type: "post",
-                success:function(data){
-                    data = JSON.parse(data)
-                    This.refs.taskInfo.setState({"fileStatus":filesList.length+" file(s) uploaded"})
-                    $("#jac_JMXName").empty()
-                    $.each(data["jmxList"],function(i,d){
-                        $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
-                    })
-                    alert("succeed");
-                },
-                error:function(err){alert("failed")},
-                complete:function(){This.setState({btnDisabled:0});}
+                type: "post"
             })
         }
     }

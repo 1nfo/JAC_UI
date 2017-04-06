@@ -18,8 +18,9 @@ check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#depl
 
 ## To do
 0. redis detect 
-1. thread blocking ..
+1. thread blocking ..fixed?
 2. global variable
+3. post -> socket
 3. task level info, ip >> id, more tag
 4. config.json / Config module refactor
 5. es part decouple
