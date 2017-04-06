@@ -23,9 +23,69 @@ export default class DashBoard extends React.Component{
             nameChange(e){ This.setState({JAC_taskName:e.target.value});},
             numChange(e){ This.setState({JAC_SLAVENUM:e.target.value});},
             descChange(e){ This.setState({JAC_taskDesc:e.target.value});},
-            confChange(target){ This.setState({JAC_config:target});}
+            confChange(target){This.setState({JAC_config:target});}
         }
         autoBind(this);
+    }
+
+    componentDidMount(){
+        var This = this
+
+        this.props.socket.on("config_changed",function(data){
+            This.setState({JAC_config:data.config})
+        })
+
+        this.props.socket.on("task_IDs",function(data){
+            var data = JSON.parse(data)
+            if (data.length==0) {
+                alert("No running instance!")
+            } else {
+                This.setState({taskList:data})
+                $(".taskToResume").tooltip();
+            }
+            This.setState({btnDisabled:0});
+        })
+
+        this.props.socket.on("task_started",function(data){
+            data = JSON.parse(data)
+            This.refs.taskInfo.setState({"fileStatus":data["files"].length+" file(s) on cloud"})
+            $("#jac_JMXName").empty()
+            $.each(data["jmxList"],function(i,d){
+                $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
+            })
+            This.setState({
+                    btnDisabled:0,
+                    display:0b0100111,
+                    JAC_taskID:data["taskID"],
+                    JAC_SLAVENUM:data["slaveNum"],
+                    JAC_taskDesc:data["description"],
+                    readonly:true,
+                    taskList:[]
+                })
+        })
+
+        this.props.socket.on("upload_done", function(data){
+            data = JSON.parse(data)
+            This.setState({ btnDisabled:0})
+            $("#jac_JMXName").empty()
+            $.each(data["jmxList"],function(i,d){
+                $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
+            })
+            alert("succeed");
+        })
+
+        this.props.socket.on("task_stopped", function(){
+            This.setState({btnDisabled:0})
+        })
+
+        this.props.socket.on("task_finished",function(){
+            This.setState({ btnDisabled:0})
+            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled")
+        })
+
+        this.props.socket.on("task_deleted", function(){
+            This.setState({display:0,btnDisabled:0})
+        })
     }
 
     runTask(){
@@ -51,7 +111,7 @@ export default class DashBoard extends React.Component{
             display:0b1010011,
             readonly:false
         });
-        $.post("/post/defaultconfig","")
+        this.props.socket.emit("get_default_config")
     }
 
     resume(){
@@ -62,16 +122,7 @@ export default class DashBoard extends React.Component{
             btnDisabled:1,
             JAC_SLAVENUM:""
         });
-        $.post("/post/getTaskIDs","",function(data){
-            var data = JSON.parse(data)
-            if (data.length==0) {
-                alert("No running instance!")
-            } else {
-                This.setState({taskList:data})
-                $(".taskToResume").tooltip();
-            }
-            This.setState({btnDisabled:0});
-        }).error(function(){This.setState({btnDisabled:0});})
+        this.props.socket.emit("get_task_IDs")
     }
 
     clickOnResumeTask(index,e){
@@ -93,29 +144,15 @@ export default class DashBoard extends React.Component{
         }
         else {
             This.setState({btnDisabled:1});
-            var res = $.post("/post/taskName",{
-                "taskName":This.state.JAC_taskName,
-                "taskID":This.state.JAC_taskID,
-                "slaveNum":This.state.JAC_SLAVENUM,
-                "description":This.state.JAC_taskDesc,
-                "create":This.state.task_to_create
-            },function(data){
-                data = JSON.parse(data)
-                This.refs.taskInfo.setState({"fileStatus":data["files"].length+" file(s) on cloud"})
-                $("#jac_JMXName").empty()
-                $.each(data["jmxList"],function(i,d){
-                    $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
-                })
-                This.setState({
-                        btnDisabled:0,
-                        display:0b0100111,
-                        JAC_taskID:data["taskID"],
-                        JAC_SLAVENUM:data["slaveNum"],
-                        JAC_taskDesc:data["description"],
-                        readonly:true,
-                        taskList:[]
-                    })
-            }).error(function(){This.setState({btnDisabled:0});})
+            This.props.socket.emit("start_task",
+                {
+                    "taskName":This.state.JAC_taskName,
+                    "taskID":This.state.JAC_taskID,
+                    "slaveNum":This.state.JAC_SLAVENUM,
+                    "description":This.state.JAC_taskDesc,
+                    "create":This.state.task_to_create
+                }
+            )
         }
     }
 
@@ -141,21 +178,15 @@ export default class DashBoard extends React.Component{
     }
 
     delete(){
-        var This = this;
-        This.setState({btnDisabled:1});
-        $.post("/post/cleanup",{"taskID":This.state.JAC_taskID},
-            function(data){
-                This.setState({display:0,btnDisabled:0})
-            }).error(function(){This.setState({btnDisabled:0})})
+        this.setState({btnDisabled:1});
+        this.props.socket.emit("delete_task");
     }
 
     stop(){
-        var This = this;
+        var id = this.state.JAC_taskID;
         $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled")
-        This.setState({btnDisabled:1})
-        $.post("/post/stop",{"taskID":This.state.JAC_taskID},function(data){
-            This.setState({btnDisabled:0})
-        }).error(function(){This.setState({btnDisabled:0});})
+        this.setState({btnDisabled:1})
+        this.props.socket.emit("stop_task",{"taskID":id})
     }
 
     render(){
@@ -167,6 +198,7 @@ export default class DashBoard extends React.Component{
                         {...this.state}
                     />
                     <InputBlock_taskInfo ref="taskInfo"
+                        socket={this.props.socket}
                         confirmFunc={this.confirm}
                         deleteFunc={this.delete}
                         uploadFunc={this.upload}

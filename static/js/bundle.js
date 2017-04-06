@@ -21604,9 +21604,8 @@
 	    }
 
 	    _createClass(Content, [{
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            var This = this;
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
 	            // Use a "/test" namespace.
 	            // An application can open a connection on multiple namespaces, and
 	            // Socket.IO will multiplex all those connections on a single
@@ -21618,7 +21617,12 @@
 	            // The connection URL has the following format:
 	            //     http[s]://<domain>:<port>[/<namespace>]
 	            var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
-
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var socket = this.socket;
+	            var This = this;
 	            socket.on("connect", function () {
 	                $('#connIcon').removeClass();
 	                $('#connIcon').addClass("glyphicon glyphicon-ok");
@@ -21642,24 +21646,6 @@
 
 	            socket.on('reconnect_attempt', function () {
 	                $('#output').append("... ");
-	            });
-
-	            socket.on("initial_config", function (d) {
-	                This.setState({ JAC_config: d.config });
-	            });
-
-	            socket.on("taskFinished", function (d) {
-	                $(".btn").removeClass("disabled");
-	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
-	            });
-
-	            socket.on("upload_done", function (data) {
-	                data = JSON.parse(data);
-	                $("#jac_JMXName").empty();
-	                $.each(data["jmxList"], function (i, d) {
-	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
-	                });
-	                alert("succeed");
 	            });
 	        }
 	    }, {
@@ -21867,6 +21853,67 @@
 	    }
 
 	    _createClass(DashBoard, [{
+	        key: "componentDidMount",
+	        value: function componentDidMount() {
+	            var This = this;
+
+	            this.props.socket.on("config_changed", function (data) {
+	                This.setState({ JAC_config: data.config });
+	            });
+
+	            this.props.socket.on("task_IDs", function (data) {
+	                var data = JSON.parse(data);
+	                if (data.length == 0) {
+	                    alert("No running instance!");
+	                } else {
+	                    This.setState({ taskList: data });
+	                    $(".taskToResume").tooltip();
+	                }
+	                This.setState({ btnDisabled: 0 });
+	            });
+
+	            this.props.socket.on("task_started", function (data) {
+	                data = JSON.parse(data);
+	                This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
+	                $("#jac_JMXName").empty();
+	                $.each(data["jmxList"], function (i, d) {
+	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
+	                });
+	                This.setState({
+	                    btnDisabled: 0,
+	                    display: 39,
+	                    JAC_taskID: data["taskID"],
+	                    JAC_SLAVENUM: data["slaveNum"],
+	                    JAC_taskDesc: data["description"],
+	                    readonly: true,
+	                    taskList: []
+	                });
+	            });
+
+	            this.props.socket.on("upload_done", function (data) {
+	                data = JSON.parse(data);
+	                This.setState({ btnDisabled: 0 });
+	                $("#jac_JMXName").empty();
+	                $.each(data["jmxList"], function (i, d) {
+	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
+	                });
+	                alert("succeed");
+	            });
+
+	            this.props.socket.on("task_stopped", function () {
+	                This.setState({ btnDisabled: 0 });
+	            });
+
+	            this.props.socket.on("task_finished", function () {
+	                This.setState({ btnDisabled: 0 });
+	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
+	            });
+
+	            this.props.socket.on("task_deleted", function () {
+	                This.setState({ display: 0, btnDisabled: 0 });
+	            });
+	        }
+	    }, {
 	        key: "runTask",
 	        value: function runTask() {
 	            var jmx_to_run = $("#jac_JMXName").val();
@@ -21891,7 +21938,7 @@
 	                display: 83,
 	                readonly: false
 	            });
-	            $.post("/post/defaultconfig", "");
+	            this.props.socket.emit("get_default_config");
 	        }
 	    }, {
 	        key: "resume",
@@ -21903,18 +21950,7 @@
 	                btnDisabled: 1,
 	                JAC_SLAVENUM: ""
 	            });
-	            $.post("/post/getTaskIDs", "", function (data) {
-	                var data = JSON.parse(data);
-	                if (data.length == 0) {
-	                    alert("No running instance!");
-	                } else {
-	                    This.setState({ taskList: data });
-	                    $(".taskToResume").tooltip();
-	                }
-	                This.setState({ btnDisabled: 0 });
-	            }).error(function () {
-	                This.setState({ btnDisabled: 0 });
-	            });
+	            this.props.socket.emit("get_task_IDs");
 	        }
 	    }, {
 	        key: "clickOnResumeTask",
@@ -21935,30 +21971,12 @@
 	                alert("Invalid number, slave num should be from 1 to 5");
 	            } else {
 	                This.setState({ btnDisabled: 1 });
-	                var res = $.post("/post/taskName", {
+	                This.props.socket.emit("start_task", {
 	                    "taskName": This.state.JAC_taskName,
 	                    "taskID": This.state.JAC_taskID,
 	                    "slaveNum": This.state.JAC_SLAVENUM,
 	                    "description": This.state.JAC_taskDesc,
 	                    "create": This.state.task_to_create
-	                }, function (data) {
-	                    data = JSON.parse(data);
-	                    This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
-	                    $("#jac_JMXName").empty();
-	                    $.each(data["jmxList"], function (i, d) {
-	                        $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
-	                    });
-	                    This.setState({
-	                        btnDisabled: 0,
-	                        display: 39,
-	                        JAC_taskID: data["taskID"],
-	                        JAC_SLAVENUM: data["slaveNum"],
-	                        JAC_taskDesc: data["description"],
-	                        readonly: true,
-	                        taskList: []
-	                    });
-	                }).error(function () {
-	                    This.setState({ btnDisabled: 0 });
 	                });
 	            }
 	        }
@@ -21988,25 +22006,16 @@
 	    }, {
 	        key: "delete",
 	        value: function _delete() {
-	            var This = this;
-	            This.setState({ btnDisabled: 1 });
-	            $.post("/post/cleanup", { "taskID": This.state.JAC_taskID }, function (data) {
-	                This.setState({ display: 0, btnDisabled: 0 });
-	            }).error(function () {
-	                This.setState({ btnDisabled: 0 });
-	            });
+	            this.setState({ btnDisabled: 1 });
+	            this.props.socket.emit("delete_task");
 	        }
 	    }, {
 	        key: "stop",
 	        value: function stop() {
-	            var This = this;
+	            var id = this.state.JAC_taskID;
 	            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
-	            This.setState({ btnDisabled: 1 });
-	            $.post("/post/stop", { "taskID": This.state.JAC_taskID }, function (data) {
-	                This.setState({ btnDisabled: 0 });
-	            }).error(function () {
-	                This.setState({ btnDisabled: 0 });
-	            });
+	            this.setState({ btnDisabled: 1 });
+	            this.props.socket.emit("stop_task", { "taskID": id });
 	        }
 	    }, {
 	        key: "render",
@@ -22019,6 +22028,7 @@
 	                    resumeFunc: this.resume
 	                }, this.state)),
 	                _react2.default.createElement(_InputBlocks.InputBlock_taskInfo, _extends({ ref: "taskInfo",
+	                    socket: this.props.socket,
 	                    confirmFunc: this.confirm,
 	                    deleteFunc: this.delete,
 	                    uploadFunc: this.upload,
@@ -22200,7 +22210,8 @@
 	            _react2.default.createElement(
 	                "div",
 	                { id: "InputBlock_taskInfo" },
-	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config, confChange: this.props.confChange,
+	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config,
+	                    socket: this.props.socket, confChange: this.props.confChange,
 	                    saveBtnStyle: { display: this.calc(6) }, btnDis: this.disCls() }),
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
@@ -22450,6 +22461,7 @@
 	    }, {
 	        key: 'save',
 	        value: function save() {
+	            var This = this;
 	            var jsonToSave = this.refs.textarea.value;
 	            var IS_JSON = true;
 	            try {
@@ -22459,8 +22471,10 @@
 	                IS_JSON = false;
 	            }
 	            if (!IS_JSON) alert("Invaild JSON format");else {
-	                this.props.confChange(jsonToSave);
-	                $.post("/post/config", { "config": jsonToSave });
+	                this.props.socket.emit("update_config", { "config": jsonToSave });
+	                this.props.socket.on("config_updated", function (d) {
+	                    if (d["success"] == 1) This.props.confChange(jsonToSave);
+	                });
 	            }
 	        }
 	    }, {

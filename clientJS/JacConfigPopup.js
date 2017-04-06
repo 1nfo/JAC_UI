@@ -19,6 +19,7 @@ export default class JacConfigPopup extends React.Component{
     }
 
     save(){
+        var This = this
         var jsonToSave = this.refs.textarea.value;
         var IS_JSON = true;
         try{
@@ -29,8 +30,10 @@ export default class JacConfigPopup extends React.Component{
         }
         if(!IS_JSON) alert("Invaild JSON format")
         else{
-            this.props.confChange(jsonToSave)
-            $.post("/post/config",{"config":jsonToSave})
+            this.props.socket.emit("update_config",{"config":jsonToSave})
+            this.props.socket.on("config_updated",function(d){
+              if (d["success"]==1) This.props.confChange(jsonToSave)
+          })
         }
     }
 

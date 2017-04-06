@@ -47,7 +47,8 @@ export const InputBlock_taskInfo = React.createClass({
         var This = this;
         return (<div>
                     <div id="InputBlock_taskInfo">
-                        <JacConfigPopup style={{display: this.calc(0)}} config={this.props.JAC_config} confChange={this.props.confChange}
+                        <JacConfigPopup style={{display: this.calc(0)}} config={this.props.JAC_config}
+                                        socket={this.props.socket} confChange={this.props.confChange}
                                         saveBtnStyle={{display:this.calc(6)}} btnDis={this.disCls()}/>
                         <br/>
                         <div className="row panel" id="InputRow_task" style={{display: this.calc(1)}}>

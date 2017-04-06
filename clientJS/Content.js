@@ -8,8 +8,7 @@ export default class Content extends React.Component{
         super(props);
     }
 
-    componentDidMount(){
-        var This=this;
+    componentWillMount(){
         // Use a "/test" namespace.
         // An application can open a connection on multiple namespaces, and
         // Socket.IO will multiplex all those connections on a single
@@ -21,7 +20,11 @@ export default class Content extends React.Component{
         // The connection URL has the following format:
         //     http[s]://<domain>:<port>[/<namespace>]
         var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+    }
 
+    componentDidMount(){
+        var socket = this.socket
+        var This = this
         socket.on("connect",function(){
             $('#connIcon').removeClass();
             $('#connIcon').addClass("glyphicon glyphicon-ok")
@@ -46,24 +49,6 @@ export default class Content extends React.Component{
         socket.on('reconnect_attempt', function(){
             $('#output').append("... ")
         });
-
-        socket.on("initial_config",function(d){
-            This.setState({JAC_config:d.config})
-        })
-
-        socket.on("taskFinished",function(d){
-            $(".btn").removeClass("disabled")
-            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled")
-        })
-
-        socket.on("upload_done", function(data){
-            data = JSON.parse(data)
-            $("#jac_JMXName").empty()
-            $.each(data["jmxList"],function(i,d){
-                $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
-            })
-            alert("succeed");
-        })
     }
 
     render() {
