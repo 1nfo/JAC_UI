@@ -92,7 +92,7 @@ def startTask():
         if createOrNot:
             try:
                 taskMngr.setConfig(customConfigs[addr])
-                taskMngr.startTask(taskName)
+                taskMngr.create(taskName,addr=addr)
                 taskID = taskMngr.instMngr.taskID
                 taskMngr.setTaskDesc(description)
                 taskMngr.setSlaveNumber(slaveNum)
@@ -116,7 +116,7 @@ def startTask():
                 with open(os.path.join(app.config['UPLOAD_FOLDER'],taskID,".JAC_config.json"),"w") as f:
                     f.write(json.dumps(config))
             taskMngr.setConfig(config)
-            taskMngr.startTask(taskName, taskID)
+            taskMngr.resume(taskName, taskID)
             successOrNot = True
 
         if successOrNot:

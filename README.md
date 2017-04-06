@@ -17,13 +17,11 @@ check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#depl
 
 
 ## To do
-0. redis detect 
-1. thread blocking ..fixed?
-2. global variable
+0. [√].awsPathredis detect 
+1. [?]thread blocking ..fixed?
+2. [?]global variable
 3. task level info, ip >> id, more tag
 3. afterReady -> reactjs; post -> socket
-4. config.json / Config module refactor
-5. es part decouple
 3. deploy on aws
 6. pass users credentials (user login if sharing one credential)
 7. readonly task ( task locker / is exclusively accessing neccessary?)

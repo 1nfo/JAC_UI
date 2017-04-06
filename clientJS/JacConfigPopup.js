@@ -10,8 +10,12 @@ export default class JacConfigPopup extends React.Component{
     }
 
     show(){
-        this.setState({"json":JAC_CONFIG});
+        this.setState({"json":this.props.config});
         this.refs.jac_configJson.show();
+    }
+
+    contentChange(e){
+        this.setState({"json":e.target.value})
     }
 
     save(){
@@ -25,6 +29,7 @@ export default class JacConfigPopup extends React.Component{
         }
         if(!IS_JSON) alert("Invaild JSON format")
         else{
+            this.props.confChange(jsonToSave)
             $.post("/post/config",{"config":jsonToSave})
         }
     }
@@ -49,6 +54,7 @@ export default class JacConfigPopup extends React.Component{
                         <textarea   defaultValue={this.state.json}
                                     className="form-control"
                                     ref="textarea"
+                                    onChange={this.contentChange}
                                     style={{"minWidth": "100%","minHeight":"80%"}}>
                         </textarea>
                         <br/>

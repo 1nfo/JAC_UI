@@ -25,7 +25,6 @@ const Console = React.createClass({
     },
 
     render(){
-        GLOBAL_SCROLLDOWN = this.toBottom
         return <div className="panel-body" style={{"minHeight": 501}} id="output" />;
     }
 })
@@ -48,7 +47,7 @@ const Output = React.createClass({
                                     horizontalScrollbarStyle={scrollbarStyles}
                                     horizontalContainerStyle={scrollbarStyles}
                                     >
-                            <Console/>
+                            <Console ref="console"/>
                         </ScrollArea>
                     </div>
                 </div>)

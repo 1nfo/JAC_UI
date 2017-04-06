@@ -21604,13 +21604,72 @@
 	    }
 
 	    _createClass(Content, [{
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var This = this;
+	            // Use a "/test" namespace.
+	            // An application can open a connection on multiple namespaces, and
+	            // Socket.IO will multiplex all those connections on a single
+	            // physical channel. If you don't care about multiple channels, you
+	            // can set the namespace to an empty string.
+	            var namespace = '/redirect';
+
+	            // Connect to the Socket.IO server.
+	            // The connection URL has the following format:
+	            //     http[s]://<domain>:<port>[/<namespace>]
+	            var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+
+	            socket.on("connect", function () {
+	                $('#connIcon').removeClass();
+	                $('#connIcon').addClass("glyphicon glyphicon-ok");
+	                $('#connIcon').empty();
+	                $('#connIcon').append(" Connected");
+	                socket.on('disconnect', function () {
+	                    $('#connIcon').removeClass();
+	                    $('#connIcon').addClass("glyphicon glyphicon-remove");
+	                    $('#connIcon').empty();
+	                    $('#connIcon').append(" Disconnected");
+	                });
+	                socket.on('connect_timeout', function () {
+	                    $('#output').append("<br/>Connection Timeout<br/>");
+	                });
+	            });
+
+	            socket.on('redirect', function (d) {
+	                $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g, "<br/>"));
+	                This.refs.output.refs.console.toBottom();
+	            });
+
+	            socket.on('reconnect_attempt', function () {
+	                $('#output').append("... ");
+	            });
+
+	            socket.on("initial_config", function (d) {
+	                This.setState({ JAC_config: d.config });
+	            });
+
+	            socket.on("taskFinished", function (d) {
+	                $(".btn").removeClass("disabled");
+	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
+	            });
+
+	            socket.on("upload_done", function (data) {
+	                data = JSON.parse(data);
+	                $("#jac_JMXName").empty();
+	                $.each(data["jmxList"], function (i, d) {
+	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
+	                });
+	                alert("succeed");
+	            });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
 	                'div',
 	                { className: 'row panel-body' },
-	                _react2.default.createElement(_DashBoard2.default, null),
-	                _react2.default.createElement(_Output2.default, null)
+	                _react2.default.createElement(_DashBoard2.default, { socket: this.socket }),
+	                _react2.default.createElement(_Output2.default, { ref: 'output' })
 	            );
 	        }
 	    }]);
@@ -21688,7 +21747,6 @@
 	        this.context.scrollArea.scrollBottom();
 	    },
 	    render: function render() {
-	        GLOBAL_SCROLLDOWN = this.toBottom;
 	        return _react2.default.createElement("div", { className: "panel-body", style: { "minHeight": 501 }, id: "output" });
 	    }
 	});
@@ -21717,7 +21775,7 @@
 	                        horizontalScrollbarStyle: scrollbarStyles,
 	                        horizontalContainerStyle: scrollbarStyles
 	                    },
-	                    _react2.default.createElement(Console, null)
+	                    _react2.default.createElement(Console, { ref: "console" })
 	                )
 	            )
 	        );
@@ -21759,9 +21817,7 @@
 
 	var _reactAutobind2 = _interopRequireDefault(_reactAutobind);
 
-	var _JacConfigPopup = __webpack_require__(186);
-
-	var _JacConfigPopup2 = _interopRequireDefault(_JacConfigPopup);
+	var _InputBlocks = __webpack_require__(186);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -21771,7 +21827,319 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var InputBlock_startTask = _react2.default.createClass({
+	var DashBoard = function (_React$Component) {
+	    _inherits(DashBoard, _React$Component);
+
+	    function DashBoard(props) {
+	        _classCallCheck(this, DashBoard);
+
+	        var _this = _possibleConstructorReturn(this, (DashBoard.__proto__ || Object.getPrototypeOf(DashBoard)).call(this, props));
+
+	        _this.state = {
+	            task_to_create: 1,
+	            JAC_taskID: "",
+	            JAC_SLAVENUM: "",
+	            JAC_taskName: "",
+	            JAC_taskDesc: "",
+	            JAC_config: "",
+	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
+	            readonly: false,
+	            btnDisabled: 0,
+	            taskList: []
+	        };
+	        var This = _this;
+	        _this.handle = {
+	            nameChange: function nameChange(e) {
+	                This.setState({ JAC_taskName: e.target.value });
+	            },
+	            numChange: function numChange(e) {
+	                This.setState({ JAC_SLAVENUM: e.target.value });
+	            },
+	            descChange: function descChange(e) {
+	                This.setState({ JAC_taskDesc: e.target.value });
+	            },
+	            confChange: function confChange(target) {
+	                This.setState({ JAC_config: target });
+	            }
+	        };
+	        (0, _reactAutobind2.default)(_this);
+	        return _this;
+	    }
+
+	    _createClass(DashBoard, [{
+	        key: "runTask",
+	        value: function runTask() {
+	            var jmx_to_run = $("#jac_JMXName").val();
+	            if (this.state.JAC_SLAVENUM < 1) {
+	                alert("No slave running!");
+	            } else if (jmx_to_run == null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)) {
+	                alert("Invaild JMX file, please upload and select jmx file");
+	            } else {
+	                this.setState({ btnDisabled: 1 });
+	                $("#btn_stopRunning").removeClass("btn-default disabled").addClass("btn-danger");
+	                this.props.socket.emit('startRunning', { "jmx_name": jmx_to_run, "taskID": this.state.JAC_taskID });
+	            }
+	        }
+	    }, {
+	        key: "create",
+	        value: function create() {
+	            this.setState({
+	                task_to_create: 1,
+	                JAC_taskName: "",
+	                JAC_SLAVENUM: "",
+	                JAC_taskDesc: "",
+	                display: 83,
+	                readonly: false
+	            });
+	            $.post("/post/defaultconfig", "");
+	        }
+	    }, {
+	        key: "resume",
+	        value: function resume() {
+	            var This = this;
+	            This.setState({
+	                task_to_create: 0,
+	                display: 8,
+	                btnDisabled: 1,
+	                JAC_SLAVENUM: ""
+	            });
+	            $.post("/post/getTaskIDs", "", function (data) {
+	                var data = JSON.parse(data);
+	                if (data.length == 0) {
+	                    alert("No running instance!");
+	                } else {
+	                    This.setState({ taskList: data });
+	                    $(".taskToResume").tooltip();
+	                }
+	                This.setState({ btnDisabled: 0 });
+	            }).error(function () {
+	                This.setState({ btnDisabled: 0 });
+	            });
+	        }
+	    }, {
+	        key: "clickOnResumeTask",
+	        value: function clickOnResumeTask(index, e) {
+	            this.setState({
+	                btnDisabled: 1,
+	                JAC_taskID: this.state.taskList[index][0],
+	                JAC_taskName: $(e.target).val()
+	            }, this.confirm);
+	        }
+	    }, {
+	        key: "confirm",
+	        value: function confirm() {
+	            var This = this;
+	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
+	                if (This.state.task_to_create == 1) alert("Name needs to be letters and number only");else alert("Select one task to Resume");
+	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]$/) && This.state.task_to_create == 1) {
+	                alert("Invalid number, slave num should be from 1 to 5");
+	            } else {
+	                This.setState({ btnDisabled: 1 });
+	                var res = $.post("/post/taskName", {
+	                    "taskName": This.state.JAC_taskName,
+	                    "taskID": This.state.JAC_taskID,
+	                    "slaveNum": This.state.JAC_SLAVENUM,
+	                    "description": This.state.JAC_taskDesc,
+	                    "create": This.state.task_to_create
+	                }, function (data) {
+	                    data = JSON.parse(data);
+	                    This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
+	                    $("#jac_JMXName").empty();
+	                    $.each(data["jmxList"], function (i, d) {
+	                        $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
+	                    });
+	                    This.setState({
+	                        btnDisabled: 0,
+	                        display: 39,
+	                        JAC_taskID: data["taskID"],
+	                        JAC_SLAVENUM: data["slaveNum"],
+	                        JAC_taskDesc: data["description"],
+	                        readonly: true,
+	                        taskList: []
+	                    });
+	                }).error(function () {
+	                    This.setState({ btnDisabled: 0 });
+	                });
+	            }
+	        }
+	    }, {
+	        key: "upload",
+	        value: function upload() {
+	            var This = this;
+	            var filesList = $("#jac_uploadFiles").prop("files");
+	            if (filesList.length == 0) alert("No file selected!");else {
+	                This.setState({ btnDisabled: 1 });
+	                var form_data = new FormData();
+	                form_data.append("taskID", This.state.JAC_taskID);
+	                $.each(filesList, function (i, d) {
+	                    form_data.append("file", d);
+	                });
+	                $.ajax({
+	                    url: "/uploadFiles",
+	                    dataType: "text",
+	                    chache: false,
+	                    contentType: false,
+	                    processData: false,
+	                    data: form_data,
+	                    type: "post"
+	                });
+	            }
+	        }
+	    }, {
+	        key: "delete",
+	        value: function _delete() {
+	            var This = this;
+	            This.setState({ btnDisabled: 1 });
+	            $.post("/post/cleanup", { "taskID": This.state.JAC_taskID }, function (data) {
+	                This.setState({ display: 0, btnDisabled: 0 });
+	            }).error(function () {
+	                This.setState({ btnDisabled: 0 });
+	            });
+	        }
+	    }, {
+	        key: "stop",
+	        value: function stop() {
+	            var This = this;
+	            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
+	            This.setState({ btnDisabled: 1 });
+	            $.post("/post/stop", { "taskID": This.state.JAC_taskID }, function (data) {
+	                This.setState({ btnDisabled: 0 });
+	            }).error(function () {
+	                This.setState({ btnDisabled: 0 });
+	            });
+	        }
+	    }, {
+	        key: "render",
+	        value: function render() {
+	            return _react2.default.createElement(
+	                "div",
+	                { className: "col-lg-7 panel" },
+	                _react2.default.createElement(_InputBlocks.InputBlock_startTask, _extends({
+	                    createFunc: this.create,
+	                    resumeFunc: this.resume
+	                }, this.state)),
+	                _react2.default.createElement(_InputBlocks.InputBlock_taskInfo, _extends({ ref: "taskInfo",
+	                    confirmFunc: this.confirm,
+	                    deleteFunc: this.delete,
+	                    uploadFunc: this.upload,
+	                    stopFunc: this.stop,
+	                    runFunc: this.runTask,
+	                    clickOnResumeTask: this.clickOnResumeTask
+	                }, this.handle, this.state))
+	            );
+	        }
+	    }]);
+
+	    return DashBoard;
+	}(_react2.default.Component);
+
+	exports.default = DashBoard;
+
+/***/ },
+/* 184 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(185);
+
+
+/***/ },
+/* 185 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	exports['default'] = autoBind;
+	var wontBind = ['constructor', 'render', 'componentWillMount', 'componentDidMount', 'componentWillReceiveProps', 'shouldComponentUpdate', 'componentWillUpdate', 'componentDidUpdate', 'componentWillUnmount'];
+
+	var toBind = [];
+
+	function autoBind(context) {
+	  if (context === undefined) {
+	    console.error('Autobind error: No context provided.');
+	    return;
+	  }
+
+	  var objPrototype = Object.getPrototypeOf(context);
+
+	  if (arguments.length > 1) {
+	    // If a list of methods to bind is provided, use it.
+	    toBind = Array.prototype.slice.call(arguments, 1);
+	  } else {
+	    // If no list of methods to bind is provided, bind all available methods in class.
+	    toBind = Object.getOwnPropertyNames(objPrototype);
+	  }
+
+	  toBind.forEach(function (method) {
+	    var descriptor = Object.getOwnPropertyDescriptor(objPrototype, method);
+
+	    if (descriptor === undefined) {
+	      console.warn('Autobind: "' + method + '" method not found in class.');
+	      return;
+	    }
+
+	    // Return if it's special case function or if not a function at all
+	    if (wontBind.indexOf(method) !== -1 || typeof descriptor.value !== 'function') {
+	      return;
+	    }
+
+	    Object.defineProperty(objPrototype, method, boundMethod(objPrototype, method, descriptor));
+	  });
+	}
+
+	/**
+	* From autobind-decorator (https://github.com/andreypopp/autobind-decorator/tree/master)
+	* Return a descriptor removing the value and returning a getter
+	* The getter will return a .bind version of the function
+	* and memoize the result against a symbol on the instance
+	*/
+	function boundMethod(objPrototype, method, descriptor) {
+	  var fn = descriptor.value;
+
+	  return {
+	    configurable: true,
+	    get: function get() {
+	      if (this === objPrototype || this.hasOwnProperty(method)) {
+	        return fn;
+	      }
+
+	      var boundFn = fn.bind(this);
+	      Object.defineProperty(this, method, {
+	        value: boundFn,
+	        configurable: true,
+	        writable: true
+	      });
+	      return boundFn;
+	    }
+	  };
+	}
+	module.exports = exports['default'];
+
+
+/***/ },
+/* 186 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.InputBlock_taskInfo = exports.InputBlock_startTask = undefined;
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _JacConfigPopup = __webpack_require__(187);
+
+	var _JacConfigPopup2 = _interopRequireDefault(_JacConfigPopup);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var InputBlock_startTask = exports.InputBlock_startTask = _react2.default.createClass({
 	    displayName: "InputBlock_startTask",
 	    disCls: function disCls() {
 	        if (this.props.btnDisabled > 0) return " disabled";
@@ -21803,7 +22171,7 @@
 	    }
 	});
 
-	var InputBlock_taskInfo = _react2.default.createClass({
+	var InputBlock_taskInfo = exports.InputBlock_taskInfo = _react2.default.createClass({
 	    displayName: "InputBlock_taskInfo",
 	    getInitialState: function getInitialState() {
 	        return { "fileStatus": "" };
@@ -21832,7 +22200,8 @@
 	            _react2.default.createElement(
 	                "div",
 	                { id: "InputBlock_taskInfo" },
-	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, saveBtnStyle: { display: this.calc(6) }, btnDis: this.disCls() }),
+	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config, confChange: this.props.confChange,
+	                    saveBtnStyle: { display: this.calc(6) }, btnDis: this.disCls() }),
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
 	                    "div",
@@ -22006,7 +22375,7 @@
 	                            { className: "btn-group" },
 	                            _react2.default.createElement(
 	                                "a",
-	                                { href: "#", className: "btn btn-primary" + this.disCls(), id: "btn_runTask" },
+	                                { href: "#", className: "btn btn-primary" + this.disCls(), id: "btn_runTask", onClick: this.props.runFunc },
 	                                "run"
 	                            ),
 	                            _react2.default.createElement(
@@ -22022,282 +22391,8 @@
 	    }
 	});
 
-	var DashBoard = function (_React$Component) {
-	    _inherits(DashBoard, _React$Component);
-
-	    function DashBoard(props) {
-	        _classCallCheck(this, DashBoard);
-
-	        var _this = _possibleConstructorReturn(this, (DashBoard.__proto__ || Object.getPrototypeOf(DashBoard)).call(this, props));
-
-	        _this.state = {
-	            task_to_create: 1,
-	            JAC_taskID: "",
-	            JAC_SLAVENUM: "",
-	            JAC_taskName: "",
-	            JAC_taskDesc: "",
-	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
-	            readonly: false,
-	            btnDisabled: 0,
-	            taskList: []
-	        };
-	        var This = _this;
-	        _this.handle = {
-	            nameChange: function nameChange(e) {
-	                This.setState({ JAC_taskName: e.target.value });
-	            },
-	            numChange: function numChange(e) {
-	                This.setState({ JAC_SLAVENUM: e.target.value });
-	            },
-	            descChange: function descChange(e) {
-	                This.setState({ JAC_taskDesc: e.target.value });
-	            }
-	        };
-	        (0, _reactAutobind2.default)(_this);
-	        return _this;
-	    }
-
-	    _createClass(DashBoard, [{
-	        key: "create",
-	        value: function create() {
-	            this.setState({
-	                task_to_create: 1,
-	                JAC_taskName: "",
-	                JAC_SLAVENUM: "",
-	                JAC_taskDesc: "",
-	                display: 83,
-	                readonly: false
-	            });
-	            $.post("/post/defaultconfig", "");
-	        }
-	    }, {
-	        key: "resume",
-	        value: function resume() {
-	            var This = this;
-	            This.setState({
-	                task_to_create: 0,
-	                display: 8,
-	                btnDisabled: 1,
-	                JAC_SLAVENUM: ""
-	            });
-	            $.post("/post/getTaskIDs", "", function (data) {
-	                var data = JSON.parse(data);
-	                if (data.length == 0) {
-	                    alert("No running instance!");
-	                } else {
-	                    This.setState({ taskList: data });
-	                    $(".taskToResume").tooltip();
-	                }
-	                This.setState({ btnDisabled: 0 });
-	            }).error(function () {
-	                This.setState({ btnDisabled: 0 });
-	            });
-	        }
-	    }, {
-	        key: "clickOnResumeTask",
-	        value: function clickOnResumeTask(index, e) {
-	            this.setState({
-	                btnDisabled: 1,
-	                JAC_taskID: this.state.taskList[index][0],
-	                JAC_taskName: $(e.target).val()
-	            }, this.confirm);
-	        }
-	    }, {
-	        key: "confirm",
-	        value: function confirm() {
-	            var This = this;
-	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
-	                if (This.state.task_to_create == 1) alert("Name needs to be letters and number only");else alert("Select one task to Resume");
-	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]$/) && This.state.task_to_create == 1) {
-	                alert("Invalid number, slave num should be from 1 to 5");
-	            } else {
-	                This.setState({ btnDisabled: 1 });
-	                var res = $.post("/post/taskName", {
-	                    "taskName": This.state.JAC_taskName,
-	                    "taskID": This.state.JAC_taskID,
-	                    "slaveNum": This.state.JAC_SLAVENUM,
-	                    "description": This.state.JAC_taskDesc,
-	                    "create": This.state.task_to_create
-	                }, function (data) {
-	                    data = JSON.parse(data);
-	                    GLOBAL_JAC_taskID = data["taskID"];
-	                    GLOBAL_JAC_SLAVENUM = data["slaveNum"];
-	                    This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
-	                    $("#jac_JMXName").empty();
-	                    $.each(data["jmxList"], function (i, d) {
-	                        $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
-	                    });
-	                    This.setState({
-	                        btnDisabled: 0,
-	                        display: 39,
-	                        JAC_taskID: GLOBAL_JAC_taskID,
-	                        JAC_SLAVENUM: GLOBAL_JAC_SLAVENUM,
-	                        JAC_taskDesc: data["description"],
-	                        readonly: true,
-	                        taskList: []
-	                    });
-	                }).error(function () {
-	                    This.setState({ btnDisabled: 0 });
-	                });
-	            }
-	        }
-	    }, {
-	        key: "upload",
-	        value: function upload() {
-	            var This = this;
-	            var filesList = $("#jac_uploadFiles").prop("files");
-	            if (filesList.length == 0) alert("No file selected!");else {
-	                This.setState({ btnDisabled: 1 });
-	                var form_data = new FormData();
-	                form_data.append("taskID", This.state.JAC_taskID);
-	                $.each(filesList, function (i, d) {
-	                    form_data.append("file", d);
-	                });
-	                $.ajax({
-	                    url: "/uploadFiles",
-	                    dataType: "text",
-	                    chache: false,
-	                    contentType: false,
-	                    processData: false,
-	                    data: form_data,
-	                    type: "post"
-	                });
-	            }
-	        }
-	    }, {
-	        key: "delete",
-	        value: function _delete() {
-	            var This = this;
-	            This.setState({ btnDisabled: 1 });
-	            $.post("/post/cleanup", { "taskID": This.state.JAC_taskID }, function (data) {
-	                This.setState({ display: 0, btnDisabled: 0 });
-	            }).error(function () {
-	                This.setState({ btnDisabled: 0 });
-	            });
-	        }
-	    }, {
-	        key: "stop",
-	        value: function stop() {
-	            var This = this;
-	            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
-	            This.setState({ btnDisabled: 1 });
-	            $.post("/post/stop", { "taskID": This.state.JAC_taskID }, function (data) {
-	                This.setState({ btnDisabled: 0 });
-	            }).error(function () {
-	                This.setState({ btnDisabled: 0 });
-	            });
-	        }
-	    }, {
-	        key: "render",
-	        value: function render() {
-	            return _react2.default.createElement(
-	                "div",
-	                { className: "col-lg-7 panel" },
-	                _react2.default.createElement(InputBlock_startTask, _extends({
-	                    createFunc: this.create,
-	                    resumeFunc: this.resume
-	                }, this.state)),
-	                _react2.default.createElement(InputBlock_taskInfo, _extends({ ref: "taskInfo",
-	                    confirmFunc: this.confirm,
-	                    deleteFunc: this.delete,
-	                    uploadFunc: this.upload,
-	                    stopFunc: this.stop,
-	                    clickOnResumeTask: this.clickOnResumeTask
-	                }, this.handle, this.state))
-	            );
-	        }
-	    }]);
-
-	    return DashBoard;
-	}(_react2.default.Component);
-
-	exports.default = DashBoard;
-
 /***/ },
-/* 184 */
-/***/ function(module, exports, __webpack_require__) {
-
-	module.exports = __webpack_require__(185);
-
-
-/***/ },
-/* 185 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, '__esModule', {
-	  value: true
-	});
-	exports['default'] = autoBind;
-	var wontBind = ['constructor', 'render', 'componentWillMount', 'componentDidMount', 'componentWillReceiveProps', 'shouldComponentUpdate', 'componentWillUpdate', 'componentDidUpdate', 'componentWillUnmount'];
-
-	var toBind = [];
-
-	function autoBind(context) {
-	  if (context === undefined) {
-	    console.error('Autobind error: No context provided.');
-	    return;
-	  }
-
-	  var objPrototype = Object.getPrototypeOf(context);
-
-	  if (arguments.length > 1) {
-	    // If a list of methods to bind is provided, use it.
-	    toBind = Array.prototype.slice.call(arguments, 1);
-	  } else {
-	    // If no list of methods to bind is provided, bind all available methods in class.
-	    toBind = Object.getOwnPropertyNames(objPrototype);
-	  }
-
-	  toBind.forEach(function (method) {
-	    var descriptor = Object.getOwnPropertyDescriptor(objPrototype, method);
-
-	    if (descriptor === undefined) {
-	      console.warn('Autobind: "' + method + '" method not found in class.');
-	      return;
-	    }
-
-	    // Return if it's special case function or if not a function at all
-	    if (wontBind.indexOf(method) !== -1 || typeof descriptor.value !== 'function') {
-	      return;
-	    }
-
-	    Object.defineProperty(objPrototype, method, boundMethod(objPrototype, method, descriptor));
-	  });
-	}
-
-	/**
-	* From autobind-decorator (https://github.com/andreypopp/autobind-decorator/tree/master)
-	* Return a descriptor removing the value and returning a getter
-	* The getter will return a .bind version of the function
-	* and memoize the result against a symbol on the instance
-	*/
-	function boundMethod(objPrototype, method, descriptor) {
-	  var fn = descriptor.value;
-
-	  return {
-	    configurable: true,
-	    get: function get() {
-	      if (this === objPrototype || this.hasOwnProperty(method)) {
-	        return fn;
-	      }
-
-	      var boundFn = fn.bind(this);
-	      Object.defineProperty(this, method, {
-	        value: boundFn,
-	        configurable: true,
-	        writable: true
-	      });
-	      return boundFn;
-	    }
-	  };
-	}
-	module.exports = exports['default'];
-
-
-/***/ },
-/* 186 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22312,7 +22407,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactSkylight = __webpack_require__(187);
+	var _reactSkylight = __webpack_require__(188);
 
 	var _reactSkylight2 = _interopRequireDefault(_reactSkylight);
 
@@ -22344,8 +22439,13 @@
 	    _createClass(JacConfigPopup, [{
 	        key: 'show',
 	        value: function show() {
-	            this.setState({ "json": JAC_CONFIG });
+	            this.setState({ "json": this.props.config });
 	            this.refs.jac_configJson.show();
+	        }
+	    }, {
+	        key: 'contentChange',
+	        value: function contentChange(e) {
+	            this.setState({ "json": e.target.value });
 	        }
 	    }, {
 	        key: 'save',
@@ -22359,6 +22459,7 @@
 	                IS_JSON = false;
 	            }
 	            if (!IS_JSON) alert("Invaild JSON format");else {
+	                this.props.confChange(jsonToSave);
 	                $.post("/post/config", { "config": jsonToSave });
 	            }
 	        }
@@ -22392,6 +22493,7 @@
 	                    _react2.default.createElement('textarea', { defaultValue: this.state.json,
 	                        className: 'form-control',
 	                        ref: 'textarea',
+	                        onChange: this.contentChange,
 	                        style: { "minWidth": "100%", "minHeight": "80%" } }),
 	                    _react2.default.createElement('br', null),
 	                    _react2.default.createElement(
@@ -22413,7 +22515,7 @@
 	exports.default = JacConfigPopup;
 
 /***/ },
-/* 187 */
+/* 188 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22422,7 +22524,7 @@
 	  value: true
 	});
 
-	var _skylight = __webpack_require__(188);
+	var _skylight = __webpack_require__(189);
 
 	Object.defineProperty(exports, 'default', {
 	  enumerable: true,
@@ -22431,7 +22533,7 @@
 	  }
 	});
 
-	var _skylightstateless = __webpack_require__(189);
+	var _skylightstateless = __webpack_require__(190);
 
 	Object.defineProperty(exports, 'SkyLightStateless', {
 	  enumerable: true,
@@ -22443,7 +22545,7 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
-/* 188 */
+/* 189 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22460,7 +22562,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _skylightstateless = __webpack_require__(189);
+	var _skylightstateless = __webpack_require__(190);
 
 	var _skylightstateless2 = _interopRequireDefault(_skylightstateless);
 
@@ -22571,7 +22673,7 @@
 	});
 
 /***/ },
-/* 189 */
+/* 190 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -22588,7 +22690,7 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _styles = __webpack_require__(190);
+	var _styles = __webpack_require__(191);
 
 	var _styles2 = _interopRequireDefault(_styles);
 
@@ -22708,7 +22810,7 @@
 	};
 
 /***/ },
-/* 190 */
+/* 191 */
 /***/ function(module, exports) {
 
 	'use strict';
