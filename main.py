@@ -1,30 +1,31 @@
 from flask import Flask, render_template, request, redirect, session
 from flask_socketio import SocketIO, emit
 from werkzeug.utils import secure_filename
+from Memcached import RedisableManagers, redisReady
 import json, os
-from Memcached import RedisableManagers
 import JmeterAwsConf as JAC
 
 
-# old part before add socketio
 app = Flask(__name__)
 app.config.update(
     DEBUG=True,
     TEMPLATES_AUTO_RELOAD=True,
-    UPLOAD_FOLDER='uploads/'
+    UPLOAD_FOLDER='uploads/',
+    SECRET_KEY='secret!'
 )
 
-# new part
+
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
 async_mode = None
 
-app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, async_mode=async_mode, ping_timeout=6000)
 thread = None
 
-taskMngrs = RedisableManagers()
+# redis memcacached
+taskMngrs = dict() if not redisReady() else RedisableManagers()
+
 # these global variables could be problem in the future
 jredirectors = {}
 processes = {} # task level

@@ -1,20 +1,38 @@
-import redis, pickle
+import redis, pickle, socket
 
-class RedisableManagers(object):
+# Defalut param
+HOST='localhost'
+PORT=6379
+DB=0
+
+
+class RedisableDict(object):
     def __init__(self):
-        self.redis = redis.StrictRedis(host='localhost', port=6379, db=0)
+        self.redis = redis.StrictRedis(host=HOST, port=PORT, db=DB)
 
     def __getitem__(self,key):
         return pickle.loads(self.redis.get(key))
 
     def __setitem__(self,key,value):
-        if value.instMngr and "client" in value.instMngr.__dict__:
-            del value.instMngr.__dict__["client"]
-        self.redis.set(key,
-            pickle.dumps(value))
+        self.redis.set(key, pickle.dumps(value))
 
     def __delitem__(self, key):
         self.redis.delete(key)
 
     def __contains__(self, key):
         return self.redis.get(key) is not None
+
+
+class RedisableManagers(RedisableDict):
+    def __setitem__(self,key,value):
+        if value.instMngr and "client" in value.instMngr.__dict__:
+            del value.instMngr.__dict__["client"]
+        self.redis.set(key, pickle.dumps(value))
+
+def redisReady():
+    try:
+        socket.create_connection((HOST,PORT))
+        return True
+    except:
+        print("\nRedis server is not ready, using default dictionary.\n")
+        return False
