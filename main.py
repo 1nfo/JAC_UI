@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session
 from werkzeug.utils import secure_filename
 from server import *
-import json, os
+import json, os, sys
 
 
 app = Flask(__name__)
@@ -63,4 +63,7 @@ def uploadFiles():
 socketio.init_app(app)
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    if len(sys.argv)>1 and sys.argv[1]=="server":
+        socketio.run(app, host="0.0.0.0", port=80, debug=True)
+    else:
+        socketio.run(app, debug=True)
