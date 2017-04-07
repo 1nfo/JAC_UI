@@ -22,35 +22,6 @@ export default class Content extends React.Component{
         var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
     }
 
-    componentDidMount(){
-        var socket = this.socket
-        var This = this
-        socket.on("connect",function(){
-            $('#connIcon').removeClass();
-            $('#connIcon').addClass("glyphicon glyphicon-ok")
-            $('#connIcon').empty()
-            $('#connIcon').append(" Connected")
-            socket.on('disconnect', function() {
-                $('#connIcon').removeClass();
-                $('#connIcon').addClass("glyphicon glyphicon-remove")
-                $('#connIcon').empty()
-                $('#connIcon').append(" Disconnected")
-            });
-            socket.on('connect_timeout', function() {
-                $('#output').append("<br/>Connection Timeout<br/>");
-            });
-        })
-
-        socket.on('redirect', function(d) {
-            $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g,"<br/>"));
-            This.refs.output.refs.console.toBottom()
-        });
-
-        socket.on('reconnect_attempt', function(){
-            $('#output').append("... ")
-        });
-    }
-
     render() {
         return (<div className="row panel-body">
                     <DashBoard socket={this.socket}/>

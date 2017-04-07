@@ -21619,36 +21619,6 @@
 	            var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 	        }
 	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            var socket = this.socket;
-	            var This = this;
-	            socket.on("connect", function () {
-	                $('#connIcon').removeClass();
-	                $('#connIcon').addClass("glyphicon glyphicon-ok");
-	                $('#connIcon').empty();
-	                $('#connIcon').append(" Connected");
-	                socket.on('disconnect', function () {
-	                    $('#connIcon').removeClass();
-	                    $('#connIcon').addClass("glyphicon glyphicon-remove");
-	                    $('#connIcon').empty();
-	                    $('#connIcon').append(" Disconnected");
-	                });
-	                socket.on('connect_timeout', function () {
-	                    $('#output').append("<br/>Connection Timeout<br/>");
-	                });
-	            });
-
-	            socket.on('redirect', function (d) {
-	                $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g, "<br/>"));
-	                This.refs.output.refs.console.toBottom();
-	            });
-
-	            socket.on('reconnect_attempt', function () {
-	                $('#output').append("... ");
-	            });
-	        }
-	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
@@ -21830,7 +21800,7 @@
 	            JAC_config: "",
 	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
 	            readonly: false,
-	            btnDisabled: 0,
+	            btnDisabled: 1,
 	            taskList: []
 	        };
 	        var This = _this;
@@ -21856,12 +21826,38 @@
 	        key: "componentDidMount",
 	        value: function componentDidMount() {
 	            var This = this;
+	            var socket = this.props.socket;
+	            socket.on("connect", function () {
+	                $('#connIcon').removeClass();
+	                $('#connIcon').addClass("glyphicon glyphicon-ok");
+	                $('#connIcon').empty();
+	                $('#connIcon').append(" Connected");
+	                socket.on('disconnect', function () {
+	                    $('#connIcon').removeClass();
+	                    $('#connIcon').addClass("glyphicon glyphicon-remove");
+	                    $('#connIcon').empty();
+	                    $('#connIcon').append(" Disconnected");
+	                });
+	                socket.on('connect_timeout', function () {
+	                    $('#output').append("<br/>Connection Timeout<br/>");
+	                });
+	                This.setState({ btnDisabled: 0 });
+	            });
 
-	            this.props.socket.on("config_changed", function (data) {
+	            socket.on('redirect', function (d) {
+	                $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g, "<br/>"));
+	                This.refs.output.refs.console.toBottom();
+	            });
+
+	            socket.on('reconnect_attempt', function () {
+	                $('#output').append("... ");
+	            });
+
+	            socket.on("config_changed", function (data) {
 	                This.setState({ JAC_config: data.config });
 	            });
 
-	            this.props.socket.on("task_IDs", function (data) {
+	            socket.on("task_IDs", function (data) {
 	                var data = JSON.parse(data);
 	                if (data.length == 0) {
 	                    alert("No running instance!");
@@ -21872,7 +21868,7 @@
 	                This.setState({ btnDisabled: 0 });
 	            });
 
-	            this.props.socket.on("task_started", function (data) {
+	            socket.on("task_started", function (data) {
 	                data = JSON.parse(data);
 	                This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
 	                $("#jac_JMXName").empty();
@@ -21890,7 +21886,7 @@
 	                });
 	            });
 
-	            this.props.socket.on("upload_done", function (data) {
+	            socket.on("upload_done", function (data) {
 	                data = JSON.parse(data);
 	                This.setState({ btnDisabled: 0 });
 	                $("#jac_JMXName").empty();
@@ -21900,16 +21896,16 @@
 	                alert("succeed");
 	            });
 
-	            this.props.socket.on("task_stopped", function () {
+	            socket.on("task_stopped", function () {
 	                This.setState({ btnDisabled: 0 });
 	            });
 
-	            this.props.socket.on("task_finished", function () {
+	            socket.on("task_finished", function () {
 	                This.setState({ btnDisabled: 0 });
 	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
 	            });
 
-	            this.props.socket.on("task_deleted", function () {
+	            socket.on("task_deleted", function () {
 	                This.setState({ display: 0, btnDisabled: 0 });
 	            });
 	        }
