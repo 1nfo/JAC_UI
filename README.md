@@ -22,7 +22,7 @@ check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#depl
 2. [?]global variable
 3. task level info, ip >> id, more tag
 3. [√]afterReady -> reactjs; post -> socket
-3. deploy on aws
+3. [√]deploy on aws
 6. pass users credentials (user login if sharing one credential)
 7. readonly task ( task locker / is exclusively accessing neccessary?)
 
@@ -35,16 +35,6 @@ some global variables exist. It is find if running under singel process, but cou
 ### aws credential
 share one credential or use user's credential
 if sharing, login are required.
-
-### Concurrency[FIXING]
-
-JmeterAwsConf is designed as a single task/user API, so there is no consideration to handle multiple users. But the idea of this UI is to support multiple users.
-
-
-### React vs JQurey
-This UI are originally written in JQurey, then tranformed into react.js. Still some JQuery part are there, like socketio, and upload file. 
-
-Some situations is against the idea of how react uses state to manage the page. For example, streamming backend output to page. In react, needs to maintain all the history output, re-render them once new output coming, which is exhausted. Instead, JQurey only appends new output to div. 
 
 
 ## workflow & Request/Response
