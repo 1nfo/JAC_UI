@@ -1,2 +1,2 @@
-from .socket_app import *
+from .flask_app import socketio, app
 

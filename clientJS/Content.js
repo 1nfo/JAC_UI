@@ -22,6 +22,20 @@ export default class Content extends React.Component{
         var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
     }
 
+    componentDidMount(){
+        var This=this;
+        var socket=this.socket;
+
+        This.socket.on('redirect', function(d) {
+            $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g,"<br/>"));
+            This.refs.output.refs.console.toBottom()
+        });
+
+        socket.on('reconnect_attempt', function(){
+            $('#output').append("... ")
+        });
+    }
+
     render() {
         return (<div className="row panel-body">
                     <DashBoard socket={this.socket}/>

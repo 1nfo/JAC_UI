@@ -21619,6 +21619,21 @@
 	            var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
 	        }
 	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var This = this;
+	            var socket = this.socket;
+
+	            This.socket.on('redirect', function (d) {
+	                $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g, "<br/>"));
+	                This.refs.output.refs.console.toBottom();
+	            });
+
+	            socket.on('reconnect_attempt', function () {
+	                $('#output').append("... ");
+	            });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return _react2.default.createElement(
@@ -21800,7 +21815,7 @@
 	            JAC_config: "",
 	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
 	            readonly: false,
-	            btnDisabled: 1,
+	            btnDisabled: _this.props.btnDisabled,
 	            taskList: []
 	        };
 	        var This = _this;
@@ -21827,6 +21842,7 @@
 	        value: function componentDidMount() {
 	            var This = this;
 	            var socket = this.props.socket;
+
 	            socket.on("connect", function () {
 	                $('#connIcon').removeClass();
 	                $('#connIcon').addClass("glyphicon glyphicon-ok");
@@ -21837,20 +21853,12 @@
 	                    $('#connIcon').addClass("glyphicon glyphicon-remove");
 	                    $('#connIcon').empty();
 	                    $('#connIcon').append(" Disconnected");
+	                    This.setState({ btnDisabled: 1 });
 	                });
 	                socket.on('connect_timeout', function () {
 	                    $('#output').append("<br/>Connection Timeout<br/>");
 	                });
 	                This.setState({ btnDisabled: 0 });
-	            });
-
-	            socket.on('redirect', function (d) {
-	                $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g, "<br/>"));
-	                This.refs.output.refs.console.toBottom();
-	            });
-
-	            socket.on('reconnect_attempt', function () {
-	                $('#output').append("... ");
 	            });
 
 	            socket.on("config_changed", function (data) {
