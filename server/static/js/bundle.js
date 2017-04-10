@@ -21554,7 +21554,21 @@
 	            _react2.default.createElement(
 	                "h3",
 	                null,
-	                "Performance Availability Reliability Scalability "
+	                "Performance Availability Reliability Scalability",
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "btn-group pull-right" },
+	                    _react2.default.createElement(
+	                        "a",
+	                        { className: "btn btn-success", href: "/credential" },
+	                        "AWS Credential"
+	                    ),
+	                    _react2.default.createElement(
+	                        "a",
+	                        { className: "btn btn-default", href: "/logout" },
+	                        "Logout"
+	                    )
+	                )
 	            )
 	        );
 	    }
@@ -21718,7 +21732,7 @@
 	        this.context.scrollArea.scrollBottom();
 	    },
 	    render: function render() {
-	        return _react2.default.createElement("div", { className: "panel-body", style: { "minHeight": 501 }, id: "output" });
+	        return _react2.default.createElement("div", { className: "panel-body", style: { "minHeight": 501, "minWidth": "100%" }, id: "output" });
 	    }
 	});
 

@@ -25,7 +25,7 @@ const Console = React.createClass({
     },
 
     render(){
-        return <div className="panel-body" style={{"minHeight": 501}} id="output" />;
+        return <div className="panel-body" style={{"minHeight": 501,"minWidth": "100%"}} id="output" />;
     }
 })
 

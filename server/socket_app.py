@@ -63,19 +63,19 @@ def disconnected():
 @socketio.on("get_default_config", namespace="/redirect")
 def refreshConfig():
     global customConfigs
-    addr = session["addr"]
-    if not addr in customConfigs:
-        customConfigs[addr] = {}
-        customConfigs[addr].update(JAC.CONFIG)
-    emit('config_changed', {'config': json.dumps(customConfigs[addr], indent="\t")},room=request.sid)
+    username = session["username"]
+    if not username in customConfigs:
+        customConfigs[username] = {}
+        customConfigs[username].update(JAC.CONFIG)
+    emit('config_changed', {'config': json.dumps(customConfigs[username], indent="\t")},room=request.sid)
 
 
 @socketio.on("update_config", namespace="/redirect")
 def updateConfig(data):
     global customConfigs
     config = data["config"]
-    addr = session["addr"]
-    customConfigs[addr].update(json.loads(config))
+    username = session["username"]
+    customConfigs[username].update(json.loads(config))
     socketio.emit('config_updated', {'success':1}, namespace='/redirect', room=request.sid)
 
 
@@ -87,7 +87,7 @@ def getTaskIDs():
 
 @socketio.on("start_task", namespace="/redirect")
 def startTask(data):
-    addr = session["addr"]
+    username = session["username"]
     taskName = data["taskName"]
     taskID = data["taskID"]
     slaveNum = int(data["slaveNum"] if data["slaveNum"] else 0)
@@ -100,8 +100,8 @@ def startTask(data):
     with jredirectors[request.sid]:
         if createOrNot:
             try:
-                taskMngr.setConfig(customConfigs[addr])
-                taskMngr.create(taskName,addr=addr)
+                taskMngr.setConfig(customConfigs[username])
+                taskMngr.create(taskName,user=username)
                 taskID = taskMngr.instMngr.taskID
                 taskMngr.setTaskDesc(description)
                 taskMngr.setSlaveNumber(slaveNum)
