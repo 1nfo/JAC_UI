@@ -9,16 +9,12 @@ import json, os
 app = Flask(__name__)
 
 app.config.update(
-    DEBUG=True,
     TEMPLATES_AUTO_RELOAD=True,
-    UPLOAD_FOLDER='uploads/',
-    SECRET_KEY='secret!',
-    SQLALCHEMY_DATABASE_URI="sqlite:///users.db",
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    UPLOAD_FOLDER='uploads/'
 )
 
 login_manager = LoginManager()
-
+login_manager.login_view = "login"
 
 @app.route("/")
 def index():
@@ -30,10 +26,10 @@ def index():
 def command():
     import uuid
     title = "Jmeter Cloud Testing"
-    if "sid" in session:
-        del taskMngrs[session["sid"]]
-    session['sid'] = str(uuid.uuid4())
-    return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["sid"])
+    if "tid" in session:
+        del taskMngrs[session["tid"]]
+    session['tid'] = str(uuid.uuid4())
+    return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["tid"])
 
 
 @app.route("/uploadFiles", methods=['POST'])
@@ -42,7 +38,7 @@ def uploadFiles():
     from multiprocessing import Process as P
     taskID = request.form["taskID"]
     files = request.files.getlist("file")
-    taskMngr = taskMngrs[session["sid"]]
+    taskMngr = taskMngrs[session["tid"]]
     for file in files:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + taskID + "/", filename))
@@ -58,12 +54,12 @@ def uploadFiles():
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
-            socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=taskMngr.sid)
+            socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=taskMngr.tid)
             print("")
         else:
             print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
-    with jredirectors[taskMngr.sid]:
+    with jredirectors[taskMngr.tid]:
         p.start()
     return ""
 

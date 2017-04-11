@@ -59,14 +59,14 @@ def connected():
     jredirectors[request.sid] = JAC.Redirector(pauseFunc=flushPasuse)
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    taskMngrs[session["sid"]]=taskMngr
+    taskMngrs[session["tid"]]=taskMngr
 
 
 @socketio.on("disconnect",namespace='/redirect')
 def disconnected():
     global jredirectors, taskMngrs
-    if session['sid'] in taskMngrs:
-        del taskMngrs[session["sid"]]
+    if session['tid'] in taskMngrs:
+        del taskMngrs[session["tid"]]
     if request.sid in jredirectors:
         del jredirectors[request.sid]
 
@@ -110,7 +110,7 @@ def startTask(data):
     createOrNot = int(data["create"])
     description = data["description"]
     successOrNot = False
-    taskMngr=taskMngrs[session["sid"]]
+    taskMngr=taskMngrs[session["tid"]]
     with jredirectors[request.sid]:
         if createOrNot:
             try:
@@ -156,7 +156,7 @@ def startTask(data):
             jmxList = [f for f in files if f.endswith(".jmx")]
             emit('config_changed', configJson(customConfigs[username]),room=request.sid)
         print("")
-    taskMngrs[session["sid"]] = taskMngr
+    taskMngrs[session["tid"]] = taskMngr
     emit('task_started',
          json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "description":description}),
          room=taskMngr.sid)
@@ -164,7 +164,7 @@ def startTask(data):
 
 @socketio.on("delete_task", namespace="/redirect")
 def delete():
-    taskMngr = taskMngrs[session["sid"]]
+    taskMngr = taskMngrs[session["tid"]]
     with jredirectors[request.sid]:
         taskMngr.cleanup()
         os.system("cd %s && rm -rf %s &"%(UPLOAD_PATH,taskMngr.instMngr.taskID))
@@ -176,7 +176,7 @@ def runTest(data):
     from multiprocessing import Process as P
     taskID = data["taskID"]
     jmxName = data["jmx_name"]
-    taskMngr = taskMngrs[session["sid"]]
+    taskMngr = taskMngrs[session["tid"]]
     def wrapper():
         if taskMngr.checkStatus(socketio.sleep):
             taskMngr.refreshConnections()
@@ -197,7 +197,7 @@ def runTest(data):
 
 @socketio.on("stop_task", namespace="/redirect")
 def stopRunning(data):
-    taskMngr = taskMngrs[session["sid"]]
+    taskMngr = taskMngrs[session["tid"]]
     with jredirectors[request.sid]:
         taskID = data["taskID"]
         if taskID in processes:

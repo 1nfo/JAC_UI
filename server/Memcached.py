@@ -3,9 +3,10 @@ import redis, pickle, socket
 # Defalut param
 HOST='localhost'
 PORT=6379
-DB=0
+DB=5
 
-
+# override the for basic operators to read, write, delete, check object in redis
+# and make object picklable and store in redis.
 class RedisableDict(object):
     def __init__(self):
         self.redis = redis.StrictRedis(host=HOST, port=PORT, db=DB)
@@ -29,6 +30,7 @@ class RedisableManagers(RedisableDict):
             del value.instMngr.__dict__["client"]
         self.redis.set(key, pickle.dumps(value))
 
+# check is redis-server is running
 def redisReady():
     try:
         socket.create_connection((HOST,PORT))
