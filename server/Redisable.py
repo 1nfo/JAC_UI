@@ -23,7 +23,7 @@ class RedisableDict(object):
     def __contains__(self, key):
         return self.redis.get(key) is not None
 
-
+# since client is not picklable, remove it before save it to redis
 class RedisableManagers(RedisableDict):
     def __setitem__(self,key,value):
         if value.instMngr and "client" in value.instMngr.__dict__:

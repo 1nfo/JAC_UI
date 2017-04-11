@@ -1,6 +1,6 @@
 from flask import request, session
 from flask_socketio import SocketIO, emit
-from .Memcached import redisReady, RedisableManagers
+from .Redisable import redisReady, RedisableManagers
 import json, os
 import JmeterAwsConf as JAC
 
@@ -24,11 +24,11 @@ jredirectors = {}
 processes = {} # task level
 customConfigs = {} # client level
 
-
+# need pause to flush out redirect message
 def flushPasuse():
     socketio.sleep(1e-3)
 
-
+# redirect the messages from all taskMngrs in bg thread
 def background_thread():
     while True:
         socketio.sleep(1e-3)
@@ -40,6 +40,7 @@ def background_thread():
                               namespace='/redirect',
                               room=sid)
 
+# remove some configs that should be invisible to user
 def configFilter(config):
     filter_list = set(["aws_access_key_id", "aws_secret_access_key","role", # these are credentials
                        "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath", # there aren't change unless AWS side settings are changed
@@ -47,11 +48,11 @@ def configFilter(config):
     res = {k:config[k] for k in config if k not in filter_list}
     return res
 
-
+# parse to json before response
 def configJson(config):
     return {'config': json.dumps(configFilter(config), indent="\t")}
 
-
+# init a new taskmanager,redirector when socket connected
 @socketio.on('connect', namespace='/redirect')
 def connected():
     global thread, jredirectors, taskMngrs
@@ -61,7 +62,7 @@ def connected():
         thread = socketio.start_background_task(target=background_thread)
     taskMngrs[session["tid"]]=taskMngr
 
-
+# release manager and redirector when socket disconnected
 @socketio.on("disconnect",namespace='/redirect')
 def disconnected():
     global jredirectors, taskMngrs
@@ -70,7 +71,7 @@ def disconnected():
     if request.sid in jredirectors:
         del jredirectors[request.sid]
 
-
+# send user's config while click create
 @socketio.on("get_default_config", namespace="/redirect")
 def refreshConfig():
     global customConfigs
@@ -78,10 +79,11 @@ def refreshConfig():
     if not username in customConfigs:
         customConfigs[username] = {}
         customConfigs[username].update(JAC.CONFIG)
-        customConfigs[username].update(session["credentials"])
+    # always use the updated credentials
+    customConfigs[username].update(session["credentials"])
     emit('config_changed', configJson(customConfigs[username]),room=request.sid)
 
-
+# user changes configs
 @socketio.on("update_config", namespace="/redirect")
 def updateConfig(data):
     global customConfigs
@@ -92,13 +94,13 @@ def updateConfig(data):
     customConfigs[username].update(updatedConfig)
     socketio.emit('config_updated', {'success':1}, namespace='/redirect', room=request.sid)
 
-
+# while click resume
 @socketio.on("get_task_IDs", namespace="/redirect")
 def getTaskIDs():
     li = JAC.InstanceManager(JAC.AWSConfig(**JAC.CONFIG,**session["credentials"])).getDupTaskIds()
     emit("task_IDs",json.dumps(li),room=request.sid)
 
-
+# start a created task or resume from previous one.
 @socketio.on("start_task", namespace="/redirect")
 def startTask(data):
     username = session["username"]
@@ -161,7 +163,7 @@ def startTask(data):
          json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "description":description}),
          room=taskMngr.sid)
 
-
+# respective dir should be removed as well
 @socketio.on("delete_task", namespace="/redirect")
 def delete():
     taskMngr = taskMngrs[session["tid"]]
@@ -170,7 +172,7 @@ def delete():
         os.system("cd %s && rm -rf %s &"%(UPLOAD_PATH,taskMngr.instMngr.taskID))
     emit("task_deleted",room=request.sid)
 
-
+# run task, used multiprocessing so it can be stopped
 @socketio.on("startRunning", namespace='/redirect')
 def runTest(data):
     from multiprocessing import Process as P
@@ -191,10 +193,9 @@ def runTest(data):
     p = P(target=wrapper)
     with jredirectors[taskMngr.sid]:
         p.start()
-    # wrapper()
     processes[taskID] = p
 
-
+# terminate running process
 @socketio.on("stop_task", namespace="/redirect")
 def stopRunning(data):
     taskMngr = taskMngrs[session["tid"]]

@@ -11,7 +11,8 @@ app.config.update(
 
 sess = Session()
 
+db.init_app(app)
 sess.init_app(app)
 socketio.init_app(app)
 login_manager.init_app(app)
-db.init_app(app)
+

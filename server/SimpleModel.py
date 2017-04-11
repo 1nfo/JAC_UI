@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-
+# basic user model to store aws credentials
 class User(db.Model, UserMixin):
 
     __tablename__ = "users"

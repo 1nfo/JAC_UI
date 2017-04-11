@@ -20,7 +20,7 @@ login_manager.login_view = "login"
 def index():
     return redirect("/command")
 
-
+# main page, perform commands to control instances and jmeter test.
 @app.route("/command")
 @login_required
 def command():
@@ -31,7 +31,7 @@ def command():
     session['tid'] = str(uuid.uuid4())
     return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["tid"])
 
-
+# upload test plan endpoint
 @app.route("/uploadFiles", methods=['POST'])
 @login_required
 def uploadFiles():
@@ -54,21 +54,21 @@ def uploadFiles():
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
-            socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=taskMngr.tid)
+            socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=taskMngr.sid)
             print("")
         else:
             print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
-    with jredirectors[taskMngr.tid]:
+    with jredirectors[taskMngr.sid]:
         p.start()
     return ""
 
-
+# login api
 @login_manager.user_loader
 def load_user(userid):
     return User.query.get(userid)
 
-
+# login page
 @app.route('/login' , methods=['GET' , 'POST'])
 def login():
     title="Jmeter Cloud Testing -- Login"
@@ -88,7 +88,7 @@ def login():
     else:
         return render_template("login.html", title=title, display="none")
 
-
+# logout page
 @app.route('/logout')
 @login_required
 def logout():
@@ -119,19 +119,16 @@ def register():
         </form>
         ''')
 
-
+# update credentials.
 @app.route("/credential", methods = ["GET", "POST"])
 @login_required
 def credential():
     if request.method == "POST":
         user = User.query.filter_by(username=session["username"]).first()
         d = {k:request.form[k] for k in request.form}
-        print(d)
         user.setCredentials(d)
-        print(user.getCredentials())
         db.session.commit()
-        print(user.getCredentials())
-
+        session["credentials"] = user.getCredentials()
     user = User.query.filter_by(username=session["username"]).first()
     kargs ={
             "title":"AWS Credential",
