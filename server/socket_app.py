@@ -40,6 +40,17 @@ def background_thread():
                               namespace='/redirect',
                               room=sid)
 
+def configFilter(config):
+    filter_list = set(["aws_access_key_id", "aws_secret_access_key","role", # these are credentials
+                       "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath", # there aren't change unless AWS side settings are changed
+                       "region","zone"]) #
+    res = {k:config[k] for k in config if k not in filter_list}
+    return res
+
+
+def configJson(config):
+    return {'config': json.dumps(configFilter(config), indent="\t")}
+
 
 @socketio.on('connect', namespace='/redirect')
 def connected():
@@ -68,7 +79,7 @@ def refreshConfig():
         customConfigs[username] = {}
         customConfigs[username].update(JAC.CONFIG)
         customConfigs[username].update(session["credentials"])
-    emit('config_changed', {'config': json.dumps(customConfigs[username], indent="\t")},room=request.sid)
+    emit('config_changed', configJson(customConfigs[username]),room=request.sid)
 
 
 @socketio.on("update_config", namespace="/redirect")
@@ -76,7 +87,9 @@ def updateConfig(data):
     global customConfigs
     config = data["config"]
     username = session["username"]
-    customConfigs[username].update(json.loads(config))
+    updatedConfig = json.loads(config)
+    updatedConfig = {k:updatedConfig[k] for k in updatedConfig if k in customConfigs[username]}
+    customConfigs[username].update(updatedConfig)
     socketio.emit('config_updated', {'success':1}, namespace='/redirect', room=request.sid)
 
 
@@ -141,7 +154,7 @@ def startTask(data):
             description = taskMngr.instMngr.getTaskDesc()
             files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
-            emit('config_changed', {'config': json.dumps(taskMngr.config, indent="\t")},room=request.sid)
+            emit('config_changed', configJson(customConfigs[username]),room=request.sid)
         print("")
     taskMngrs[session["sid"]] = taskMngr
     emit('task_started',
