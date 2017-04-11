@@ -44,7 +44,7 @@ def background_thread():
 @socketio.on('connect', namespace='/redirect')
 def connected():
     global thread, jredirectors, taskMngrs
-    taskMngr = JAC.TaskManager(pauseFunc=flushPasuse,sid=request.sid)
+    taskMngr = JAC.TaskManager(sid=request.sid)
     jredirectors[request.sid] = JAC.Redirector(pauseFunc=flushPasuse)
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
@@ -67,6 +67,7 @@ def refreshConfig():
     if not username in customConfigs:
         customConfigs[username] = {}
         customConfigs[username].update(JAC.CONFIG)
+        customConfigs[username].update(session["credentials"])
     emit('config_changed', {'config': json.dumps(customConfigs[username], indent="\t")},room=request.sid)
 
 
@@ -81,7 +82,7 @@ def updateConfig(data):
 
 @socketio.on("get_task_IDs", namespace="/redirect")
 def getTaskIDs():
-    li = JAC.InstanceManager(JAC.AWSConfig(**JAC.CONFIG)).getDupTaskIds()
+    li = JAC.InstanceManager(JAC.AWSConfig(**JAC.CONFIG,**session["credentials"])).getDupTaskIds()
     emit("task_IDs",json.dumps(li),room=request.sid)
 
 

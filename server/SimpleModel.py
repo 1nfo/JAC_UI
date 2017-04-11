@@ -1,13 +1,29 @@
 from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()
 
 
-class User(UserMixin):
+class User(db.Model, UserMixin):
+
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer,primary_key=True)
+    username = db.Column(db.String(20), unique=True)
+    password = db.Column(db.String(20))
+    aws_access_key_id = db.Column(db.String(50))
+    aws_secret_access_key = db.Column(db.String(50))
+    role = db.Column(db.String(50))
+
     def __init__(self , username , password , id , active=True):
         self.id = id
         self.username = username
         self.password = password
         self.active = active
         self.authenticated = True
+        self.aws_access_key_id=""
+        self.aws_secret_access_key=""
+        self.role=""
 
     def get_id(self):
         return self.id
@@ -16,27 +32,20 @@ class User(UserMixin):
         return self.active
 
     def is_authenticated(self):
-        """Return True if the user is authenticated."""
         return self.authenticated
 
+    def setCredentials(self, credentials):
+        self.aws_access_key_id=credentials["aws_access_key_id"]
+        self.aws_secret_access_key=credentials["aws_secret_access_key"]
+        self.role=credentials["role"]
 
-class UsersRepository:
+    def getCredentials(self):
+        return {
+            "aws_access_key_id":self.aws_access_key_id,
+            "aws_secret_access_key":self.aws_secret_access_key,
+            "role":self.role
+        }
 
-    def __init__(self):
-        self.users = dict()
-        self.users_id_dict = dict()
-        self.identifier = 0
+    def __repr__(self):
+        return '<User %r>' % self.username
 
-    def save_user(self , user):
-        self.users_id_dict.setdefault(user.id , user)
-        self.users.setdefault(user.username , user)
-
-    def get_user(self , username):
-        return self.users.get(username)
-
-    def get_user_by_id(self , userid):
-        return self.users_id_dict.get(userid)
-
-    def next_index(self):
-        self.identifier +=1
-        return self.identifier

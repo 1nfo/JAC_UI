@@ -1,20 +1,23 @@
-from flask import Flask, render_template, request, redirect, session, Response, abort, url_for
+from flask import Flask, render_template, request, redirect, session, Response
 from flask_login import LoginManager , login_required , login_user, logout_user
 from werkzeug.utils import secure_filename
 from .socket_app import *
-from .SimpleModel import *
+from .SimpleModel import User, db
 import json, os
 
 
 app = Flask(__name__)
 
-
 app.config.update(
     DEBUG=True,
     TEMPLATES_AUTO_RELOAD=True,
-    UPLOAD_FOLDER=UPLOAD_PATH,
-    SECRET_KEY='secret!'
+    UPLOAD_FOLDER='uploads/',
+    SECRET_KEY='secret!',
+    SQLALCHEMY_DATABASE_URI="sqlite:///users.db",
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 )
+
+login_manager = LoginManager()
 
 
 @app.route("/")
@@ -27,6 +30,8 @@ def index():
 def command():
     import uuid
     title = "Jmeter Cloud Testing"
+    if "sid" in session:
+        del taskMngrs[session["sid"]]
     session['sid'] = str(uuid.uuid4())
     return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["sid"])
 
@@ -63,17 +68,9 @@ def uploadFiles():
     return ""
 
 
-login_manager = LoginManager()
-login_manager.login_view = "login"
-login_manager.init_app(app)
-
-users_repository = UsersRepository()
-users_repository.save_user(User("admin" , "q@123" , users_repository.next_index()))
-
-
 @login_manager.user_loader
 def load_user(userid):
-    return users_repository.get_user_by_id(userid)
+    return User.query.get(userid)
 
 
 @app.route('/login' , methods=['GET' , 'POST'])
@@ -83,10 +80,11 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        registeredUser = users_repository.get_user(username)
+        registeredUser = User.query.filter_by(username=username).first()
         if registeredUser != None and registeredUser.password == password:
             login_user(registeredUser)
             # session['logged_in'] = True
+            session["credentials"] = registeredUser.getCredentials()
             session["username"] = username
             return redirect( request.args.get("next") or "/command" )
         else:
@@ -110,8 +108,10 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        new_user = User(username , password , users_repository.next_index())
-        users_repository.save_user(new_user)
+        new_user = User(username , password , User.query.all().__len__())
+        with app.app_context():
+            db.session.add(new_user)
+            db.session.commit()
         return Response("<p>Registered Successfully<p><p><a href='/login'>login</a><p>")
     else:
         return Response("Not available now <br> <a href='/login'>login</a>")
@@ -127,15 +127,20 @@ def register():
 @app.route("/credential", methods = ["GET", "POST"])
 @login_required
 def credential():
-    if request.method == "GET":
-        kargs ={
-            "title":"AWS Credential",
-            "key_id":"*****",
-            "access_key":"**********",
-            "role":"arn:****"
-        }
+    if request.method == "POST":
+        user = User.query.filter_by(username=session["username"]).first()
+        d = {k:request.form[k] for k in request.form}
+        print(d)
+        user.setCredentials(d)
+        print(user.getCredentials())
+        db.session.commit()
+        print(user.getCredentials())
 
-    else:
-        kargs = {}
-        kargs.update({k:request.form[k] for k in request.form})
+    user = User.query.filter_by(username=session["username"]).first()
+    kargs ={
+            "title":"AWS Credential",
+            "key_id":user.aws_access_key_id,
+            "access_key":user.aws_secret_access_key,
+            "role":user.role
+        }
     return render_template("credential.html",**kargs)

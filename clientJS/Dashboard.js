@@ -138,7 +138,6 @@ export default class DashBoard extends React.Component{
         This.setState({
             task_to_create:0,
             display:0b0001000,
-            btnDisabled:1,
             JAC_SLAVENUM:""
         });
         this.props.socket.emit("get_task_IDs")
