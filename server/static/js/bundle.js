@@ -21827,10 +21827,12 @@
 	            JAC_taskName: "",
 	            JAC_taskDesc: "",
 	            JAC_config: "",
+	            JAC_user: "",
 	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
 	            readonly: false,
 	            btnDisabled: _this.props.btnDisabled,
-	            taskList: []
+	            taskList: [],
+	            executable: true
 	        };
 	        var This = _this;
 	        _this.handle = {
@@ -21882,10 +21884,11 @@
 	            socket.on("task_IDs", function (data) {
 	                var data = JSON.parse(data);
 	                if (data.length == 0) {
+	                    This.setState({ taskList: [] });
 	                    alert("No running instance!");
 	                } else {
 	                    This.setState({ taskList: data });
-	                    $(".taskToResume").tooltip();
+	                    $(".taskToResume").tooltip({ html: true });
 	                }
 	                This.setState({ btnDisabled: 0 });
 	            });
@@ -21903,8 +21906,10 @@
 	                    JAC_taskID: data["taskID"],
 	                    JAC_SLAVENUM: data["slaveNum"],
 	                    JAC_taskDesc: data["description"],
+	                    JAC_user: data["user"],
 	                    readonly: true,
-	                    taskList: []
+	                    taskList: [],
+	                    executable: data["executable"]
 	                });
 	            });
 
@@ -21975,7 +21980,8 @@
 	            this.setState({
 	                btnDisabled: 1,
 	                JAC_taskID: this.state.taskList[index][0],
-	                JAC_taskName: $(e.target).val()
+	                JAC_taskName: $(e.target).val(),
+	                JAC_user: this.state.taskList[index][2]
 	            }, this.confirm);
 	        }
 	    }, {
@@ -21993,7 +21999,8 @@
 	                    "taskID": This.state.JAC_taskID,
 	                    "slaveNum": This.state.JAC_SLAVENUM,
 	                    "description": This.state.JAC_taskDesc,
-	                    "create": This.state.task_to_create
+	                    "create": This.state.task_to_create,
+	                    "user": This.state.JAC_user
 	                });
 	            }
 	        }
@@ -22169,8 +22176,8 @@
 	var InputBlock_startTask = exports.InputBlock_startTask = _react2.default.createClass({
 	    displayName: "InputBlock_startTask",
 	    disCls: function disCls() {
-	        if (this.props.btnDisabled > 0) return " disabled";
-	        return "";
+	        if (this.props.btnDisabled < 1) return "";
+	        return " disabled";
 	    },
 	    render: function render() {
 	        return _react2.default.createElement(
@@ -22204,12 +22211,16 @@
 	        return { "fileStatus": "" };
 	    },
 	    calc: function calc(bit) {
-	        if ((1 << bit & this.props.display) > 0) return "block";
+	        var enabled = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+	        if (enabled && (1 << bit & this.props.display) > 0) return "block";
 	        return "none";
 	    },
 	    disCls: function disCls() {
-	        if (this.props.btnDisabled > 0) return " disabled";
-	        return "";
+	        var enabled = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+	        if (enabled && this.props.btnDisabled < 1) return "";
+	        return " disabled";
 	    },
 	    fileChange: function fileChange(e) {
 	        var input = $(e.target),
@@ -22229,7 +22240,7 @@
 	                { id: "InputBlock_taskInfo" },
 	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config,
 	                    socket: this.props.socket, confChange: this.props.confChange,
-	                    saveBtnStyle: { display: this.calc(6) }, btnDis: this.disCls() }),
+	                    saveBtnStyle: { display: this.calc(6, this.props.executable) }, btnDis: this.disCls() }),
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
 	                    "div",
@@ -22254,7 +22265,8 @@
 	                        { className: "col-md-1", id: "cleaup_btn_div", style: { display: this.calc(2) } },
 	                        _react2.default.createElement(
 	                            "a",
-	                            { href: "#", className: "btn btn-danger btn-sm" + this.disCls(), id: "btn_cleanupTask", onClick: this.props.deleteFunc },
+	                            { href: "#", className: "btn btn-danger btn-sm" + this.disCls(), id: "btn_cleanupTask",
+	                                onClick: this.props.deleteFunc, style: this.props.executable ? {} : { display: "none" } },
 	                            "Del Task"
 	                        )
 	                    )
@@ -22310,7 +22322,7 @@
 	                                { className: "panel", key: d[0] },
 	                                _react2.default.createElement("input", { className: "btn btn-default taskToResume" + This.disCls(),
 	                                    value: d[0].split("_", 1),
-	                                    title: d[1].length > 0 ? "Description: " + d[1] : "Task ID: " + d[0],
+	                                    title: d[1].length > 0 ? "Description: " + d[1] + " <br/> User: " + d[2] : "Task ID: " + d[0],
 	                                    onClick: This.props.clickOnResumeTask.bind(This, i),
 	                                    readOnly: true })
 	                            );
@@ -22333,7 +22345,7 @@
 	            ),
 	            _react2.default.createElement(
 	                "div",
-	                { id: "InputBlock_uploadFiles", style: { display: this.calc(5) } },
+	                { id: "InputBlock_uploadFiles", style: { display: this.calc(5, this.props.executable) } },
 	                _react2.default.createElement(
 	                    "div",
 	                    { className: "row panel" },

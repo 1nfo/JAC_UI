@@ -13,10 +13,12 @@ export default class DashBoard extends React.Component{
             JAC_taskName:"",
             JAC_taskDesc:"",
             JAC_config:"",
+            JAC_user:"",
             display:0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
             readonly:false,
             btnDisabled:this.props.btnDisabled,
-            taskList:[]
+            taskList:[],
+            executable:true
         };
         var This = this;
         this.handle = {
@@ -57,10 +59,11 @@ export default class DashBoard extends React.Component{
         socket.on("task_IDs",function(data){
             var data = JSON.parse(data)
             if (data.length==0) {
+                This.setState({taskList:[]})
                 alert("No running instance!")
             } else {
                 This.setState({taskList:data})
-                $(".taskToResume").tooltip();
+                $(".taskToResume").tooltip({html: true});
             }
             This.setState({btnDisabled:0});
         })
@@ -78,8 +81,10 @@ export default class DashBoard extends React.Component{
                     JAC_taskID:data["taskID"],
                     JAC_SLAVENUM:data["slaveNum"],
                     JAC_taskDesc:data["description"],
+                    JAC_user:data["user"],
                     readonly:true,
-                    taskList:[]
+                    taskList:[],
+                    executable:data["executable"]
                 })
         })
 
@@ -148,6 +153,7 @@ export default class DashBoard extends React.Component{
             btnDisabled:1,
             JAC_taskID:this.state.taskList[index][0],
             JAC_taskName:$(e.target).val(),
+            JAC_user:this.state.taskList[index][2]
         },this.confirm)
     }
 
@@ -168,7 +174,8 @@ export default class DashBoard extends React.Component{
                     "taskID":This.state.JAC_taskID,
                     "slaveNum":This.state.JAC_SLAVENUM,
                     "description":This.state.JAC_taskDesc,
-                    "create":This.state.task_to_create
+                    "create":This.state.task_to_create,
+                    "user":This.state.JAC_user
                 }
             )
         }

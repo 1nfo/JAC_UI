@@ -3,8 +3,8 @@ import JacConfigPopup from "./JacConfigPopup"
 
 export const InputBlock_startTask = React.createClass({
     disCls(){
-        if (this.props.btnDisabled>0) return " disabled";
-        return "";
+        if (this.props.btnDisabled<1) return "";
+        return " disabled";
     },
 
     render(){
@@ -24,14 +24,14 @@ export const InputBlock_taskInfo = React.createClass({
         return {"fileStatus":""};
     },
 
-    calc(bit){
-        if(((1<<bit)&this.props.display)>0) return "block";
+    calc(bit,enabled=true){
+        if( enabled &&((1<<bit)&this.props.display)>0) return "block";
         return "none";
     },
 
-    disCls(){
-        if (this.props.btnDisabled>0) return " disabled";
-        return "";
+    disCls(enabled=true){
+        if (enabled && this.props.btnDisabled<1) return "";
+        return " disabled";
     },
 
     fileChange(e){
@@ -49,7 +49,7 @@ export const InputBlock_taskInfo = React.createClass({
                     <div id="InputBlock_taskInfo">
                         <JacConfigPopup style={{display: this.calc(0)}} config={this.props.JAC_config}
                                         socket={this.props.socket} confChange={this.props.confChange}
-                                        saveBtnStyle={{display:this.calc(6)}} btnDis={this.disCls()}/>
+                                        saveBtnStyle={{display:this.calc(6,this.props.executable)}} btnDis={this.disCls()}/>
                         <br/>
                         <div className="row panel" id="InputRow_task" style={{display: this.calc(1)}}>
                             <div className="col-md-3"><label>Task Name</label></div>
@@ -58,7 +58,10 @@ export const InputBlock_taskInfo = React.createClass({
                                        value={this.props.JAC_taskName} readOnly={this.props.readonly}/>
                             </div>
                             <div className="col-md-1" id="cleaup_btn_div" style={{display: this.calc(2)}}>
-                                <a href="#" className={"btn btn-danger btn-sm"+this.disCls()} id="btn_cleanupTask" onClick={this.props.deleteFunc}>Del Task</a>
+                                <a href="#" className={"btn btn-danger btn-sm"+this.disCls()} id="btn_cleanupTask"
+                                   onClick={this.props.deleteFunc} style={this.props.executable?{}:{display:"none"}}>
+                                   Del Task
+                                </a>
                             </div>
                         </div>
                         <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(1)}}>
@@ -82,7 +85,7 @@ export const InputBlock_taskInfo = React.createClass({
                                             <div className='panel' key={d[0]}>
                                                 <input className={"btn btn-default taskToResume"+This.disCls()}
                                                        value={d[0].split("_",1)}
-                                                       title={d[1].length>0?"Description: "+d[1]:"Task ID: "+d[0]}
+                                                       title={d[1].length>0?"Description: "+d[1]+" <br/> User: "+d[2]:"Task ID: "+d[0]}
                                                        onClick={This.props.clickOnResumeTask.bind(This,i)}
                                                        readOnly/>
                                             </div>
@@ -96,7 +99,7 @@ export const InputBlock_taskInfo = React.createClass({
                             </div>
                         </div>
                     </div>
-                    <div id="InputBlock_uploadFiles" style={{display: this.calc(5)}}>
+                    <div id="InputBlock_uploadFiles" style={{display: this.calc(5,this.props.executable)}}>
                         <div className="row panel">
                             <div className="col-md-3"><label>Upload Path</label></div>
                             <div className="col-md-5">

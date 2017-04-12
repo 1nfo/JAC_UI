@@ -97,6 +97,7 @@ def updateConfig(data):
 # while click resume
 @socketio.on("get_task_IDs", namespace="/redirect")
 def getTaskIDs():
+    refreshConfig()
     li = JAC.InstanceManager(JAC.AWSConfig(**JAC.CONFIG,**session["credentials"])).getDupTaskIds()
     emit("task_IDs",json.dumps(li),room=request.sid)
 
@@ -156,11 +157,16 @@ def startTask(data):
             description = taskMngr.instMngr.getTaskDesc()
             files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
-            emit('config_changed', configJson(customConfigs[username]),room=request.sid)
+            emit('config_changed', configJson(taskMngr.config),room=request.sid)
+            if not username==data["user"]:
+                print("You are not the owner of this task.")
+                if username=="admin":print("Access allowed as admin")
+                else:print("Read-only access.")
         print("")
     taskMngrs[session["tid"]] = taskMngr
     emit('task_started',
-         json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "description":description}),
+         json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files,
+                     "description":description, "user":username, "executable":username==data["user"] or username=="admin"}),
          room=taskMngr.sid)
 
 # respective dir should be removed as well
