@@ -194,7 +194,7 @@ def runTest(data):
             taskMngr.runTest(jmxName)
             taskMngr.stopSlavesServer()
             emit('task_finished', {'msg': "finished"}, namespace='/redirect', room=taskMngr.sid)
-            print("Finished")
+            print("Finished\n")
         else: print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
     with jredirectors[taskMngr.sid]:

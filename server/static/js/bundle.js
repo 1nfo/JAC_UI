@@ -22471,21 +22471,78 @@
 
 	        var _this = _possibleConstructorReturn(this, (JacConfigPopup.__proto__ || Object.getPrototypeOf(JacConfigPopup)).call(this, props));
 
-	        _this.state = { "json": "" };
+	        var This = _this;
+	        _this.state = { "config": { "InstType": {}, "ami": {} }, "json": "", "json_mode": false };
+	        _this.types = ["t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "r4.large", "r4.xlarge", "r4.2xlarge", "r4.4xlarge", "r4.8xlarge", "r4.16xlarge", "x1.16xlarge", "x1.32xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "i3.large", "i3.xlarge", "i3.2xlarge", "i3.4xlarge", "i3.8xlarge", "i3.16xlarge", "p2.xlarge", "p2.8xlarge", "p2.16xlarge", "g2.2xlarge", "g2.8xlarge"];
+	        _this.changes = {
+	            mt: function mt(e) {
+	                var config = This.state.config;config.InstType.master = e.target.value;This.inputChanges(config);
+	            },
+	            st: function st(e) {
+	                var config = This.state.config;config.InstType.slave = e.target.value;This.inputChanges(config);
+	            },
+	            sg: function sg(e) {
+	                var config = This.state.config;config.security_groups = e.target.value.split(",");This.inputChanges(config);
+	            },
+	            mi: function mi(e) {
+	                var config = This.state.config;config.ami.LXDM = e.target.value;This.inputChanges(config);
+	            },
+	            si: function si(e) {
+	                var config = This.state.config;config.ami.basic = e.target.value;This.inputChanges(config);
+	            },
+	            es: function es(e) {
+	                var config = This.state.config;config.es_IP = e.target.value;This.inputChanges(config);
+	            }
+	        };
 	        (0, _reactAutobind2.default)(_this);
 	        return _this;
 	    }
 
 	    _createClass(JacConfigPopup, [{
+	        key: 'type_append',
+	        value: function type_append(t, i) {
+	            return _react2.default.createElement(
+	                'option',
+	                { key: i },
+	                t
+	            );
+	        }
+	    }, {
 	        key: 'show',
 	        value: function show() {
-	            this.setState({ "json": this.props.config });
+	            this.setState({ "json": this.props.config, "config": JSON.parse(this.props.config), "json_mode": false });
 	            this.refs.jac_configJson.show();
 	        }
 	    }, {
-	        key: 'contentChange',
-	        value: function contentChange(e) {
-	            this.setState({ "json": e.target.value });
+	        key: 'clickOnJsonBtn',
+	        value: function clickOnJsonBtn() {
+	            this.setState({ "json_mode": !this.state.json_mode });
+	        }
+	    }, {
+	        key: 'jsonDisplay',
+	        value: function jsonDisplay() {
+	            return this.state.json_mode ? {} : { display: "none" };
+	        }
+	    }, {
+	        key: 'inputDisplay',
+	        value: function inputDisplay() {
+	            return this.state.json_mode ? { display: "none" } : {};
+	        }
+	    }, {
+	        key: 'btn_text',
+	        value: function btn_text() {
+	            return this.state.json_mode ? "BACK" : "SHOW JSON";
+	        }
+	    }, {
+	        key: 'jsonChange',
+	        value: function jsonChange(e) {
+	            this.setState({ "json": e.target.value, "config": JSON.parse(e.target.value) });
+	        }
+	    }, {
+	        key: 'inputChanges',
+	        value: function inputChanges(obj) {
+	            this.setState({ "config": obj, "json": JSON.stringify(obj, null, "\t") });
+	            console.log(this.state.json);
 	        }
 	    }, {
 	        key: 'save',
@@ -22517,6 +22574,7 @@
 	                marginTop: '-300px',
 	                marginLeft: '-35%'
 	            };
+	            var input_class = "form-control";
 	            return _react2.default.createElement(
 	                'div',
 	                { id: 'jac_config_area', style: this.props.style },
@@ -22533,19 +22591,127 @@
 	                _react2.default.createElement(
 	                    _reactSkylight2.default,
 	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Config Json' },
-	                    _react2.default.createElement('textarea', { defaultValue: this.state.json,
-	                        className: 'form-control',
-	                        ref: 'textarea',
-	                        onChange: this.contentChange,
-	                        style: { "minWidth": "100%", "minHeight": "80%" } }),
-	                    _react2.default.createElement('br', null),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { style: this.inputDisplay() },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Master Instance Type: '
+	                                ),
+	                                _react2.default.createElement(
+	                                    'select',
+	                                    { value: this.state.config.InstType.master, onChange: this.changes.mt,
+	                                        className: input_class },
+	                                    this.types.map(this.type_append)
+	                                )
+	                            ),
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Slave Instance Type: '
+	                                ),
+	                                _react2.default.createElement(
+	                                    'select',
+	                                    { value: this.state.config.InstType.slave, onChange: this.changes.st,
+	                                        className: input_class },
+	                                    this.types.map(this.type_append)
+	                                )
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-12' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Instance Security Group: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.security_groups, onChange: this.changes.sg, className: input_class })
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Master Image: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.ami.LXDM, className: input_class, onChange: this.changes.mi })
+	                            ),
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Slave Image: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.ami.basic, className: input_class, onChange: this.changes.si })
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-12' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Elasticsearch Server URL: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.es_IP, className: input_class, onChange: this.changes.es })
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null)
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { style: this.jsonDisplay() },
+	                        _react2.default.createElement(
+	                            'span',
+	                            null,
+	                            'JSON'
+	                        ),
+	                        _react2.default.createElement('textarea', { value: this.state.json,
+	                            className: 'form-control',
+	                            ref: 'textarea',
+	                            onChange: this.jsonChange,
+	                            style: { "minWidth": "100%", "minHeight": "420px" } }),
+	                        _react2.default.createElement('br', null)
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { className: 'btn btn-primary pull-right', onClick: this.clickOnJsonBtn },
+	                        this.btn_text()
+	                    ),
 	                    _react2.default.createElement(
 	                        'button',
 	                        { className: 'btn btn-danger',
 	                            ref: 'save',
 	                            onClick: this.save,
 	                            style: this.props.saveBtnStyle },
-	                        'save'
+	                        'SAVE'
 	                    )
 	                )
 	            );
