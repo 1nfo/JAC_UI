@@ -22485,10 +22485,10 @@
 	                var config = This.state.config;config.security_groups = e.target.value.split(",");This.inputChanges(config);
 	            },
 	            mi: function mi(e) {
-	                var config = This.state.config;config.ami.LXDM = e.target.value;This.inputChanges(config);
+	                var config = This.state.config;config.ami.master = e.target.value;This.inputChanges(config);
 	            },
 	            si: function si(e) {
-	                var config = This.state.config;config.ami.basic = e.target.value;This.inputChanges(config);
+	                var config = This.state.config;config.ami.slave = e.target.value;This.inputChanges(config);
 	            },
 	            es: function es(e) {
 	                var config = This.state.config;config.es_IP = e.target.value;This.inputChanges(config);
@@ -22569,7 +22569,7 @@
 	                backgroundColor: '#00897B',
 	                color: '#ffffff',
 	                width: '70%',
-	                height: '500px',
+	                height: '550px',
 	                marginTop: '-300px',
 	                marginLeft: '-35%'
 	            };
@@ -22654,7 +22654,7 @@
 	                                    null,
 	                                    'Master Image: '
 	                                ),
-	                                _react2.default.createElement('input', { value: this.state.config.ami.LXDM, className: input_class, onChange: this.changes.mi })
+	                                _react2.default.createElement('input', { value: this.state.config.ami.master, className: input_class, onChange: this.changes.mi })
 	                            ),
 	                            _react2.default.createElement(
 	                                'div',
@@ -22664,7 +22664,7 @@
 	                                    null,
 	                                    'Slave Image: '
 	                                ),
-	                                _react2.default.createElement('input', { value: this.state.config.ami.basic, className: input_class, onChange: this.changes.si })
+	                                _react2.default.createElement('input', { value: this.state.config.ami.slave, className: input_class, onChange: this.changes.si })
 	                            )
 	                        ),
 	                        _react2.default.createElement('br', null),

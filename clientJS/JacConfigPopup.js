@@ -12,8 +12,8 @@ export default class JacConfigPopup extends React.Component{
         mt:function(e){var config=This.state.config;config.InstType.master=e.target.value;This.inputChanges(config);},
         st:function(e){var config=This.state.config;config.InstType.slave=e.target.value;This.inputChanges(config);},
         sg:function(e){var config=This.state.config;config.security_groups=e.target.value.split(",");This.inputChanges(config);},
-        mi:function(e){var config=This.state.config;config.ami.LXDM=e.target.value;This.inputChanges(config);},
-        si:function(e){var config=This.state.config;config.ami.basic=e.target.value;This.inputChanges(config);},
+        mi:function(e){var config=This.state.config;config.ami.master=e.target.value;This.inputChanges(config);},
+        si:function(e){var config=This.state.config;config.ami.slave=e.target.value;This.inputChanges(config);},
         es:function(e){var config=This.state.config;config.es_IP=e.target.value;This.inputChanges(config);}
       }
       autoBind(this);
@@ -78,7 +78,7 @@ export default class JacConfigPopup extends React.Component{
           backgroundColor: '#00897B',
           color: '#ffffff',
           width: '70%',
-          height: '500px',
+          height: '550px',
           marginTop: '-300px',
           marginLeft: '-35%',
         };
@@ -109,10 +109,10 @@ export default class JacConfigPopup extends React.Component{
                           <div className="row">
                             <div className="col-lg-6">
                               <span>Master Image: </span>
-                              <input value={this.state.config.ami.LXDM} className={input_class} onChange={this.changes.mi}/></div>
+                              <input value={this.state.config.ami.master} className={input_class} onChange={this.changes.mi}/></div>
                             <div className="col-lg-6">
                               <span>Slave Image: </span>
-                              <input value={this.state.config.ami.basic} className={input_class} onChange={this.changes.si}/></div>
+                              <input value={this.state.config.ami.slave} className={input_class} onChange={this.changes.si}/></div>
                           </div><br/>
                           <div className="row">
                             <div className="col-lg-12">

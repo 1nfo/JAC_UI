@@ -114,6 +114,9 @@ def startTask(data):
     description = data["description"]
     successOrNot = False
     taskMngr=taskMngrs[session["tid"]]
+    if not createOrNot and not username==data["user"]:
+        if username=="admin":emit("redirect",{"msg":"Admin access.\n"},room=request.sid)
+        else:emit("redirect",{"msg":"You are not the owner of this task.\nRead-only access.\n\n"},room=request.sid)
     with jredirectors[request.sid]:
         if createOrNot:
             try:
@@ -158,15 +161,11 @@ def startTask(data):
             files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
             emit('config_changed', configJson(taskMngr.config),room=request.sid)
-            if not username==data["user"]:
-                print("You are not the owner of this task.")
-                if username=="admin":print("Access allowed as admin")
-                else:print("Read-only access.")
         print("")
     taskMngrs[session["tid"]] = taskMngr
     emit('task_started',
          json.dumps({"taskID": taskID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files,
-                     "description":description, "user":username, "executable":username==data["user"] or username=="admin"}),
+                     "description":description, "user":username, "executable":createOrNot or username==data["user"] or username=="admin"}),
          room=taskMngr.sid)
 
 # respective dir should be removed as well
@@ -185,6 +184,15 @@ def runTest(data):
     taskID = data["taskID"]
     jmxName = data["jmx_name"]
     taskMngr = taskMngrs[session["tid"]]
+    def fakeRun():
+        import time
+        c=0
+        while c<30:
+            c+=1
+            print(c)
+            time.sleep(1)
+        emit('task_finished', {'msg': "finished"}, namespace='/redirect', room=taskMngr.sid)
+        print("Finished\n")
     def wrapper():
         if taskMngr.checkStatus(socketio.sleep):
             taskMngr.refreshConnections()
@@ -196,7 +204,7 @@ def runTest(data):
             emit('task_finished', {'msg': "finished"}, namespace='/redirect', room=taskMngr.sid)
             print("Finished\n")
         else: print("Time out, please check instances status on AWS web console or try again")
-    p = P(target=wrapper)
+    p = P(target=fakeRun)
     with jredirectors[taskMngr.sid]:
         p.start()
     processes[taskID] = p
