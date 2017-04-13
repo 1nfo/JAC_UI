@@ -52,7 +52,6 @@ export default class JacConfigPopup extends React.Component{
 
     inputChanges(obj){
         this.setState({"config":obj,"json":JSON.stringify(obj, null, "\t")})
-        console.log(this.state.json)
     }
 
     save(){
@@ -79,7 +78,7 @@ export default class JacConfigPopup extends React.Component{
           backgroundColor: '#00897B',
           color: '#ffffff',
           width: '70%',
-          height: '600px',
+          height: '500px',
           marginTop: '-300px',
           marginLeft: '-35%',
         };
@@ -91,33 +90,33 @@ export default class JacConfigPopup extends React.Component{
                                 onClick={this.show}> Configuration
                         </button>
                     </section>
-                    <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Config Json">
+                    <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Task Configuration">
                         <div style={this.inputDisplay()}>
                           <div className="row">
-                            <div className="col-lg-6"><span >Master Instance Type: </span>
+                            <div className="col-lg-6"><span>Master Instance Type: </span>
                                 <select value={this.state.config.InstType.master} onChange={this.changes.mt}
                                  className={input_class}>{this.types.map(this.type_append)}
                                 </select></div>
-                            <div className="col-lg-6"><span >Slave Instance Type: </span>
+                            <div className="col-lg-6"><span>Slave Instance Type: </span>
                                 <select value={this.state.config.InstType.slave} onChange={this.changes.st}
                                  className={input_class}>{this.types.map(this.type_append)}
                                  </select></div>
                           </div><br/>
                           <div className="row">
-                            <div className="col-lg-12"><span >Instance Security Group: </span>
+                            <div className="col-lg-12"><span>Instance Security Group: </span>
                             <input value={this.state.config.security_groups} onChange={this.changes.sg} className={input_class}/></div>
                           </div><br/>
                           <div className="row">
                             <div className="col-lg-6">
-                              <span >Master Image: </span>
+                              <span>Master Image: </span>
                               <input value={this.state.config.ami.LXDM} className={input_class} onChange={this.changes.mi}/></div>
                             <div className="col-lg-6">
-                              <span >Slave Image: </span>
+                              <span>Slave Image: </span>
                               <input value={this.state.config.ami.basic} className={input_class} onChange={this.changes.si}/></div>
                           </div><br/>
                           <div className="row">
                             <div className="col-lg-12">
-                              <span >Elasticsearch Server URL: </span>
+                              <span>Elasticsearch Server URL: </span>
                               <input value={this.state.config.es_IP} className={input_class} onChange={this.changes.es}/></div>
                           </div><br/>
                         </div>
@@ -127,7 +126,7 @@ export default class JacConfigPopup extends React.Component{
                                     className="form-control"
                                     ref="textarea"
                                     onChange={this.jsonChange}
-                                    style={{"minWidth": "100%","minHeight":"420px"}}></textarea><br/>
+                                    style={{"minWidth": "100%","minHeight":"320px"}}></textarea><br/>
                         </div>
                         <button className="btn btn-primary pull-right" onClick={this.clickOnJsonBtn}>{this.btn_text()}</button>
                         <button className="btn btn-danger"

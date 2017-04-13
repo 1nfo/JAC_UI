@@ -24,6 +24,7 @@ def index():
 @app.route("/command")
 @login_required
 def command():
+    session.permanent=True
     import uuid
     title = "Jmeter Cloud Testing"
     if "tid" in session:

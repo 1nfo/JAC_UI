@@ -22542,7 +22542,6 @@
 	        key: 'inputChanges',
 	        value: function inputChanges(obj) {
 	            this.setState({ "config": obj, "json": JSON.stringify(obj, null, "\t") });
-	            console.log(this.state.json);
 	        }
 	    }, {
 	        key: 'save',
@@ -22570,7 +22569,7 @@
 	                backgroundColor: '#00897B',
 	                color: '#ffffff',
 	                width: '70%',
-	                height: '600px',
+	                height: '500px',
 	                marginTop: '-300px',
 	                marginLeft: '-35%'
 	            };
@@ -22590,7 +22589,7 @@
 	                ),
 	                _react2.default.createElement(
 	                    _reactSkylight2.default,
-	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Config Json' },
+	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Task Configuration' },
 	                    _react2.default.createElement(
 	                        'div',
 	                        { style: this.inputDisplay() },
@@ -22697,7 +22696,7 @@
 	                            className: 'form-control',
 	                            ref: 'textarea',
 	                            onChange: this.jsonChange,
-	                            style: { "minWidth": "100%", "minHeight": "420px" } }),
+	                            style: { "minWidth": "100%", "minHeight": "320px" } }),
 	                        _react2.default.createElement('br', null)
 	                    ),
 	                    _react2.default.createElement(
