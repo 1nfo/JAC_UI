@@ -21712,8 +21712,8 @@
 	                _react2.default.createElement("span", { id: "connIcon", className: "glyphicon",
 	                    style: { lineHeight: 2 }, "aria-hidden": "true" }),
 	                _react2.default.createElement(
-	                    "a",
-	                    { href: "#", className: "btn btn-default pull-right", id: "btn_clear",
+	                    "button",
+	                    { className: "btn btn-default pull-right", id: "btn_clear",
 	                        onClick: function onClick() {
 	                            return _this2.props.clearFunc();
 	                        } },
@@ -22190,13 +22190,13 @@
 	                    "div",
 	                    { className: "btn-group" },
 	                    _react2.default.createElement(
-	                        "a",
-	                        { href: "#", className: "btn btn-primary" + this.disCls(), onClick: this.props.createFunc },
+	                        "button",
+	                        { className: "btn btn-primary" + this.disCls(), onClick: this.props.createFunc },
 	                        "create"
 	                    ),
 	                    _react2.default.createElement(
-	                        "a",
-	                        { href: "#", className: "btn btn-primary" + this.disCls(), onClick: this.props.resumeFunc },
+	                        "button",
+	                        { className: "btn btn-primary" + this.disCls(), onClick: this.props.resumeFunc },
 	                        "resume"
 	                    )
 	                )
@@ -22264,8 +22264,8 @@
 	                        "div",
 	                        { className: "col-md-1", id: "cleaup_btn_div", style: { display: this.calc(2) } },
 	                        _react2.default.createElement(
-	                            "a",
-	                            { href: "#", className: "btn btn-danger btn-sm" + this.disCls(), id: "btn_cleanupTask",
+	                            "button",
+	                            { className: "btn btn-danger btn-sm" + this.disCls(), id: "btn_cleanupTask",
 	                                onClick: this.props.deleteFunc, style: this.props.executable ? {} : { display: "none" } },
 	                            "Del Task"
 	                        )
@@ -22322,7 +22322,7 @@
 	                                { className: "panel", key: d[0] },
 	                                _react2.default.createElement("input", { className: "btn btn-default taskToResume" + This.disCls(),
 	                                    value: d[0].split("_", 1),
-	                                    title: d[1].length > 0 ? "Description: " + d[1] + " <br/> User: " + d[2] : "Task ID: " + d[0],
+	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Task ID: " + d[0],
 	                                    onClick: This.props.clickOnResumeTask.bind(This, i),
 	                                    readOnly: true })
 	                            );
@@ -22336,8 +22336,8 @@
 	                        "div",
 	                        { className: "col-md-4" },
 	                        _react2.default.createElement(
-	                            "a",
-	                            { href: "#", className: "btn btn-primary" + this.disCls(), id: "btn_taskConfirm", onClick: this.props.confirmFunc },
+	                            "button",
+	                            { className: "btn btn-primary" + this.disCls(), id: "btn_taskConfirm", onClick: this.props.confirmFunc },
 	                            "confirm"
 	                        )
 	                    )
@@ -22375,8 +22375,8 @@
 	                                        name: "file", style: { display: "none" }, multiple: true })
 	                                ),
 	                                _react2.default.createElement(
-	                                    "a",
-	                                    { href: "#", className: "btn btn-primary" + this.disCls(),
+	                                    "button",
+	                                    { className: "btn btn-primary" + this.disCls(),
 	                                        id: "btn_uploadTask", onClick: this.props.uploadFunc },
 	                                    "Upload"
 	                                )
@@ -22414,13 +22414,13 @@
 	                            "div",
 	                            { className: "btn-group" },
 	                            _react2.default.createElement(
-	                                "a",
-	                                { href: "#", className: "btn btn-primary" + this.disCls(), id: "btn_runTask", onClick: this.props.runFunc },
+	                                "button",
+	                                { className: "btn btn-primary" + this.disCls(), id: "btn_runTask", onClick: this.props.runFunc },
 	                                "run"
 	                            ),
 	                            _react2.default.createElement(
-	                                "a",
-	                                { href: "#", className: "btn btn-default disabled", id: "btn_stopRunning", onClick: this.props.stopFunc },
+	                                "button",
+	                                { className: "btn btn-default disabled", id: "btn_stopRunning", onClick: this.props.stopFunc },
 	                                "stop"
 	                            )
 	                        )

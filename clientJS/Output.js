@@ -11,10 +11,10 @@ class ConnectionStatus extends React.Component{
         return( <div className="panel-heading">
                     <span  id="connIcon" className="glyphicon"
                            style={{lineHeight:2}} aria-hidden="true"/>
-                    <a href="#" className="btn btn-default pull-right" id="btn_clear"
+                    <button className="btn btn-default pull-right" id="btn_clear"
                                 onClick={() => this.props.clearFunc()}>
                         clear screen
-                    </a>
+                    </button>
                 </div>);
     }
 }

@@ -11,8 +11,8 @@ export const InputBlock_startTask = React.createClass({
         return (<div className="row panel" id="InputBlock_startTask" >
                     <div className="col-md-4">
                         <div className="btn-group">
-                            <a href="#" className={"btn btn-primary"+this.disCls()} onClick={this.props.createFunc}>create</a>
-                            <a href="#" className={"btn btn-primary"+this.disCls()} onClick={this.props.resumeFunc}>resume</a>
+                            <button className={"btn btn-primary"+this.disCls()} onClick={this.props.createFunc}>create</button>
+                            <button className={"btn btn-primary"+this.disCls()} onClick={this.props.resumeFunc}>resume</button>
                         </div>
                      </div>
                 </div>);
@@ -58,10 +58,10 @@ export const InputBlock_taskInfo = React.createClass({
                                        value={this.props.JAC_taskName} readOnly={this.props.readonly}/>
                             </div>
                             <div className="col-md-1" id="cleaup_btn_div" style={{display: this.calc(2)}}>
-                                <a href="#" className={"btn btn-danger btn-sm"+this.disCls()} id="btn_cleanupTask"
+                                <button className={"btn btn-danger btn-sm"+this.disCls()} id="btn_cleanupTask"
                                    onClick={this.props.deleteFunc} style={this.props.executable?{}:{display:"none"}}>
                                    Del Task
-                                </a>
+                                </button>
                             </div>
                         </div>
                         <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(1)}}>
@@ -85,7 +85,7 @@ export const InputBlock_taskInfo = React.createClass({
                                             <div className='panel' key={d[0]}>
                                                 <input className={"btn btn-default taskToResume"+This.disCls()}
                                                        value={d[0].split("_",1)}
-                                                       title={d[1].length>0?"Description: "+d[1]+" <br/> User: "+d[2]:"Task ID: "+d[0]}
+                                                       title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Task ID: "+d[0]}
                                                        onClick={This.props.clickOnResumeTask.bind(This,i)}
                                                        readOnly/>
                                             </div>
@@ -95,7 +95,7 @@ export const InputBlock_taskInfo = React.createClass({
                         </div>
                         <div className="row panel" id="InputRow_confirmBtn" style={{display: this.calc(4)}}>
                             <div className="col-md-4">
-                                <a href="#" className={"btn btn-primary"+this.disCls()} id='btn_taskConfirm' onClick={this.props.confirmFunc}>confirm</a>
+                                <button className={"btn btn-primary"+this.disCls()} id='btn_taskConfirm' onClick={this.props.confirmFunc}>confirm</button>
                             </div>
                         </div>
                     </div>
@@ -110,8 +110,8 @@ export const InputBlock_taskInfo = React.createClass({
                                         <input id="jac_uploadFiles" type="file" onChange={this.fileChange}
                                                name="file" style={{display: "none"}} multiple />
                                         </label>
-                                        <a href="#" className={"btn btn-primary"+this.disCls()}
-                                                    id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</a>
+                                        <button className={"btn btn-primary"+this.disCls()}
+                                                    id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</button>
                                     </label>
                                     <input id="uploaded_files_status" type="text" value={this.state.fileStatus}
                                            className="form-control" readOnly />
@@ -125,8 +125,8 @@ export const InputBlock_taskInfo = React.createClass({
                         <div className="row panel">
                             <div className="col-md-4">
                                 <div className="btn-group">
-                                    <a href="#" className={"btn btn-primary"+this.disCls()} id="btn_runTask" onClick={this.props.runFunc}>run</a>
-                                    <a href="#" className="btn btn-default disabled" id="btn_stopRunning" onClick={this.props.stopFunc}>stop</a>
+                                    <button className={"btn btn-primary"+this.disCls()} id="btn_runTask" onClick={this.props.runFunc}>run</button>
+                                    <button className="btn btn-default disabled" id="btn_stopRunning" onClick={this.props.stopFunc}>stop</button>
                                 </div>
                             </div>
                         </div>
