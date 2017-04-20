@@ -198,12 +198,13 @@ def runTest(data):
             taskMngr.refreshConnections()
             taskMngr.updateRemotehost()
             taskMngr.startSlavesServer()
+            socketio.sleep(3)
             #taskMngr.esCheck()############
             taskMngr.runTest(jmxName)
             taskMngr.stopSlavesServer()
             emit('task_finished', {'msg': "finished"}, namespace='/redirect', room=taskMngr.sid)
             print("Finished\n")
-        else: print("Time out, please check instances status on AWS web console or try again")
+        # else: print("Time out, please check instances status on AWS web console or try again")
     p = P(target=fakeRun)
     with jredirectors[taskMngr.sid]:
         p.start()
