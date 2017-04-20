@@ -28,7 +28,7 @@ def command():
     import uuid
     title = "Jmeter Cloud Testing"
     if "tid" in session:
-        del taskMngrs[session["tid"]]
+        del clients[session["tid"]]
     session['tid'] = str(uuid.uuid4())
     return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["tid"])
 
@@ -37,30 +37,29 @@ def command():
 @login_required
 def uploadFiles():
     from multiprocessing import Process as P
-    taskID = request.form["taskID"]
+    clusterID = request.form["clusID"]
     files = request.files.getlist("file")
-    taskMngr = taskMngrs[session["tid"]]
+    client = clients[session["tid"]]
     for file in files:
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'] + taskID + "/", filename))
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'] + clusterID + "/", filename))
     def wrapper():
-        path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], taskID)
-        if taskMngr.checkStatus(socketio.sleep):
-            taskMngr.refreshConnections()
-            taskMngr.uploadFiles()
+        path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], clusterID)
+        if client.checkStatus(socketio.sleep):
+            client.refreshConnections()
+            client.uploadFiles()
             try:
-                taskMngr.setUploadDir(path_to_upload)
+                client.setUploadDir(path_to_upload)
                 tmp = os.listdir(path_to_upload)
             except:
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
-            socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=taskMngr.sid)
-            print("")
-        else:
-            print("Time out, please check instances status on AWS web console or try again")
+        socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=client.sid)
+        print("")
+        #else:print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
-    with jredirectors[taskMngr.sid]:
+    with jredirectors[client.sid]:
         p.start()
     return ""
 

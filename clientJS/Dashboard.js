@@ -1,31 +1,31 @@
 import React from "react";
 import autoBind from 'react-autobind';
-import {InputBlock_startTask,InputBlock_taskInfo} from "./InputBlocks"
+import {InputBlock_start,InputBlock_clusInfo} from "./InputBlocks"
 
 
 export default class DashBoard extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            task_to_create:1,
-            JAC_taskID:"",
+            createOrNot:1,
+            JAC_clusID:"",
             JAC_SLAVENUM:"",
-            JAC_taskName:"",
-            JAC_taskDesc:"",
+            JAC_clusName:"",
+            JAC_clusDesc:"",
             JAC_config:"",
             JAC_user:"",
-            display:0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
+            display:0, // saveInPopup,uploads,confirm,resumeList,slvnum,delBtn,clusName,popupConfig
             readonly:false,
             btnDisabled:true,
             stopBtnDis:true,
-            taskList:[],
+            clusList:[],
             executable:true
         };
         var This = this;
         this.handle = {
-            nameChange(e){ This.setState({JAC_taskName:e.target.value});},
+            nameChange(e){ This.setState({JAC_clusName:e.target.value});},
             numChange(e){ This.setState({JAC_SLAVENUM:e.target.value});},
-            descChange(e){ This.setState({JAC_taskDesc:e.target.value});},
+            descChange(e){ This.setState({JAC_clusDesc:e.target.value});},
             confChange(target){This.setState({JAC_config:target});}
         }
         autoBind(this);
@@ -57,21 +57,21 @@ export default class DashBoard extends React.Component{
             This.setState({JAC_config:data.config})
         })
 
-        socket.on("task_IDs",function(data){
+        socket.on("cluster_ids",function(data){
             var data = JSON.parse(data)
             if (data.length==0) {
-                This.setState({taskList:[]})
+                This.setState({clusList:[]})
                 alert("No running instance!")
             } else {
-                This.setState({taskList:data})
-                $(".taskToResume").tooltip({html: true});
+                This.setState({clusList:data})
+                $(".clusToResume").tooltip({html: true});
             }
             This.setState({btnDisabled:false});
         })
 
-        socket.on("task_started",function(data){
+        socket.on("cluster_started",function(data){
             data = JSON.parse(data)
-            This.refs.taskInfo.setState({"fileStatus":data["files"].length+" file(s) on cloud"})
+            This.refs.clusInfo.setState({"fileStatus":data["files"].length+" file(s) on cloud"})
             $("#jac_JMXName").empty()
             $.each(data["jmxList"],function(i,d){
                 $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
@@ -79,12 +79,12 @@ export default class DashBoard extends React.Component{
             This.setState({
                     btnDisabled:false,
                     display:0b0100111,
-                    JAC_taskID:data["taskID"],
+                    JAC_clusID:data["clusID"],
                     JAC_SLAVENUM:data["slaveNum"],
-                    JAC_taskDesc:data["description"],
+                    JAC_clusDesc:data["description"],
                     JAC_user:data["user"],
                     readonly:true,
-                    taskList:[],
+                    clusList:[],
                     executable:data["executable"]
                 })
         })
@@ -99,21 +99,21 @@ export default class DashBoard extends React.Component{
             alert("succeed");
         })
 
-        socket.on("task_stopped", function(){
+        socket.on("cluster_stopped", function(){
             This.setState({btnDisabled:false})
         })
 
-        socket.on("task_finished",function(){
+        socket.on("cluster_finished",function(){
             This.setState({ btnDisabled:false,stopBtnDis:true})
             $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default")
         })
 
-        socket.on("task_deleted", function(){
+        socket.on("cluster_deleted", function(){
             This.setState({display:0,btnDisabled:false})
         })
     }
 
-    runTask(){
+    run(){
         var jmx_to_run = $("#jac_JMXName").val()
         if(this.state.JAC_SLAVENUM<1){
             alert("No slave running!")
@@ -123,16 +123,16 @@ export default class DashBoard extends React.Component{
         }else{
             this.setState({btnDisabled:true,stopBtnDis:false});
             $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger")
-            this.props.socket.emit('startRunning', {"jmx_name":jmx_to_run,"taskID":this.state.JAC_taskID})
+            this.props.socket.emit('startRunning', {"jmx_name":jmx_to_run,"clusID":this.state.JAC_clusID})
         }
     }
 
     create(){
         this.setState({
-            task_to_create:1,
-            JAC_taskName:"",
+            createOrNot:1,
+            JAC_clusName:"",
             JAC_SLAVENUM:"",
-            JAC_taskDesc:"",
+            JAC_clusDesc:"",
             display:0b1010011,
             readonly:false
         });
@@ -142,40 +142,39 @@ export default class DashBoard extends React.Component{
     resume(){
         var This = this;
         This.setState({
-            task_to_create:0,
+            createOrNot:0,
             display:0b0001000,
             JAC_SLAVENUM:""
         });
-        this.props.socket.emit("get_task_IDs")
+        this.props.socket.emit("get_cluster_ids")
     }
 
-    clickOnResumeTask(index,e){
+    clickOnResumeClus(index,e){
         this.setState({
             btnDisabled:true,
-            JAC_taskID:this.state.taskList[index][0],
-            JAC_taskName:$(e.target).val(),
-            JAC_user:this.state.taskList[index][2]
+            JAC_clusID:this.state.clusList[index][0],
+            JAC_clusName:$(e.target).val(),
+            JAC_user:this.state.clusList[index][2]
         },this.confirm)
     }
 
     confirm(){
         var This = this;
-        if(!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)){
-            if(This.state.task_to_create==1)alert("Name needs to be letters and number only");
-            else alert("Select one task to Resume")
+        if(!This.state.JAC_clusName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)){
+            if(This.state.createOrNot==1)alert("Name needs to be letters and number only");
         }
-        else if(!This.state.JAC_SLAVENUM.match(/^[1-5]$/)&&This.state.task_to_create == 1){
+        else if(!This.state.JAC_SLAVENUM.match(/^[1-5]$/)&&This.state.createOrNot == 1){
             alert("Invalid number, slave num should be from 1 to 5");
         }
         else {
             This.setState({btnDisabled:true});
-            This.props.socket.emit("start_task",
+            This.props.socket.emit("start_cluster",
                 {
-                    "taskName":This.state.JAC_taskName,
-                    "taskID":This.state.JAC_taskID,
+                    "clusName":This.state.JAC_clusName,
+                    "clusID":This.state.JAC_clusID,
                     "slaveNum":This.state.JAC_SLAVENUM,
-                    "description":This.state.JAC_taskDesc,
-                    "create":This.state.task_to_create,
+                    "description":This.state.JAC_clusDesc,
+                    "create":This.state.createOrNot,
                     "user":This.state.JAC_user
                 }
             )
@@ -189,7 +188,7 @@ export default class DashBoard extends React.Component{
         else{
             This.setState({btnDisabled:true});
             var form_data = new FormData();
-            form_data.append("taskID",This.state.JAC_taskID)
+            form_data.append("clusID",This.state.JAC_clusID)
             $.each(filesList,function(i,d){form_data.append("file",d)})
             $.ajax({
                 url:"/uploadFiles",
@@ -205,32 +204,32 @@ export default class DashBoard extends React.Component{
 
     delete(){
         this.setState({btnDisabled:true});
-        this.props.socket.emit("delete_task");
+        this.props.socket.emit("terminate_cluster");
     }
 
     stop(){
-        var id = this.state.JAC_taskID;
+        var id = this.state.JAC_clusID;
         $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default")
         this.setState({btnDisabled:true,stopBtnDis:true})
-        this.props.socket.emit("stop_task",{"taskID":id})
+        this.props.socket.emit("stop_running",{"clusID":id})
     }
 
     render(){
         return (
                 <div className="col-lg-7 panel">
-                    <InputBlock_startTask
+                    <InputBlock_start
                         createFunc={this.create}
                         resumeFunc={this.resume}
                         {...this.state}
                     />
-                    <InputBlock_taskInfo ref="taskInfo"
+                    <InputBlock_clusInfo ref="clusInfo"
                         socket={this.props.socket}
                         confirmFunc={this.confirm}
                         deleteFunc={this.delete}
                         uploadFunc={this.upload}
                         stopFunc={this.stop}
-                        runFunc={this.runTask}
-                        clickOnResumeTask={this.clickOnResumeTask}
+                        runFunc={this.run}
+                        clickOnResumeClus={this.clickOnResumeClus}
                         {...this.handle}
                         {...this.state}
                     />

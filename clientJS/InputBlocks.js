@@ -1,9 +1,9 @@
 import React from "react";
 import JacConfigPopup from "./JacConfigPopup"
 
-export const InputBlock_startTask = React.createClass({
+export const InputBlock_start = React.createClass({
     render(){
-        return (<div className="row panel" id="InputBlock_startTask" >
+        return (<div className="row panel">
                     <div className="col-md-4">
                         <div className="btn-group">
                             <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.createFunc}>create</button>
@@ -14,7 +14,7 @@ export const InputBlock_startTask = React.createClass({
     }
 });
 
-export const InputBlock_taskInfo = React.createClass({
+export const InputBlock_clusInfo = React.createClass({
     getInitialState(){
         return {"fileStatus":""};
     },
@@ -36,74 +36,74 @@ export const InputBlock_taskInfo = React.createClass({
     render(){
         var This = this;
         return (<div>
-                    <div id="InputBlock_taskInfo">
+                    <div>
                         <JacConfigPopup style={{display: this.calc(0)}} config={this.props.JAC_config}
                                         socket={this.props.socket} confChange={this.props.confChange}
                                         saveBtnStyle={{display:this.calc(6,this.props.executable)}} />
                         <br/>
-                        <div className="row panel" id="InputRow_task" style={{display: this.calc(1)}}>
-                            <div className="col-md-3"><label>Task Name</label></div>
+                        <div className="row panel" style={{display: this.calc(1)}}>
+                            <div className="col-md-3"><label>Cluster Name</label></div>
                             <div className="col-md-3" >
-                                <input id="jac_taskName" type="text" className="form-control" onChange={this.props.nameChange}
-                                       value={this.props.JAC_taskName} readOnly={this.props.readonly}/>
+                                <input type="text" className="form-control" onChange={this.props.nameChange}
+                                       value={this.props.JAC_clusName} readOnly={this.props.readonly}/>
                             </div>
-                            <div className="col-md-1" id="cleaup_btn_div" style={{display: this.calc(2)}}>
-                                <button className={"btn btn-danger btn-sm"} id="btn_cleanupTask" disabled={this.props.btnDisabled}
+                            <div className="col-md-1" style={{display: this.calc(2)}}>
+                                <button className={"btn btn-danger btn-sm"} disabled={this.props.btnDisabled}
                                    onClick={this.props.deleteFunc} style={this.props.executable?{}:{display:"none"}}>
-                                   Del Task
+                                   Delete
                                 </button>
                             </div>
                         </div>
-                        <div className="row panel" id="InputRow_slaveNem" style={{display: this.calc(1)}}>
+                        <div className="row panel" style={{display: this.calc(1)}}>
                             <div className="col-md-3"><label>Slave Num</label></div>
                             <div className="col-md-3">
                                 <input id="jac_slaveNum" type="text" className="form-control" onChange={this.props.numChange}
                                        value={this.props.JAC_SLAVENUM} readOnly={this.props.readonly}/></div>
                         </div>
                         <div className="row panel" style={{display: this.calc(1)}}>
-                            <div className="col-md-3"><label>Task Description</label></div>
+                            <div className="col-md-3"><label>Cluster Description</label></div>
                             <div className="col-md-5">
                                 <textarea className="form-control" readOnly={this.props.readonly}
-                                          value={this.props.JAC_taskDesc} onChange={this.props.descChange}
+                                          value={this.props.JAC_clusDesc} onChange={this.props.descChange}
                                           style={{"minWidth": "100%","height":this.props.readonly?"34px":"100px"}} />
                             </div>
                         </div>
-                        <div className="row panel" id="InputRow_resumeTasks" style={{display: this.calc(3)}}>
+                        <div className="row panel" style={{display: this.calc(3)}}>
                             <div className="col-md-4" >
-                                {this.props.taskList.map(function(d,i){
+                                {this.props.clusList.map(function(d,i){
                                     return (
                                             <div className='panel' key={d[0]}>
-                                                <input className={"btn btn-default taskToResume"}
+                                                <input className={"btn btn-default clusToResume"}
                                                        value={d[0].split("_",1)} disabled={This.props.btnDisabled}
-                                                       title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Task ID: "+d[0]}
-                                                       onClick={This.props.clickOnResumeTask.bind(This,i)}
+                                                       title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
+                                                       onClick={This.props.clickOnResumeClus.bind(This,i)}
                                                        readOnly/>
                                             </div>
                                         );
                                 })}
                             </div>
                         </div>
-                        <div className="row panel" id="InputRow_confirmBtn" style={{display: this.calc(4)}}>
+                        <div className="row panel" style={{display: this.calc(4)}}>
                             <div className="col-md-4">
-                                <button className={"btn btn-primary"} id='btn_taskConfirm'
-                                        disabled={this.props.btnDisabled} onClick={this.props.confirmFunc}>confirm</button>
+                                <button className={"btn btn-primary"} disabled={this.props.btnDisabled}
+                                        onClick={this.props.confirmFunc}>confirm</button>
                             </div>
                         </div>
                     </div>
-                    <div id="InputBlock_uploadFiles" style={{display: this.calc(5,this.props.executable)}}>
+                    <div style={{display: this.calc(5,this.props.executable)}}>
                         <div className="row panel">
                             <div className="col-md-3"><label>Upload Path</label></div>
                             <div className="col-md-5">
                                 <div className="input-group">
-                                    <label className="input-group-btn">
+                                    <div className="input-group-btn">
                                         <label className={"btn btn-default"} disabled={this.props.btnDisabled}>
                                         Browse
                                         <input id="jac_uploadFiles" type="file" onChange={this.fileChange}
-                                               name="file" style={{display: "none"}} multiple />
+                                               name="file" style={{display: "none"}} multiple  disabled={this.props.btnDisabled}/>
                                         </label>
                                         <button className={"btn btn-primary"} disabled={this.props.btnDisabled}
-                                                id="btn_uploadTask" onClick={this.props.uploadFunc}>Upload</button>
-                                    </label>
+                                                onClick={this.props.uploadFunc}>Upload</button>
+                                    </div>
                                     <input id="uploaded_files_status" type="text" value={this.state.fileStatus}
                                            className="form-control" readOnly />
                                 </div>
@@ -116,7 +116,7 @@ export const InputBlock_taskInfo = React.createClass({
                         <div className="row panel">
                             <div className="col-md-4">
                                 <div className="btn-group">
-                                    <button className={"btn btn-primary"} disabled={this.props.btnDisabled} id="btn_runTask" onClick={this.props.runFunc}>run</button>
+                                    <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.runFunc}>run</button>
                                     <button className="btn btn-default" disabled={this.props.stopBtnDis} id="btn_stopRunning" onClick={this.props.stopFunc}>stop</button>
                                 </div>
                             </div>

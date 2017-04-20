@@ -90,7 +90,7 @@ export default class JacConfigPopup extends React.Component{
                                 onClick={this.show}> Configuration
                         </button>
                     </section>
-                    <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Task Configuration">
+                    <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Cluster Configuration">
                         <div style={this.inputDisplay()}>
                           <div className="row">
                             <div className="col-lg-6"><span>Master Instance Type: </span>

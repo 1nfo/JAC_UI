@@ -21821,30 +21821,30 @@
 	        var _this = _possibleConstructorReturn(this, (DashBoard.__proto__ || Object.getPrototypeOf(DashBoard)).call(this, props));
 
 	        _this.state = {
-	            task_to_create: 1,
-	            JAC_taskID: "",
+	            createOrNot: 1,
+	            JAC_clusID: "",
 	            JAC_SLAVENUM: "",
-	            JAC_taskName: "",
-	            JAC_taskDesc: "",
+	            JAC_clusName: "",
+	            JAC_clusDesc: "",
 	            JAC_config: "",
 	            JAC_user: "",
-	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
+	            display: 0, // saveInPopup,uploads,confirm,resumeList,slvnum,delBtn,clusName,popupConfig
 	            readonly: false,
 	            btnDisabled: true,
 	            stopBtnDis: true,
-	            taskList: [],
+	            clusList: [],
 	            executable: true
 	        };
 	        var This = _this;
 	        _this.handle = {
 	            nameChange: function nameChange(e) {
-	                This.setState({ JAC_taskName: e.target.value });
+	                This.setState({ JAC_clusName: e.target.value });
 	            },
 	            numChange: function numChange(e) {
 	                This.setState({ JAC_SLAVENUM: e.target.value });
 	            },
 	            descChange: function descChange(e) {
-	                This.setState({ JAC_taskDesc: e.target.value });
+	                This.setState({ JAC_clusDesc: e.target.value });
 	            },
 	            confChange: function confChange(target) {
 	                This.setState({ JAC_config: target });
@@ -21882,21 +21882,21 @@
 	                This.setState({ JAC_config: data.config });
 	            });
 
-	            socket.on("task_IDs", function (data) {
+	            socket.on("cluster_ids", function (data) {
 	                var data = JSON.parse(data);
 	                if (data.length == 0) {
-	                    This.setState({ taskList: [] });
+	                    This.setState({ clusList: [] });
 	                    alert("No running instance!");
 	                } else {
-	                    This.setState({ taskList: data });
-	                    $(".taskToResume").tooltip({ html: true });
+	                    This.setState({ clusList: data });
+	                    $(".clusToResume").tooltip({ html: true });
 	                }
 	                This.setState({ btnDisabled: false });
 	            });
 
-	            socket.on("task_started", function (data) {
+	            socket.on("cluster_started", function (data) {
 	                data = JSON.parse(data);
-	                This.refs.taskInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
+	                This.refs.clusInfo.setState({ "fileStatus": data["files"].length + " file(s) on cloud" });
 	                $("#jac_JMXName").empty();
 	                $.each(data["jmxList"], function (i, d) {
 	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
@@ -21904,12 +21904,12 @@
 	                This.setState({
 	                    btnDisabled: false,
 	                    display: 39,
-	                    JAC_taskID: data["taskID"],
+	                    JAC_clusID: data["clusID"],
 	                    JAC_SLAVENUM: data["slaveNum"],
-	                    JAC_taskDesc: data["description"],
+	                    JAC_clusDesc: data["description"],
 	                    JAC_user: data["user"],
 	                    readonly: true,
-	                    taskList: [],
+	                    clusList: [],
 	                    executable: data["executable"]
 	                });
 	            });
@@ -21924,22 +21924,22 @@
 	                alert("succeed");
 	            });
 
-	            socket.on("task_stopped", function () {
+	            socket.on("cluster_stopped", function () {
 	                This.setState({ btnDisabled: false });
 	            });
 
-	            socket.on("task_finished", function () {
+	            socket.on("cluster_finished", function () {
 	                This.setState({ btnDisabled: false, stopBtnDis: true });
 	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default");
 	            });
 
-	            socket.on("task_deleted", function () {
+	            socket.on("cluster_deleted", function () {
 	                This.setState({ display: 0, btnDisabled: false });
 	            });
 	        }
 	    }, {
-	        key: "runTask",
-	        value: function runTask() {
+	        key: "run",
+	        value: function run() {
 	            var jmx_to_run = $("#jac_JMXName").val();
 	            if (this.state.JAC_SLAVENUM < 1) {
 	                alert("No slave running!");
@@ -21948,17 +21948,17 @@
 	            } else {
 	                this.setState({ btnDisabled: true, stopBtnDis: false });
 	                $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger");
-	                this.props.socket.emit('startRunning', { "jmx_name": jmx_to_run, "taskID": this.state.JAC_taskID });
+	                this.props.socket.emit('startRunning', { "jmx_name": jmx_to_run, "clusID": this.state.JAC_clusID });
 	            }
 	        }
 	    }, {
 	        key: "create",
 	        value: function create() {
 	            this.setState({
-	                task_to_create: 1,
-	                JAC_taskName: "",
+	                createOrNot: 1,
+	                JAC_clusName: "",
 	                JAC_SLAVENUM: "",
-	                JAC_taskDesc: "",
+	                JAC_clusDesc: "",
 	                display: 83,
 	                readonly: false
 	            });
@@ -21969,38 +21969,38 @@
 	        value: function resume() {
 	            var This = this;
 	            This.setState({
-	                task_to_create: 0,
+	                createOrNot: 0,
 	                display: 8,
 	                JAC_SLAVENUM: ""
 	            });
-	            this.props.socket.emit("get_task_IDs");
+	            this.props.socket.emit("get_cluster_ids");
 	        }
 	    }, {
-	        key: "clickOnResumeTask",
-	        value: function clickOnResumeTask(index, e) {
+	        key: "clickOnResumeClus",
+	        value: function clickOnResumeClus(index, e) {
 	            this.setState({
 	                btnDisabled: true,
-	                JAC_taskID: this.state.taskList[index][0],
-	                JAC_taskName: $(e.target).val(),
-	                JAC_user: this.state.taskList[index][2]
+	                JAC_clusID: this.state.clusList[index][0],
+	                JAC_clusName: $(e.target).val(),
+	                JAC_user: this.state.clusList[index][2]
 	            }, this.confirm);
 	        }
 	    }, {
 	        key: "confirm",
 	        value: function confirm() {
 	            var This = this;
-	            if (!This.state.JAC_taskName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
-	                if (This.state.task_to_create == 1) alert("Name needs to be letters and number only");else alert("Select one task to Resume");
-	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]$/) && This.state.task_to_create == 1) {
+	            if (!This.state.JAC_clusName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
+	                if (This.state.createOrNot == 1) alert("Name needs to be letters and number only");
+	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]$/) && This.state.createOrNot == 1) {
 	                alert("Invalid number, slave num should be from 1 to 5");
 	            } else {
 	                This.setState({ btnDisabled: true });
-	                This.props.socket.emit("start_task", {
-	                    "taskName": This.state.JAC_taskName,
-	                    "taskID": This.state.JAC_taskID,
+	                This.props.socket.emit("start_cluster", {
+	                    "clusName": This.state.JAC_clusName,
+	                    "clusID": This.state.JAC_clusID,
 	                    "slaveNum": This.state.JAC_SLAVENUM,
-	                    "description": This.state.JAC_taskDesc,
-	                    "create": This.state.task_to_create,
+	                    "description": This.state.JAC_clusDesc,
+	                    "create": This.state.createOrNot,
 	                    "user": This.state.JAC_user
 	                });
 	            }
@@ -22013,7 +22013,7 @@
 	            if (filesList.length == 0) alert("No file selected!");else {
 	                This.setState({ btnDisabled: true });
 	                var form_data = new FormData();
-	                form_data.append("taskID", This.state.JAC_taskID);
+	                form_data.append("clusID", This.state.JAC_clusID);
 	                $.each(filesList, function (i, d) {
 	                    form_data.append("file", d);
 	                });
@@ -22032,15 +22032,15 @@
 	        key: "delete",
 	        value: function _delete() {
 	            this.setState({ btnDisabled: true });
-	            this.props.socket.emit("delete_task");
+	            this.props.socket.emit("terminate_cluster");
 	        }
 	    }, {
 	        key: "stop",
 	        value: function stop() {
-	            var id = this.state.JAC_taskID;
+	            var id = this.state.JAC_clusID;
 	            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default");
 	            this.setState({ btnDisabled: true, stopBtnDis: true });
-	            this.props.socket.emit("stop_task", { "taskID": id });
+	            this.props.socket.emit("stop_running", { "clusID": id });
 	        }
 	    }, {
 	        key: "render",
@@ -22048,18 +22048,18 @@
 	            return _react2.default.createElement(
 	                "div",
 	                { className: "col-lg-7 panel" },
-	                _react2.default.createElement(_InputBlocks.InputBlock_startTask, _extends({
+	                _react2.default.createElement(_InputBlocks.InputBlock_start, _extends({
 	                    createFunc: this.create,
 	                    resumeFunc: this.resume
 	                }, this.state)),
-	                _react2.default.createElement(_InputBlocks.InputBlock_taskInfo, _extends({ ref: "taskInfo",
+	                _react2.default.createElement(_InputBlocks.InputBlock_clusInfo, _extends({ ref: "clusInfo",
 	                    socket: this.props.socket,
 	                    confirmFunc: this.confirm,
 	                    deleteFunc: this.delete,
 	                    uploadFunc: this.upload,
 	                    stopFunc: this.stop,
-	                    runFunc: this.runTask,
-	                    clickOnResumeTask: this.clickOnResumeTask
+	                    runFunc: this.run,
+	                    clickOnResumeClus: this.clickOnResumeClus
 	                }, this.handle, this.state))
 	            );
 	        }
@@ -22162,7 +22162,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.InputBlock_taskInfo = exports.InputBlock_startTask = undefined;
+	exports.InputBlock_clusInfo = exports.InputBlock_start = undefined;
 
 	var _react = __webpack_require__(2);
 
@@ -22174,12 +22174,12 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var InputBlock_startTask = exports.InputBlock_startTask = _react2.default.createClass({
-	    displayName: "InputBlock_startTask",
+	var InputBlock_start = exports.InputBlock_start = _react2.default.createClass({
+	    displayName: "InputBlock_start",
 	    render: function render() {
 	        return _react2.default.createElement(
 	            "div",
-	            { className: "row panel", id: "InputBlock_startTask" },
+	            { className: "row panel" },
 	            _react2.default.createElement(
 	                "div",
 	                { className: "col-md-4" },
@@ -22202,8 +22202,8 @@
 	    }
 	});
 
-	var InputBlock_taskInfo = exports.InputBlock_taskInfo = _react2.default.createClass({
-	    displayName: "InputBlock_taskInfo",
+	var InputBlock_clusInfo = exports.InputBlock_clusInfo = _react2.default.createClass({
+	    displayName: "InputBlock_clusInfo",
 	    getInitialState: function getInitialState() {
 	        return { "fileStatus": "" };
 	    },
@@ -22228,43 +22228,43 @@
 	            null,
 	            _react2.default.createElement(
 	                "div",
-	                { id: "InputBlock_taskInfo" },
+	                null,
 	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config,
 	                    socket: this.props.socket, confChange: this.props.confChange,
 	                    saveBtnStyle: { display: this.calc(6, this.props.executable) } }),
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_task", style: { display: this.calc(1) } },
+	                    { className: "row panel", style: { display: this.calc(1) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-3" },
 	                        _react2.default.createElement(
 	                            "label",
 	                            null,
-	                            "Task Name"
+	                            "Cluster Name"
 	                        )
 	                    ),
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-3" },
-	                        _react2.default.createElement("input", { id: "jac_taskName", type: "text", className: "form-control", onChange: this.props.nameChange,
-	                            value: this.props.JAC_taskName, readOnly: this.props.readonly })
+	                        _react2.default.createElement("input", { type: "text", className: "form-control", onChange: this.props.nameChange,
+	                            value: this.props.JAC_clusName, readOnly: this.props.readonly })
 	                    ),
 	                    _react2.default.createElement(
 	                        "div",
-	                        { className: "col-md-1", id: "cleaup_btn_div", style: { display: this.calc(2) } },
+	                        { className: "col-md-1", style: { display: this.calc(2) } },
 	                        _react2.default.createElement(
 	                            "button",
-	                            { className: "btn btn-danger btn-sm", id: "btn_cleanupTask", disabled: this.props.btnDisabled,
+	                            { className: "btn btn-danger btn-sm", disabled: this.props.btnDisabled,
 	                                onClick: this.props.deleteFunc, style: this.props.executable ? {} : { display: "none" } },
-	                            "Del Task"
+	                            "Delete"
 	                        )
 	                    )
 	                ),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_slaveNem", style: { display: this.calc(1) } },
+	                    { className: "row panel", style: { display: this.calc(1) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-3" },
@@ -22290,31 +22290,31 @@
 	                        _react2.default.createElement(
 	                            "label",
 	                            null,
-	                            "Task Description"
+	                            "Cluster Description"
 	                        )
 	                    ),
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-5" },
 	                        _react2.default.createElement("textarea", { className: "form-control", readOnly: this.props.readonly,
-	                            value: this.props.JAC_taskDesc, onChange: this.props.descChange,
+	                            value: this.props.JAC_clusDesc, onChange: this.props.descChange,
 	                            style: { "minWidth": "100%", "height": this.props.readonly ? "34px" : "100px" } })
 	                    )
 	                ),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_resumeTasks", style: { display: this.calc(3) } },
+	                    { className: "row panel", style: { display: this.calc(3) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-4" },
-	                        this.props.taskList.map(function (d, i) {
+	                        this.props.clusList.map(function (d, i) {
 	                            return _react2.default.createElement(
 	                                "div",
 	                                { className: "panel", key: d[0] },
-	                                _react2.default.createElement("input", { className: "btn btn-default taskToResume",
+	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
 	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
-	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Task ID: " + d[0],
-	                                    onClick: This.props.clickOnResumeTask.bind(This, i),
+	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
+	                                    onClick: This.props.clickOnResumeClus.bind(This, i),
 	                                    readOnly: true })
 	                            );
 	                        })
@@ -22322,14 +22322,14 @@
 	                ),
 	                _react2.default.createElement(
 	                    "div",
-	                    { className: "row panel", id: "InputRow_confirmBtn", style: { display: this.calc(4) } },
+	                    { className: "row panel", style: { display: this.calc(4) } },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-4" },
 	                        _react2.default.createElement(
 	                            "button",
-	                            { className: "btn btn-primary", id: "btn_taskConfirm",
-	                                disabled: this.props.btnDisabled, onClick: this.props.confirmFunc },
+	                            { className: "btn btn-primary", disabled: this.props.btnDisabled,
+	                                onClick: this.props.confirmFunc },
 	                            "confirm"
 	                        )
 	                    )
@@ -22337,7 +22337,7 @@
 	            ),
 	            _react2.default.createElement(
 	                "div",
-	                { id: "InputBlock_uploadFiles", style: { display: this.calc(5, this.props.executable) } },
+	                { style: { display: this.calc(5, this.props.executable) } },
 	                _react2.default.createElement(
 	                    "div",
 	                    { className: "row panel" },
@@ -22357,19 +22357,19 @@
 	                            "div",
 	                            { className: "input-group" },
 	                            _react2.default.createElement(
-	                                "label",
+	                                "div",
 	                                { className: "input-group-btn" },
 	                                _react2.default.createElement(
 	                                    "label",
 	                                    { className: "btn btn-default", disabled: this.props.btnDisabled },
 	                                    "Browse",
 	                                    _react2.default.createElement("input", { id: "jac_uploadFiles", type: "file", onChange: this.fileChange,
-	                                        name: "file", style: { display: "none" }, multiple: true })
+	                                        name: "file", style: { display: "none" }, multiple: true, disabled: this.props.btnDisabled })
 	                                ),
 	                                _react2.default.createElement(
 	                                    "button",
 	                                    { className: "btn btn-primary", disabled: this.props.btnDisabled,
-	                                        id: "btn_uploadTask", onClick: this.props.uploadFunc },
+	                                        onClick: this.props.uploadFunc },
 	                                    "Upload"
 	                                )
 	                            ),
@@ -22407,7 +22407,7 @@
 	                            { className: "btn-group" },
 	                            _react2.default.createElement(
 	                                "button",
-	                                { className: "btn btn-primary", disabled: this.props.btnDisabled, id: "btn_runTask", onClick: this.props.runFunc },
+	                                { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.runFunc },
 	                                "run"
 	                            ),
 	                            _react2.default.createElement(
@@ -22581,7 +22581,7 @@
 	                ),
 	                _react2.default.createElement(
 	                    _reactSkylight2.default,
-	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Task Configuration' },
+	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Cluster Configuration' },
 	                    _react2.default.createElement(
 	                        'div',
 	                        { style: this.inputDisplay() },
