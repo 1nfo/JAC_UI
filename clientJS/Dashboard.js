@@ -16,7 +16,8 @@ export default class DashBoard extends React.Component{
             JAC_user:"",
             display:0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
             readonly:false,
-            btnDisabled:this.props.btnDisabled,
+            btnDisabled:true,
+            stopBtnDis:true,
             taskList:[],
             executable:true
         };
@@ -44,12 +45,12 @@ export default class DashBoard extends React.Component{
                 $('#connIcon').addClass("glyphicon glyphicon-remove")
                 $('#connIcon').empty()
                 $('#connIcon').append(" Disconnected")
-                This.setState({btnDisabled:1})
+                This.setState({btnDisabled:true})
             });
             socket.on('connect_timeout', function() {
                 $('#output').append("<br/>Connection Timeout<br/>");
             });
-            This.setState({btnDisabled:0})
+            This.setState({btnDisabled:false})
         })
 
         socket.on("config_changed",function(data){
@@ -65,7 +66,7 @@ export default class DashBoard extends React.Component{
                 This.setState({taskList:data})
                 $(".taskToResume").tooltip({html: true});
             }
-            This.setState({btnDisabled:0});
+            This.setState({btnDisabled:false});
         })
 
         socket.on("task_started",function(data){
@@ -76,7 +77,7 @@ export default class DashBoard extends React.Component{
                 $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
             })
             This.setState({
-                    btnDisabled:0,
+                    btnDisabled:false,
                     display:0b0100111,
                     JAC_taskID:data["taskID"],
                     JAC_SLAVENUM:data["slaveNum"],
@@ -90,7 +91,7 @@ export default class DashBoard extends React.Component{
 
         socket.on("upload_done", function(data){
             data = JSON.parse(data)
-            This.setState({ btnDisabled:0})
+            This.setState({ btnDisabled:false})
             $("#jac_JMXName").empty()
             $.each(data["jmxList"],function(i,d){
                 $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
@@ -99,16 +100,16 @@ export default class DashBoard extends React.Component{
         })
 
         socket.on("task_stopped", function(){
-            This.setState({btnDisabled:0})
+            This.setState({btnDisabled:false})
         })
 
         socket.on("task_finished",function(){
-            This.setState({ btnDisabled:0})
-            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled")
+            This.setState({ btnDisabled:false,stopBtnDis:true})
+            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default")
         })
 
         socket.on("task_deleted", function(){
-            This.setState({display:0,btnDisabled:0})
+            This.setState({display:0,btnDisabled:false})
         })
     }
 
@@ -120,8 +121,8 @@ export default class DashBoard extends React.Component{
         else if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
             alert("Invaild JMX file, please upload and select jmx file");
         }else{
-            this.setState({btnDisabled:1});
-            $("#btn_stopRunning").removeClass("btn-default disabled").addClass("btn-danger")
+            this.setState({btnDisabled:true,stopBtnDis:false});
+            $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger")
             this.props.socket.emit('startRunning', {"jmx_name":jmx_to_run,"taskID":this.state.JAC_taskID})
         }
     }
@@ -150,7 +151,7 @@ export default class DashBoard extends React.Component{
 
     clickOnResumeTask(index,e){
         this.setState({
-            btnDisabled:1,
+            btnDisabled:true,
             JAC_taskID:this.state.taskList[index][0],
             JAC_taskName:$(e.target).val(),
             JAC_user:this.state.taskList[index][2]
@@ -167,7 +168,7 @@ export default class DashBoard extends React.Component{
             alert("Invalid number, slave num should be from 1 to 5");
         }
         else {
-            This.setState({btnDisabled:1});
+            This.setState({btnDisabled:true});
             This.props.socket.emit("start_task",
                 {
                     "taskName":This.state.JAC_taskName,
@@ -186,7 +187,7 @@ export default class DashBoard extends React.Component{
         var filesList = $("#jac_uploadFiles").prop("files")
         if(filesList.length==0) alert("No file selected!")
         else{
-            This.setState({btnDisabled:1});
+            This.setState({btnDisabled:true});
             var form_data = new FormData();
             form_data.append("taskID",This.state.JAC_taskID)
             $.each(filesList,function(i,d){form_data.append("file",d)})
@@ -203,14 +204,14 @@ export default class DashBoard extends React.Component{
     }
 
     delete(){
-        this.setState({btnDisabled:1});
+        this.setState({btnDisabled:true});
         this.props.socket.emit("delete_task");
     }
 
     stop(){
         var id = this.state.JAC_taskID;
-        $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled")
-        this.setState({btnDisabled:1})
+        $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default")
+        this.setState({btnDisabled:true,stopBtnDis:true})
         this.props.socket.emit("stop_task",{"taskID":id})
     }
 

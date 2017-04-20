@@ -139,7 +139,9 @@ def startTask(data):
                 config = json.loads(open(UPLOAD_PATH+taskID+"/.JAC_config.json").read())
             except Exception as e:
                 print(e)
-                config = JAC.CONFIG
+                config = {}
+                config.update(JAC.CONFIG)
+                config.update(session["credentials"])
                 taskDir = "%s%s" % (UPLOAD_PATH, taskID)
                 if not os.path.exists(taskDir): os.mkdir(taskDir)
                 with open(os.path.join(UPLOAD_PATH,taskID,".JAC_config.json"),"w") as f:

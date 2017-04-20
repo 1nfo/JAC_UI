@@ -21830,7 +21830,8 @@
 	            JAC_user: "",
 	            display: 0, // saveInpopup,uploads,confirm,resumeList,slvnum,delBtn,taskName,popupConfig
 	            readonly: false,
-	            btnDisabled: _this.props.btnDisabled,
+	            btnDisabled: true,
+	            stopBtnDis: true,
 	            taskList: [],
 	            executable: true
 	        };
@@ -21869,12 +21870,12 @@
 	                    $('#connIcon').addClass("glyphicon glyphicon-remove");
 	                    $('#connIcon').empty();
 	                    $('#connIcon').append(" Disconnected");
-	                    This.setState({ btnDisabled: 1 });
+	                    This.setState({ btnDisabled: true });
 	                });
 	                socket.on('connect_timeout', function () {
 	                    $('#output').append("<br/>Connection Timeout<br/>");
 	                });
-	                This.setState({ btnDisabled: 0 });
+	                This.setState({ btnDisabled: false });
 	            });
 
 	            socket.on("config_changed", function (data) {
@@ -21890,7 +21891,7 @@
 	                    This.setState({ taskList: data });
 	                    $(".taskToResume").tooltip({ html: true });
 	                }
-	                This.setState({ btnDisabled: 0 });
+	                This.setState({ btnDisabled: false });
 	            });
 
 	            socket.on("task_started", function (data) {
@@ -21901,7 +21902,7 @@
 	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
 	                });
 	                This.setState({
-	                    btnDisabled: 0,
+	                    btnDisabled: false,
 	                    display: 39,
 	                    JAC_taskID: data["taskID"],
 	                    JAC_SLAVENUM: data["slaveNum"],
@@ -21915,7 +21916,7 @@
 
 	            socket.on("upload_done", function (data) {
 	                data = JSON.parse(data);
-	                This.setState({ btnDisabled: 0 });
+	                This.setState({ btnDisabled: false });
 	                $("#jac_JMXName").empty();
 	                $.each(data["jmxList"], function (i, d) {
 	                    $("#jac_JMXName").append("<option value=\"" + d + "\">" + d + "</option>");
@@ -21924,16 +21925,16 @@
 	            });
 
 	            socket.on("task_stopped", function () {
-	                This.setState({ btnDisabled: 0 });
+	                This.setState({ btnDisabled: false });
 	            });
 
 	            socket.on("task_finished", function () {
-	                This.setState({ btnDisabled: 0 });
-	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
+	                This.setState({ btnDisabled: false, stopBtnDis: true });
+	                $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default");
 	            });
 
 	            socket.on("task_deleted", function () {
-	                This.setState({ display: 0, btnDisabled: 0 });
+	                This.setState({ display: 0, btnDisabled: false });
 	            });
 	        }
 	    }, {
@@ -21945,8 +21946,8 @@
 	            } else if (jmx_to_run == null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)) {
 	                alert("Invaild JMX file, please upload and select jmx file");
 	            } else {
-	                this.setState({ btnDisabled: 1 });
-	                $("#btn_stopRunning").removeClass("btn-default disabled").addClass("btn-danger");
+	                this.setState({ btnDisabled: true, stopBtnDis: false });
+	                $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger");
 	                this.props.socket.emit('startRunning', { "jmx_name": jmx_to_run, "taskID": this.state.JAC_taskID });
 	            }
 	        }
@@ -21978,7 +21979,7 @@
 	        key: "clickOnResumeTask",
 	        value: function clickOnResumeTask(index, e) {
 	            this.setState({
-	                btnDisabled: 1,
+	                btnDisabled: true,
 	                JAC_taskID: this.state.taskList[index][0],
 	                JAC_taskName: $(e.target).val(),
 	                JAC_user: this.state.taskList[index][2]
@@ -21993,7 +21994,7 @@
 	            } else if (!This.state.JAC_SLAVENUM.match(/^[1-5]$/) && This.state.task_to_create == 1) {
 	                alert("Invalid number, slave num should be from 1 to 5");
 	            } else {
-	                This.setState({ btnDisabled: 1 });
+	                This.setState({ btnDisabled: true });
 	                This.props.socket.emit("start_task", {
 	                    "taskName": This.state.JAC_taskName,
 	                    "taskID": This.state.JAC_taskID,
@@ -22010,7 +22011,7 @@
 	            var This = this;
 	            var filesList = $("#jac_uploadFiles").prop("files");
 	            if (filesList.length == 0) alert("No file selected!");else {
-	                This.setState({ btnDisabled: 1 });
+	                This.setState({ btnDisabled: true });
 	                var form_data = new FormData();
 	                form_data.append("taskID", This.state.JAC_taskID);
 	                $.each(filesList, function (i, d) {
@@ -22030,15 +22031,15 @@
 	    }, {
 	        key: "delete",
 	        value: function _delete() {
-	            this.setState({ btnDisabled: 1 });
+	            this.setState({ btnDisabled: true });
 	            this.props.socket.emit("delete_task");
 	        }
 	    }, {
 	        key: "stop",
 	        value: function stop() {
 	            var id = this.state.JAC_taskID;
-	            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default disabled");
-	            this.setState({ btnDisabled: 1 });
+	            $("#btn_stopRunning").removeClass("btn-danger").addClass("btn-default");
+	            this.setState({ btnDisabled: true, stopBtnDis: true });
 	            this.props.socket.emit("stop_task", { "taskID": id });
 	        }
 	    }, {
@@ -22175,10 +22176,6 @@
 
 	var InputBlock_startTask = exports.InputBlock_startTask = _react2.default.createClass({
 	    displayName: "InputBlock_startTask",
-	    disCls: function disCls() {
-	        if (this.props.btnDisabled < 1) return "";
-	        return " disabled";
-	    },
 	    render: function render() {
 	        return _react2.default.createElement(
 	            "div",
@@ -22191,12 +22188,12 @@
 	                    { className: "btn-group" },
 	                    _react2.default.createElement(
 	                        "button",
-	                        { className: "btn btn-primary" + this.disCls(), onClick: this.props.createFunc },
+	                        { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.createFunc },
 	                        "create"
 	                    ),
 	                    _react2.default.createElement(
 	                        "button",
-	                        { className: "btn btn-primary" + this.disCls(), onClick: this.props.resumeFunc },
+	                        { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.resumeFunc },
 	                        "resume"
 	                    )
 	                )
@@ -22216,12 +22213,6 @@
 	        if (enabled && (1 << bit & this.props.display) > 0) return "block";
 	        return "none";
 	    },
-	    disCls: function disCls() {
-	        var enabled = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
-
-	        if (enabled && this.props.btnDisabled < 1) return "";
-	        return " disabled";
-	    },
 	    fileChange: function fileChange(e) {
 	        var input = $(e.target),
 	            numFiles = input.get(0).files ? input.get(0).files.length : 1,
@@ -22240,7 +22231,7 @@
 	                { id: "InputBlock_taskInfo" },
 	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config,
 	                    socket: this.props.socket, confChange: this.props.confChange,
-	                    saveBtnStyle: { display: this.calc(6, this.props.executable) }, btnDis: this.disCls() }),
+	                    saveBtnStyle: { display: this.calc(6, this.props.executable) } }),
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
 	                    "div",
@@ -22265,7 +22256,7 @@
 	                        { className: "col-md-1", id: "cleaup_btn_div", style: { display: this.calc(2) } },
 	                        _react2.default.createElement(
 	                            "button",
-	                            { className: "btn btn-danger btn-sm" + this.disCls(), id: "btn_cleanupTask",
+	                            { className: "btn btn-danger btn-sm", id: "btn_cleanupTask", disabled: this.props.btnDisabled,
 	                                onClick: this.props.deleteFunc, style: this.props.executable ? {} : { display: "none" } },
 	                            "Del Task"
 	                        )
@@ -22320,8 +22311,8 @@
 	                            return _react2.default.createElement(
 	                                "div",
 	                                { className: "panel", key: d[0] },
-	                                _react2.default.createElement("input", { className: "btn btn-default taskToResume" + This.disCls(),
-	                                    value: d[0].split("_", 1),
+	                                _react2.default.createElement("input", { className: "btn btn-default taskToResume",
+	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
 	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Task ID: " + d[0],
 	                                    onClick: This.props.clickOnResumeTask.bind(This, i),
 	                                    readOnly: true })
@@ -22337,7 +22328,8 @@
 	                        { className: "col-md-4" },
 	                        _react2.default.createElement(
 	                            "button",
-	                            { className: "btn btn-primary" + this.disCls(), id: "btn_taskConfirm", onClick: this.props.confirmFunc },
+	                            { className: "btn btn-primary", id: "btn_taskConfirm",
+	                                disabled: this.props.btnDisabled, onClick: this.props.confirmFunc },
 	                            "confirm"
 	                        )
 	                    )
@@ -22369,14 +22361,14 @@
 	                                { className: "input-group-btn" },
 	                                _react2.default.createElement(
 	                                    "label",
-	                                    { className: "btn btn-default" + this.disCls() },
+	                                    { className: "btn btn-default", disabled: this.props.btnDisabled },
 	                                    "Browse",
 	                                    _react2.default.createElement("input", { id: "jac_uploadFiles", type: "file", onChange: this.fileChange,
 	                                        name: "file", style: { display: "none" }, multiple: true })
 	                                ),
 	                                _react2.default.createElement(
 	                                    "button",
-	                                    { className: "btn btn-primary" + this.disCls(),
+	                                    { className: "btn btn-primary", disabled: this.props.btnDisabled,
 	                                        id: "btn_uploadTask", onClick: this.props.uploadFunc },
 	                                    "Upload"
 	                                )
@@ -22415,12 +22407,12 @@
 	                            { className: "btn-group" },
 	                            _react2.default.createElement(
 	                                "button",
-	                                { className: "btn btn-primary" + this.disCls(), id: "btn_runTask", onClick: this.props.runFunc },
+	                                { className: "btn btn-primary", disabled: this.props.btnDisabled, id: "btn_runTask", onClick: this.props.runFunc },
 	                                "run"
 	                            ),
 	                            _react2.default.createElement(
 	                                "button",
-	                                { className: "btn btn-default disabled", id: "btn_stopRunning", onClick: this.props.stopFunc },
+	                                { className: "btn btn-default", disabled: this.props.stopBtnDis, id: "btn_stopRunning", onClick: this.props.stopFunc },
 	                                "stop"
 	                            )
 	                        )
@@ -22582,7 +22574,7 @@
 	                    null,
 	                    _react2.default.createElement(
 	                        'button',
-	                        { className: "btn btn-success btn-sm" + this.props.btnDis,
+	                        { className: "btn btn-success btn-sm",
 	                            onClick: this.show },
 	                        ' Configuration'
 	                    )
