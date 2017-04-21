@@ -24,8 +24,6 @@ def index():
 @app.route("/command")
 @login_required
 def command():
-    session.permanent=True
-    import uuid
     title = "Jmeter Cloud Testing"
     return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["_id"])
 
@@ -68,17 +66,18 @@ def load_user(userid):
 # login page
 @app.route('/login' , methods=['GET' , 'POST'])
 def login():
+    session.permanent=True
     title="Jmeter Cloud Testing -- Login"
-    # if 'logged_in' in session and session["logged_in"]: return redirect("/command")
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         registeredUser = User.query.filter_by(username=username).first()
         if registeredUser != None and registeredUser.password == password:
             login_user(registeredUser)
-            # session['logged_in'] = True
             session["credentials"] = registeredUser.getCredentials()
             session["username"] = username
+            init_costom_config()
+            if not validateCredentials(): return redirect( "/credential" )
             return redirect( request.args.get("next") or "/command" )
         else:
             return render_template("login.html", title=title, display="block")
@@ -90,7 +89,6 @@ def login():
 @login_required
 def logout():
     logout_user()
-    # session['logged_in'] = False
     del session["username"]
     return redirect('/')
 
@@ -120,17 +118,22 @@ def register():
 @app.route("/credential", methods = ["GET", "POST"])
 @login_required
 def credential():
+    # validateCredentails must be run under get / post separately. Since post updated credentials
     if request.method == "POST":
         user = User.query.filter_by(username=session["username"]).first()
         d = {k:request.form[k] for k in request.form}
         user.setCredentials(d)
         db.session.commit()
         session["credentials"] = user.getCredentials()
-    user = User.query.filter_by(username=session["username"]).first()
-    kargs ={
-            "title":"AWS Credential",
-            "key_id":user.aws_access_key_id,
-            "access_key":user.aws_secret_access_key,
-            "role":user.role
-        }
-    return render_template("credential.html",**kargs)
+        init_costom_config()
+        return json.dumps(validateCredentials())
+    else:
+        user = User.query.filter_by(username=session["username"]).first()
+        kargs ={
+                "title":"AWS Credential",
+                "key_id":user.aws_access_key_id,
+                "access_key":user.aws_secret_access_key,
+                "role":user.role,
+                "valid":validateCredentials()
+            }
+        return render_template("credential.html",**kargs)

@@ -21638,9 +21638,15 @@
 	            var This = this;
 	            var socket = this.socket;
 
+	            // redirect massage / console output
 	            This.socket.on('redirect', function (d) {
 	                $('#output').append(jQuery('<div />').text(d.msg).html().replace(/\n/g, "<br/>"));
 	                This.refs.output.refs.console.toBottom();
+	            });
+
+	            // redirect to other page
+	            This.socket.on('redirect_page', function (d) {
+	                window.location = d.url;
 	            });
 
 	            socket.on('reconnect_attempt', function () {

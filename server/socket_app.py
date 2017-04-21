@@ -1,6 +1,7 @@
 from flask import request, session
 from flask_socketio import SocketIO, emit
 from .Redisable import redisReady, RedisableManagers
+from botocore.exceptions import ClientError
 import json, os
 import JmeterAwsConf as JAC
 
@@ -48,9 +49,28 @@ def configFilter(config):
     res = {k:config[k] for k in config if k not in filter_list}
     return res
 
-# parse to json before response
+# parse to json before return response
 def configJson(config):
     return {'config': json.dumps(configFilter(config), indent="\t")}
+
+# update date customConfigs right after login (i.e. right before redirect to endpoint /command or /credential),
+# so that cluster manager can be initialized.
+def init_costom_config():
+    global customConfigs
+    username = session["username"]
+    if not username in customConfigs:
+        customConfigs[username] = {}
+        customConfigs[username].update(JAC.CONFIG)
+    # always use the updated credentials
+    customConfigs[username].update(session["credentials"])
+
+# using user's config to validate aws access
+def validateCredentials():
+    try:
+        JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]])).client
+    except ClientError:
+        return False
+    return True
 
 # init a new cluster manager,redirector when socket connected
 @socketio.on('connect', namespace='/redirect')
@@ -61,6 +81,10 @@ def connected():
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
     clusterMngrs[session["_id"]]=clusterMngr
+    refreshConfig()
+    if not validateCredentials():
+        emit("redirect",{"msg":"WARNING: Invalid credentials"},room=request.sid)
+        # emit("redirect_page",{"url":"/credential"},room=request.sid)
 
 # release manager and redirector when socket disconnected
 @socketio.on("disconnect",namespace='/redirect')
@@ -74,14 +98,8 @@ def disconnected():
 # send user's config while click create
 @socketio.on("get_default_config", namespace="/redirect")
 def refreshConfig():
-    global customConfigs
-    username = session["username"]
-    if not username in customConfigs:
-        customConfigs[username] = {}
-        customConfigs[username].update(JAC.CONFIG)
-    # always use the updated credentials
-    customConfigs[username].update(session["credentials"])
-    emit('config_changed', configJson(customConfigs[username]),room=request.sid)
+    init_costom_config()
+    emit('config_changed', configJson(customConfigs[session["username"]]),room=request.sid)
 
 # user changes configs
 @socketio.on("update_config", namespace="/redirect")
@@ -97,8 +115,7 @@ def updateConfig(data):
 # while click resume
 @socketio.on("get_cluster_ids", namespace="/redirect")
 def getClusterIDs():
-    refreshConfig()
-    li = JAC.InstanceManager(JAC.AWSConfig(**JAC.CONFIG,**session["credentials"])).getDupClusterIds()
+    li = JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]])).getDupClusterIds()
     emit("cluster_ids",json.dumps(li),room=request.sid)
 
 # start a created cluster or resume from previous one.
