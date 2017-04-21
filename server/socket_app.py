@@ -164,7 +164,7 @@ def startCluster(data):
                 with open(os.path.join(UPLOAD_PATH,clusterID,".JAC_config.json"),"w") as f:
                     f.write(json.dumps(config))
             clusterMngr.setConfig(config)
-            clusterMngr.resume(clusterName, clusterID)
+            clusterMngr.resume(clusterName, clusterID, user=username)
             successOrNot = True
 
         if successOrNot:
@@ -202,6 +202,7 @@ def runTest(data):
     from multiprocessing import Process as P
     clusterID = data["clusID"]
     jmxName = data["jmx_name"]
+    output = data["output"]
     clusterMngr = clusterMngrs[session["_id"]]
     def fakeRun():
         import time
@@ -219,12 +220,12 @@ def runTest(data):
             clusterMngr.startSlavesServer()
             socketio.sleep(3)
             #clusterMngr.esCheck()############
-            clusterMngr.runTest(jmxName)
+            clusterMngr.runTest(jmxName,output)
             clusterMngr.stopSlavesServer()
-        emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=clusterMngr.sid)
-        print("Finished\n")
-        # else: print("Time out, please check instances status on AWS web console or try again")
-    p = P(target=fakeRun)
+            emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=clusterMngr.sid)
+            print("Finished\n")
+        else:socketio.emit('time_out', namespace='/redirect', room=clusterMngr.sid)
+    p = P(target=wrapper)
     with jredirectors[clusterMngr.sid]:
         p.start()
     processes[clusterID] = p

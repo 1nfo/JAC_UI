@@ -113,6 +113,11 @@ export const InputBlock_clusInfo = React.createClass({
                             <div className="col-md-3"><label>JMX to run</label></div>
                             <div className="col-md-1"><select id="jac_JMXName"></select></div>
                         </div>
+                        <div className="row panel" >
+                            <div className="col-md-3"><label>Result name</label></div>
+                            <div className="col-md-3"><input className="form-control" onChange={this.props.outputChange}
+                                 value={this.props.JAC_outputName}></input></div>
+                        </div>
                         <div className="row panel">
                             <div className="col-md-4">
                                 <div className="btn-group">

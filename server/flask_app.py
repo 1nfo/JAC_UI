@@ -50,9 +50,13 @@ def uploadFiles():
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
-        socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=clusterMngr.sid)
-        print("")
-        #else:print("Time out, please check instances status on AWS web console or try again")
+            socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=clusterMngr.sid)
+            # don't know why in mp, must print something after emit, otherwise it won't emit.
+            # probably because print calls jredirector, which contains socketio.sleep
+            print("")
+        else:
+            socketio.emit('time_out',"{}", namespace='/redirect', room=clusterMngr.sid)
+            print("")
     p = P(target=wrapper)
     with jredirectors[clusterMngr.sid]:
         p.start()

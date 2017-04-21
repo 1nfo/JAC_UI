@@ -21834,6 +21834,7 @@
 	            JAC_clusDesc: "",
 	            JAC_config: "",
 	            JAC_user: "",
+	            JAC_outputName: "",
 	            display: 0, // saveInPopup,uploads,confirm,resumeList,slvnum,delBtn,clusName,popupConfig
 	            readonly: false,
 	            btnDisabled: true,
@@ -21854,6 +21855,9 @@
 	            },
 	            confChange: function confChange(target) {
 	                This.setState({ JAC_config: target });
+	            },
+	            outputChange: function outputChange(e) {
+	                This.setState({ JAC_outputName: e.target.value });
 	            }
 	        };
 	        (0, _reactAutobind2.default)(_this);
@@ -21930,6 +21934,11 @@
 	                alert("succeed");
 	            });
 
+	            socket.on('time_out', function () {
+	                This.setState({ btnDisabled: false });
+	                alert("Instances are still initializing, check aws web console or try again later");
+	            });
+
 	            socket.on("cluster_stopped", function () {
 	                This.setState({ btnDisabled: false });
 	            });
@@ -21951,10 +21960,12 @@
 	                alert("No slave running!");
 	            } else if (jmx_to_run == null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)) {
 	                alert("Invaild JMX file, please upload and select jmx file");
+	            } else if (this.state.JAC_outputName.length == 0) {
+	                alert("Empty output name.");
 	            } else {
 	                this.setState({ btnDisabled: true, stopBtnDis: false });
 	                $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger");
-	                this.props.socket.emit('startRunning', { "jmx_name": jmx_to_run, "clusID": this.state.JAC_clusID });
+	                this.props.socket.emit('startRunning', { "jmx_name": jmx_to_run, "clusID": this.state.JAC_clusID, "output": this.state.JAC_outputName });
 	            }
 	        }
 	    }, {
@@ -22400,6 +22411,25 @@
 	                        "div",
 	                        { className: "col-md-1" },
 	                        _react2.default.createElement("select", { id: "jac_JMXName" })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Result name"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement("input", { className: "form-control", onChange: this.props.outputChange,
+	                            value: this.props.JAC_outputName })
 	                    )
 	                ),
 	                _react2.default.createElement(

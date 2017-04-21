@@ -14,6 +14,7 @@ export default class DashBoard extends React.Component{
             JAC_clusDesc:"",
             JAC_config:"",
             JAC_user:"",
+            JAC_outputName:"",
             display:0, // saveInPopup,uploads,confirm,resumeList,slvnum,delBtn,clusName,popupConfig
             readonly:false,
             btnDisabled:true,
@@ -26,7 +27,8 @@ export default class DashBoard extends React.Component{
             nameChange(e){ This.setState({JAC_clusName:e.target.value});},
             numChange(e){ This.setState({JAC_SLAVENUM:e.target.value});},
             descChange(e){ This.setState({JAC_clusDesc:e.target.value});},
-            confChange(target){This.setState({JAC_config:target});}
+            confChange(target){This.setState({JAC_config:target});},
+            outputChange(e){This.setState({JAC_outputName:e.target.value})}
         }
         autoBind(this);
     }
@@ -99,6 +101,11 @@ export default class DashBoard extends React.Component{
             alert("succeed");
         })
 
+        socket.on('time_out', function(){
+            This.setState({ btnDisabled:false})
+            alert("Instances are still initializing, check aws web console or try again later");
+        })
+
         socket.on("cluster_stopped", function(){
             This.setState({btnDisabled:false})
         })
@@ -120,10 +127,15 @@ export default class DashBoard extends React.Component{
         }
         else if(jmx_to_run==null || !jmx_to_run.match(/^[\s\S]*\.jmx$/)){
             alert("Invaild JMX file, please upload and select jmx file");
-        }else{
+        }
+        else if (this.state.JAC_outputName.length==0){
+            alert("Empty output name.")
+        }
+        else{
             this.setState({btnDisabled:true,stopBtnDis:false});
             $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger")
-            this.props.socket.emit('startRunning', {"jmx_name":jmx_to_run,"clusID":this.state.JAC_clusID})
+            this.props.socket.emit('startRunning',
+                        {"jmx_name":jmx_to_run,"clusID":this.state.JAC_clusID,"output":this.state.JAC_outputName})
         }
     }
 
