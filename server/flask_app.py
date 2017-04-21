@@ -28,7 +28,7 @@ def command():
     import uuid
     title = "Jmeter Cloud Testing"
     if "tid" in session:
-        del clients[session["tid"]]
+        del clusterMngrs[session["tid"]]
     session['tid'] = str(uuid.uuid4())
     return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["tid"])
 
@@ -39,27 +39,27 @@ def uploadFiles():
     from multiprocessing import Process as P
     clusterID = request.form["clusID"]
     files = request.files.getlist("file")
-    client = clients[session["tid"]]
+    clusterMngr = clusterMngrs[session["tid"]]
     for file in files:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + clusterID + "/", filename))
     def wrapper():
         path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], clusterID)
-        if client.checkStatus(socketio.sleep):
-            client.refreshConnections()
-            client.uploadFiles()
+        if clusterMngr.checkStatus(socketio.sleep):
+            clusterMngr.refreshConnections()
+            clusterMngr.uploadFiles()
             try:
-                client.setUploadDir(path_to_upload)
+                clusterMngr.setUploadDir(path_to_upload)
                 tmp = os.listdir(path_to_upload)
             except:
                 tmp = []
             tmp = [ff for ff in tmp if not ff.startswith(".")]
             jmxList = [f for f in tmp if f.endswith(".jmx")]
-        socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=client.sid)
+        socketio.emit('upload_done',json.dumps({"jmxList": jmxList, "files": tmp}), namespace='/redirect', room=clusterMngr.sid)
         print("")
         #else:print("Time out, please check instances status on AWS web console or try again")
     p = P(target=wrapper)
-    with jredirectors[client.sid]:
+    with jredirectors[clusterMngr.sid]:
         p.start()
     return ""
 

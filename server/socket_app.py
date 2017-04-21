@@ -17,7 +17,7 @@ socketio = SocketIO(async_mode=_async_mode, ping_timeout=6000)
 thread = None
 
 # redis memcacached
-clients = dict() if not redisReady() else RedisableManagers()
+clusterMngrs = dict() if not redisReady() else RedisableManagers()
 
 # these global variables could be problem in the future
 jredirectors = {}
@@ -28,7 +28,7 @@ customConfigs = {} # user level
 def flushPasuse():
     socketio.sleep(1e-3)
 
-# redirect the messages from all clients in bg thread
+# redirect the messages from all clusterMngrs in bg thread
 def background_thread():
     while True:
         socketio.sleep(1e-3)
@@ -55,19 +55,19 @@ def configJson(config):
 # init a new cluster manager,redirector when socket connected
 @socketio.on('connect', namespace='/redirect')
 def connected():
-    global thread, jredirectors, clients
-    client = JAC.Client(sid=request.sid)
+    global thread, jredirectors, clusterMngrs
+    clusterMngr= JAC.ClusterManager(sid=request.sid)
     jredirectors[request.sid] = JAC.Redirector(pauseFunc=flushPasuse)
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    clients[session["tid"]]=client
+    clusterMngrs[session["tid"]]=clusterMngr
 
 # release manager and redirector when socket disconnected
 @socketio.on("disconnect",namespace='/redirect')
 def disconnected():
-    global jredirectors, clients
-    if session['tid'] in clients:
-        del clients[session["tid"]]
+    global jredirectors, clusterMngrs
+    if session['tid'] in clusterMngrs:
+        del clusterMngrs[session["tid"]]
     if request.sid in jredirectors:
         del jredirectors[request.sid]
 
@@ -103,7 +103,7 @@ def getClusterIDs():
 
 # start a created cluster or resume from previous one.
 @socketio.on("start_cluster", namespace="/redirect")
-def startClient(data):
+def startCluster(data):
     username = session["username"]
     clusterName = data["clusName"]
     clusterID = data["clusID"]
@@ -113,27 +113,27 @@ def startClient(data):
     createOrNot = int(data["create"])
     description = data["description"]
     successOrNot = False
-    client=clients[session["tid"]]
+    clusterMngr=clusterMngrs[session["tid"]]
     if not createOrNot and not username==data["user"]:
         if username=="admin":emit("redirect",{"msg":"Admin access.\n"},room=request.sid)
         else:emit("redirect",{"msg":"You are not the owner of this cluster.\nRead-only access.\n\n"},room=request.sid)
     with jredirectors[request.sid]:
         if createOrNot:
             try:
-                client.setConfig(customConfigs[username])
-                client.create(clusterName,user=username)
-                clusterID = client.instMngr.clusterID
-                client.setClusterDesc(description)
-                client.setSlaveNumber(slaveNum)
-                client.setupInstances()
+                clusterMngr.setConfig(customConfigs[username])
+                clusterMngr.create(clusterName,user=username)
+                clusterID = clusterMngr.instMngr.clusterID
+                clusterMngr.setClusterDesc(description)
+                clusterMngr.setSlaveNumber(slaveNum)
+                clusterMngr.setupInstances()
                 clusterDir = "%s%s" % (UPLOAD_PATH, clusterID)
                 if not os.path.exists(clusterDir): os.mkdir(clusterDir)
                 with open(os.path.join(UPLOAD_PATH,clusterID,".JAC_config.json"),"w") as f:
-                    f.write(json.dumps(client.config))
+                    f.write(json.dumps(clusterMngr.config))
                 successOrNot = True
             except Exception as exception:
                 print(exception)
-                client.cleanup()
+                clusterMngr.cleanup()
         else:
             try:
                 config = json.loads(open(UPLOAD_PATH+clusterID+"/.JAC_config.json").read())
@@ -146,46 +146,46 @@ def startClient(data):
                 if not os.path.exists(clusterDir): os.mkdir(clusterDir)
                 with open(os.path.join(UPLOAD_PATH,clusterID,".JAC_config.json"),"w") as f:
                     f.write(json.dumps(config))
-            client.setConfig(config)
-            client.resume(clusterName, clusterID)
+            clusterMngr.setConfig(config)
+            clusterMngr.resume(clusterName, clusterID)
             successOrNot = True
 
         if successOrNot:
-            #client.instMngr.addMaster()#need this if resuming from no master
-            slaveNum = len(client.instMngr.slaves)
+            #clusterMngr.instMngr.addMaster()#need this if resuming from no master
+            slaveNum = len(clusterMngr.instMngr.slaves)
             try:
                 path_to_upload = os.path.join(os.getcwd(), UPLOAD_PATH, clusterID)
                 files = os.listdir(path_to_upload)
-                client.setUploadDir(path_to_upload)
+                clusterMngr.setUploadDir(path_to_upload)
             except:
                 files = []
-            description = client.instMngr.getClusterDesc()
+            description = clusterMngr.instMngr.getClusterDesc()
             files = [ff for ff in files if not ff.startswith(".")]
             jmxList = [f for f in files if f.endswith(".jmx")]
-            emit('config_changed', configJson(client.config),room=request.sid)
+            emit('config_changed', configJson(clusterMngr.config),room=request.sid)
         print("")
-    clients[session["tid"]] = client
+    clusterMngrs[session["tid"]] = clusterMngr
     emit('cluster_started',
          json.dumps({"clusID": clusterID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files,
                      "description":description, "user":username, "executable":createOrNot or username==data["user"] or username=="admin"}),
-         room=client.sid)
+         room=clusterMngr.sid)
 
 # respective dir should be removed as well
 @socketio.on("terminate_cluster", namespace="/redirect")
 def delete():
-    client = clients[session["tid"]]
+    clusterMngr = clusterMngrs[session["tid"]]
     with jredirectors[request.sid]:
-        client.cleanup()
-        os.system("cd %s && rm -rf %s &"%(UPLOAD_PATH,client.instMngr.clusterID))
+        clusterMngr.cleanup()
+        os.system("cd %s && rm -rf %s &"%(UPLOAD_PATH,clusterMngr.instMngr.clusterID))
     emit("cluster_deleted",room=request.sid)
 
-# run task, used multiprocessing so it can be stopped
+# run a test, used multiprocessing so it can be stopped
 @socketio.on("startRunning", namespace='/redirect')
 def runTest(data):
     from multiprocessing import Process as P
     clusterID = data["clusID"]
     jmxName = data["jmx_name"]
-    client = clients[session["tid"]]
+    clusterMngr = clusterMngrs[session["tid"]]
     def fakeRun():
         import time
         c=0
@@ -193,37 +193,37 @@ def runTest(data):
             c+=1
             print(c)
             time.sleep(1)
-        emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=client.sid)
+        emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=clusterMngr.sid)
         print("Finished\n")
     def wrapper():
-        if client.checkStatus(socketio.sleep):
-            client.refreshConnections()
-            client.updateRemotehost()
-            client.startSlavesServer()
+        if clusterMngr.checkStatus(socketio.sleep):
+            clusterMngr.refreshConnections()
+            clusterMngr.updateRemotehost()
+            clusterMngr.startSlavesServer()
             socketio.sleep(3)
-            #client.esCheck()############
-            client.runTest(jmxName)
-            client.stopSlavesServer()
-        emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=client.sid)
+            #clusterMngr.esCheck()############
+            clusterMngr.runTest(jmxName)
+            clusterMngr.stopSlavesServer()
+        emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=clusterMngr.sid)
         print("Finished\n")
         # else: print("Time out, please check instances status on AWS web console or try again")
     p = P(target=fakeRun)
-    with jredirectors[client.sid]:
+    with jredirectors[clusterMngr.sid]:
         p.start()
     processes[clusterID] = p
 
 # terminate running process
 @socketio.on("stop_running", namespace="/redirect")
 def stopRunning(data):
-    client = clients[session["tid"]]
+    clusterMngr = clusterMngrs[session["tid"]]
     with jredirectors[request.sid]:
         clusterID = data["clusID"]
         if clusterID in processes:
             processes[clusterID].terminate()
             del processes[clusterID]
-        client.refreshConnections(verbose=False)
-        client.stopMasterJmeter()
-        client.stopSlavesServer()
+        clusterMngr.refreshConnections(verbose=False)
+        clusterMngr.stopMasterJmeter()
+        clusterMngr.stopSlavesServer()
         socketio.sleep(.5)
         print("Stopped\n")
     emit("cluster_stopped",room=request.sid)
