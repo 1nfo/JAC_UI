@@ -60,14 +60,14 @@ def connected():
     jredirectors[request.sid] = JAC.Redirector(pauseFunc=flushPasuse)
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    clusterMngrs[session["tid"]]=clusterMngr
+    clusterMngrs[session["_id"]]=clusterMngr
 
 # release manager and redirector when socket disconnected
 @socketio.on("disconnect",namespace='/redirect')
 def disconnected():
     global jredirectors, clusterMngrs
-    if session['tid'] in clusterMngrs:
-        del clusterMngrs[session["tid"]]
+    if session['_id'] in clusterMngrs:
+        del clusterMngrs[session["_id"]]
     if request.sid in jredirectors:
         del jredirectors[request.sid]
 
@@ -113,7 +113,7 @@ def startCluster(data):
     createOrNot = int(data["create"])
     description = data["description"]
     successOrNot = False
-    clusterMngr=clusterMngrs[session["tid"]]
+    clusterMngr=clusterMngrs[session["_id"]]
     if not createOrNot and not username==data["user"]:
         if username=="admin":emit("redirect",{"msg":"Admin access.\n"},room=request.sid)
         else:emit("redirect",{"msg":"You are not the owner of this cluster.\nRead-only access.\n\n"},room=request.sid)
@@ -164,7 +164,7 @@ def startCluster(data):
             jmxList = [f for f in files if f.endswith(".jmx")]
             emit('config_changed', configJson(clusterMngr.config),room=request.sid)
         print("")
-    clusterMngrs[session["tid"]] = clusterMngr
+    clusterMngrs[session["_id"]] = clusterMngr
     emit('cluster_started',
          json.dumps({"clusID": clusterID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files,
                      "description":description, "user":username, "executable":createOrNot or username==data["user"] or username=="admin"}),
@@ -173,7 +173,7 @@ def startCluster(data):
 # respective dir should be removed as well
 @socketio.on("terminate_cluster", namespace="/redirect")
 def delete():
-    clusterMngr = clusterMngrs[session["tid"]]
+    clusterMngr = clusterMngrs[session["_id"]]
     with jredirectors[request.sid]:
         clusterMngr.cleanup()
         os.system("cd %s && rm -rf %s &"%(UPLOAD_PATH,clusterMngr.instMngr.clusterID))
@@ -185,7 +185,7 @@ def runTest(data):
     from multiprocessing import Process as P
     clusterID = data["clusID"]
     jmxName = data["jmx_name"]
-    clusterMngr = clusterMngrs[session["tid"]]
+    clusterMngr = clusterMngrs[session["_id"]]
     def fakeRun():
         import time
         c=0
@@ -215,7 +215,7 @@ def runTest(data):
 # terminate running process
 @socketio.on("stop_running", namespace="/redirect")
 def stopRunning(data):
-    clusterMngr = clusterMngrs[session["tid"]]
+    clusterMngr = clusterMngrs[session["_id"]]
     with jredirectors[request.sid]:
         clusterID = data["clusID"]
         if clusterID in processes:

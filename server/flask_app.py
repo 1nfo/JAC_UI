@@ -27,10 +27,7 @@ def command():
     session.permanent=True
     import uuid
     title = "Jmeter Cloud Testing"
-    if "tid" in session:
-        del clusterMngrs[session["tid"]]
-    session['tid'] = str(uuid.uuid4())
-    return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["tid"])
+    return render_template("index.html", async_mode=socketio.async_mode, title=title, sessionID = session["_id"])
 
 # upload test plan endpoint
 @app.route("/uploadFiles", methods=['POST'])
@@ -39,7 +36,7 @@ def uploadFiles():
     from multiprocessing import Process as P
     clusterID = request.form["clusID"]
     files = request.files.getlist("file")
-    clusterMngr = clusterMngrs[session["tid"]]
+    clusterMngr = clusterMngrs[session["_id"]]
     for file in files:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'] + clusterID + "/", filename))
