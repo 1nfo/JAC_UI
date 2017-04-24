@@ -26,8 +26,10 @@ class RedisableDict(object):
 # since client is not picklable, remove it before save it to redis
 class RedisableManagers(RedisableDict):
     def __setitem__(self,key,value):
-        if value.instMngr and "client" in value.instMngr.__dict__:
+        if "instMngr" in value.__dict__ and "client" in value.instMngr.__dict__:
             del value.instMngr.__dict__["client"]
+        if "resMngr" in value.__dict__ and "client" in value.resMngr.__dict__:
+            del value.resMngr.__dict__["client"]
         self.redis.set(key, pickle.dumps(value))
 
 # check is redis-server is running

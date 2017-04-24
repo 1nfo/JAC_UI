@@ -35,12 +35,12 @@ def uploadFiles():
     clusterID = request.form["clusID"]
     files = request.files.getlist("file")
     clusterMngr = clusterMngrs[session["_id"]]
-    for file in files:
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'] + clusterID + "/", filename))
     def wrapper():
         path_to_upload = os.path.join(os.getcwd(), app.config['UPLOAD_FOLDER'], clusterID)
         if clusterMngr.checkStatus(socketio.sleep):
+            for file in files:
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'] + clusterID + "/", filename))
             clusterMngr.refreshConnections()
             clusterMngr.uploadFiles()
             try:

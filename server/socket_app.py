@@ -44,8 +44,8 @@ def background_thread():
 # remove some configs that should be invisible to user
 def configFilter(config):
     filter_list = set(["aws_access_key_id", "aws_secret_access_key","role", # these are credentials
-                       "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath", # there aren't change unless AWS side settings are changed
-                       "region","zone"]) #
+                       "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath", # there is no changes unless AWS side settings changed
+                       "region","zone"]) # won't change under current assumption
     res = {k:config[k] for k in config if k not in filter_list}
     return res
 
@@ -76,12 +76,15 @@ def validateCredentials():
 @socketio.on('connect', namespace='/redirect')
 def connected():
     global thread, jredirectors, clusterMngrs
+    username = session["username"]
     clusterMngr= JAC.ClusterManager(sid=request.sid)
     jredirectors[request.sid] = JAC.Redirector(pauseFunc=flushPasuse)
     if thread is None:
         thread = socketio.start_background_task(target=background_thread)
-    clusterMngrs[session["_id"]]=clusterMngr
     refreshConfig()
+    clusterMngr.setConfig(customConfigs[username])
+    clusterMngr.resMngr.setUser(username)
+    clusterMngrs[session["_id"]]=clusterMngr
     if not validateCredentials():
         emit("redirect",{"msg":"WARNING: Invalid credentials"},room=request.sid)
         # emit("redirect_page",{"url":"/credential"},room=request.sid)
@@ -204,15 +207,6 @@ def runTest(data):
     jmxName = data["jmx_name"]
     output = data["output"]
     clusterMngr = clusterMngrs[session["_id"]]
-    def fakeRun():
-        import time
-        c=0
-        while c<30:
-            c+=1
-            print(c)
-            time.sleep(1)
-        emit('cluster_finished', {'msg': "finished"}, namespace='/redirect', room=clusterMngr.sid)
-        print("Finished\n")
     def wrapper():
         if clusterMngr.checkStatus(socketio.sleep):
             clusterMngr.refreshConnections()
@@ -245,3 +239,17 @@ def stopRunning(data):
         socketio.sleep(.5)
         print("Stopped\n")
     emit("cluster_stopped",room=request.sid)
+
+# list summary resuts
+@socketio.on("list_sum_results", namespace="/redirect")
+def list_sum_results():
+    clusterMngr = clusterMngrs[session["_id"]]
+    res = clusterMngr.resMngr.list()
+    emit("return_sum_results",json.dumps({"res":res}))
+
+# get summary resut
+@socketio.on("get_sum_result", namespace="/redirect")
+def list_sum_results(data):
+    clusterMngr = clusterMngrs[session["_id"]]
+    res = clusterMngr.resMngr.get(data["paths"])
+    emit("return_sum_result",json.dumps({"res":res}))

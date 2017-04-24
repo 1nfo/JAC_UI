@@ -1,14 +1,13 @@
 import React from 'react';
 import Output from './Output';
 import DashBoard from './DashBoard'
+import autoBind from 'react-autobind';
+import ResultPanel from "./ResultPanel"
 
 
 export default class Content extends React.Component{
     constructor(props) {
         super(props);
-    }
-
-    componentWillMount(){
         // Use a "/test" namespace.
         // An application can open a connection on multiple namespaces, and
         // Socket.IO will multiplex all those connections on a single
@@ -20,6 +19,7 @@ export default class Content extends React.Component{
         // The connection URL has the following format:
         //     http[s]://<domain>:<port>[/<namespace>]
         var socket = this.socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+        autoBind(this)
     }
 
     componentDidMount(){
@@ -44,8 +44,26 @@ export default class Content extends React.Component{
 
     render() {
         return (<div className="row panel-body">
-                    <DashBoard socket={this.socket}/>
-                    <Output ref="output"/>
+                    <ul className="nav nav-tabs" role="tablist">
+                      <li className="nav-item active">
+                        <a className="nav-link" data-toggle="tab" href="#Cluster" role="tab">Cluster</a>
+                      </li>
+                      <li className="nav-item">
+                        <a className="nav-link" data-toggle="tab" href="#Results" role="tab">Results</a>
+                      </li>
+                    </ul>
+
+                    <div className="tab-content">
+                      <div className="tab-pane active" id="Cluster" role="tabpanel">
+                        <br/>
+                        <DashBoard socket={this.socket}/>
+                        <Output ref="output"/>
+                      </div>
+                      <div className="tab-pane" id="Results" role="tabpanel">
+                        <br/>
+                        <ResultPanel socket={this.socket}/>
+                      </div>
+                    </div>
                 </div>);
     }
 }

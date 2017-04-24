@@ -10,7 +10,6 @@ var Header = React.createClass({
                         <a className="btn btn-default" href="/logout">Logout</a>
                     </div>
                 </h3>
-
             </div>);
     }
 });
