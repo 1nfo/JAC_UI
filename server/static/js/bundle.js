@@ -23215,6 +23215,7 @@
 	                        resizable: true };
 	                });
 	                This.setState({ "cols": cols, "rows": rows });
+	                This.refs.res_popup.show();
 	            });
 	        }
 	    }, {
@@ -23237,7 +23238,6 @@
 	        key: 'show',
 	        value: function show(i, e) {
 	            this.socket.emit("get_sum_result", { "path": this.state.results[i] });
-	            this.refs.res_popup.show();
 	        }
 	    }, {
 	        key: 'render',
@@ -23278,7 +23278,7 @@
 	                    this.state.results.map(function (d, i) {
 	                        return _react2.default.createElement(
 	                            'div',
-	                            { key: 'i', className: 'row panel col-lg-12' },
+	                            { key: i, className: 'row panel col-lg-12' },
 	                            _react2.default.createElement(
 	                                _reactSkylight2.default,
 	                                { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'res_popup', title: 'Summary Result' },

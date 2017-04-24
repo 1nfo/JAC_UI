@@ -141,6 +141,7 @@ def startCluster(data):
         if createOrNot:
             try:
                 clusterMngr.setConfig(customConfigs[username])
+                clusterMngr.resMngr.setUser(username)
                 clusterMngr.create(clusterName,user=username)
                 clusterID = clusterMngr.instMngr.clusterID
                 clusterMngr.setClusterDesc(description)
@@ -167,6 +168,7 @@ def startCluster(data):
                 with open(os.path.join(UPLOAD_PATH,clusterID,".JAC_config.json"),"w") as f:
                     f.write(json.dumps(config))
             clusterMngr.setConfig(config)
+            clusterMngr.resMngr.setUser(username)
             clusterMngr.resume(clusterName, clusterID, user=username)
             successOrNot = True
 
@@ -249,7 +251,7 @@ def list_sum_results():
 
 # get summary resut
 @socketio.on("get_sum_result", namespace="/redirect")
-def list_sum_results(data):
+def get_sum_result(data):
     clusterMngr = clusterMngrs[session["_id"]]
-    res = clusterMngr.resMngr.get(data["paths"])
+    res = clusterMngr.resMngr.get(data["path"])
     emit("return_sum_result",json.dumps({"res":res}))

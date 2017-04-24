@@ -36,6 +36,7 @@ export default class ResultPanel extends React.Component{
                             resizable:true}}
                 )
             This.setState({"cols":cols,"rows":rows})
+            This.refs.res_popup.show();
         })
     }
 
@@ -55,7 +56,6 @@ export default class ResultPanel extends React.Component{
 
     show(i,e){
         this.socket.emit("get_sum_result",{"path":this.state.results[i]})
-        this.refs.res_popup.show();
     }
 
     render(){
@@ -86,7 +86,7 @@ export default class ResultPanel extends React.Component{
                     {
                         this.state.results.map(function(d,i){
                             return (
-                                <div key="i" className="row panel col-lg-12">
+                                <div key={i} className="row panel col-lg-12">
                                 <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="res_popup" title="Summary Result" >
                                     <div style={{"color":"black"}}>
                                          <ReactDataGrid
