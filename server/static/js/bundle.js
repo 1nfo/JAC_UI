@@ -22006,6 +22006,8 @@
 	                alert("Invaild JMX file, please upload and select jmx file");
 	            } else if (this.state.JAC_outputName.length == 0) {
 	                alert("Empty output name.");
+	            } else if (!this.state.JAC_outputName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)) {
+	                alert("Result name needs to be letters and number only");
 	            } else {
 	                this.setState({ btnDisabled: true, stopBtnDis: false });
 	                $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger");
@@ -22638,7 +22640,7 @@
 	        key: 'render',
 	        value: function render() {
 	            var myBigGreenDialog = {
-	                backgroundColor: '#00897B',
+	                backgroundColor: '#337ab7',
 	                color: '#ffffff',
 	                width: '70%',
 	                height: '550px',
@@ -22773,12 +22775,12 @@
 	                    ),
 	                    _react2.default.createElement(
 	                        'button',
-	                        { className: 'btn btn-primary pull-right', onClick: this.clickOnJsonBtn },
+	                        { className: 'btn btn-default pull-right', onClick: this.clickOnJsonBtn },
 	                        this.btn_text()
 	                    ),
 	                    _react2.default.createElement(
 	                        'button',
-	                        { className: 'btn btn-danger',
+	                        { className: 'btn btn-default',
 	                            ref: 'save',
 	                            onClick: this.save,
 	                            style: this.props.saveBtnStyle },
@@ -23141,7 +23143,7 @@
 /* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -23156,10 +23158,6 @@
 	var _reactSkylight = __webpack_require__(188);
 
 	var _reactSkylight2 = _interopRequireDefault(_reactSkylight);
-
-	var _reactScrollbar = __webpack_require__(182);
-
-	var _reactScrollbar2 = _interopRequireDefault(_reactScrollbar);
 
 	var _reactDataGrid = __webpack_require__(193);
 
@@ -23177,6 +23175,40 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+	// Custom Formatter component
+	var PopupFormat = _react2.default.createClass({
+	    displayName: "PopupFormat",
+	    render: function render() {
+	        var i = this.props.value.i;
+	        return _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(
+	                "button",
+	                { className: "btn btn-link", onClick: this.props.value.func.bind(this, i) },
+	                "Details"
+	            )
+	        );
+	    }
+	});
+
+	// Custom Formatter component
+	var DownloadLinkFormat = _react2.default.createClass({
+	    displayName: "DownloadLinkFormat",
+	    render: function render() {
+	        var i = this.props.value.i;
+	        return _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(
+	                "button",
+	                { className: "btn btn-link", onClick: this.props.value.func.bind(this, i) },
+	                "Download"
+	            )
+	        );
+	    }
+	});
+
 	var ResultPanel = function (_React$Component) {
 	    _inherits(ResultPanel, _React$Component);
 
@@ -23186,46 +23218,93 @@
 	        var _this = _possibleConstructorReturn(this, (ResultPanel.__proto__ || Object.getPrototypeOf(ResultPanel)).call(this, props));
 
 	        _this.state = {
+	            popups: true,
+	            originalResults: [],
 	            results: [],
 	            cols: [],
-	            rows: []
+	            originalRows: [],
+	            rows: [],
+	            rowNum: -1
 	        };
+	        _this._cols = [{
+	            key: "Name",
+	            name: "Name",
+	            width: 200,
+	            resizable: true,
+	            sortable: true
+	        }, {
+	            key: "LastModified",
+	            name: "LastModified",
+	            width: 250,
+	            resizable: true,
+	            sortable: true
+	        }, {
+	            key: "Size",
+	            name: "Size",
+	            width: 150,
+	            resizable: true,
+	            sortable: true
+	        }, {
+	            key: "Details",
+	            name: "",
+	            width: 120,
+	            formatter: PopupFormat
+	        }, {
+	            key: "Download",
+	            name: "",
+	            width: 120,
+	            formatter: DownloadLinkFormat
+	        }];
 	        (0, _reactAutobind2.default)(_this);
 	        _this.socket = _this.props.socket;
 	        return _this;
 	    }
 
 	    _createClass(ResultPanel, [{
-	        key: 'componentDidMount',
+	        key: "componentDidMount",
 	        value: function componentDidMount() {
 	            var socket = this.socket;
 	            var This = this;
 	            socket.on("return_sum_results", function (data) {
 	                data = JSON.parse(data);
-	                This.setState({ results: data["res"] });
+	                This.setState({ results: data["res"], originalResults: data["res"].slice(0) });
 	            });
 	            socket.on("return_sum_result", function (data) {
 	                var table = JSON.parse(data)["res"];
-	                var header = table.split("\n")[0];
-	                var rows = table.split("\n").slice(1);
-	                var cols = header.split(",").map(function (d, i) {
-	                    var prefix = "aggregate_report_";
-	                    return { key: i.toString(),
-	                        name: d.startsWith(prefix) ? d.split(prefix)[1] : d,
-	                        resizable: true };
-	                });
-	                This.setState({ "cols": cols, "rows": rows });
-	                This.refs.res_popup.show();
+	                if (This.state.popups) {
+	                    var header = table.split("\n")[0];
+	                    var rows = table.split("\n").slice(1);
+	                    var originalRows = rows.slice(0);
+	                    var cols = header.split(",").map(function (d, i) {
+	                        var prefix = "aggregate_report_";
+	                        return {
+	                            key: i.toString(),
+	                            name: d.startsWith(prefix) ? d.split(prefix)[1] : d,
+	                            resizable: true,
+	                            sortable: true
+	                        };
+	                    });
+	                    This.setState({ "cols": cols, "rows": rows, "originalRows": originalRows });
+	                    This.refs.res_popup.show();
+	                } else {
+	                    var element = document.createElement('a');
+	                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(table));
+	                    element.setAttribute('download', This.state.results[This.state.rowNum]["Name"] + ".csv");
+	                    element.style.display = 'none';
+	                    document.body.appendChild(element);
+	                    element.click();
+	                    document.body.removeChild(element);
+	                }
 	            });
 	        }
 	    }, {
-	        key: 'listResults',
+	        key: "listResults",
 	        value: function listResults() {
 	            this.socket.emit("list_sum_results");
 	        }
 	    }, {
-	        key: 'rowGetter',
-	        value: function rowGetter(i) {
+	        key: "popupRowGetter",
+	        value: function popupRowGetter(i) {
 	            var d = this.state.rows[i];
 	            var ret = {};
 	            var arr = d.split(",");
@@ -23235,74 +23314,99 @@
 	            return ret;
 	        }
 	    }, {
-	        key: 'show',
-	        value: function show(i, e) {
-	            this.socket.emit("get_sum_result", { "path": this.state.results[i] });
+	        key: "outerRowGetter",
+	        value: function outerRowGetter(i) {
+	            return Object.assign({
+	                "Details": { func: this.popup, i: i },
+	                "Download": { func: this.download, i: i }
+	            }, this.state.results[i]);
 	        }
 	    }, {
-	        key: 'render',
+	        key: "popup",
+	        value: function popup(i, _) {
+	            this.setState({ popups: true });
+	            this.socket.emit("get_sum_result", { "path": this.state.results[i]["Key"] });
+	        }
+	    }, {
+	        key: "download",
+	        value: function download(i, _) {
+	            this.setState({ popups: false, rowNum: i });
+	            this.socket.emit("get_sum_result", { "path": this.state.results[i]["Key"] });
+	        }
+	    }, {
+	        key: "handleOuterGridSort",
+	        value: function handleOuterGridSort(sortColumn, sortDirection) {
+	            var comparer = function comparer(a, b) {
+	                if (sortDirection === 'ASC') {
+	                    return a[sortColumn] > b[sortColumn] ? 1 : -1;
+	                } else if (sortDirection === 'DESC') {
+	                    return a[sortColumn] < b[sortColumn] ? 1 : -1;
+	                }
+	            };
+	            var results = sortDirection === 'NONE' ? this.state.originalResults.slice(0) : this.state.results.sort(comparer);
+	            this.setState({ results: results });
+	        }
+	    }, {
+	        key: "handlePopupGridSort",
+	        value: function handlePopupGridSort(sortColumn, sortDirection) {
+	            var comparer = function comparer(a, b) {
+	                if (sortDirection === 'ASC') {
+	                    return a[sortColumn] > b[sortColumn] ? 1 : -1;
+	                } else if (sortDirection === 'DESC') {
+	                    return a[sortColumn] < b[sortColumn] ? 1 : -1;
+	                }
+	            };
+	            var rows = sortDirection === 'NONE' ? this.state.originalRows.slice(0) : this.state.rows.sort(comparer);
+	            this.setState({ rows: rows });
+	        }
+	    }, {
+	        key: "render",
 	        value: function render() {
 	            var This = this;
 	            var myBigGreenDialog = {
-	                backgroundColor: '#00897B',
+	                backgroundColor: '#337ab7',
 	                color: '#ffffff',
 	                width: '70%',
-	                height: '650px',
-	                marginTop: '-400px',
+	                height: '450px',
+	                marginTop: '-250px',
 	                marginLeft: '-35%'
 	            };
-	            var scrollbarStyles = { borderRadius: 5 };
 	            return _react2.default.createElement(
-	                'div',
-	                { className: 'col-lg-12' },
+	                "div",
+	                { className: "col-lg-12" },
 	                _react2.default.createElement(
-	                    'div',
-	                    null,
+	                    "div",
+	                    { className: "text-center" },
 	                    _react2.default.createElement(
-	                        'button',
-	                        { className: 'btn btn-primary', onClick: this.listResults },
-	                        'Refresh result list'
+	                        "button",
+	                        { className: "btn btn-primary", onClick: this.listResults },
+	                        "Refresh result list"
 	                    )
 	                ),
-	                _react2.default.createElement('br', null),
+	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
-	                    _reactScrollbar2.default,
-	                    { style: { height: 500 },
-	                        smoothScrolling: true,
-	                        minScrollSize: 40,
-	                        verticalScrollbarStyle: scrollbarStyles,
-	                        verticalContainerStyle: scrollbarStyles,
-	                        horizontalScrollbarStyle: scrollbarStyles,
-	                        horizontalContainerStyle: scrollbarStyles
-	                    },
-	                    this.state.results.map(function (d, i) {
-	                        return _react2.default.createElement(
-	                            'div',
-	                            { key: i, className: 'row panel col-lg-12' },
-	                            _react2.default.createElement(
-	                                _reactSkylight2.default,
-	                                { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'res_popup', title: 'Summary Result' },
-	                                _react2.default.createElement(
-	                                    'div',
-	                                    { style: { "color": "black" } },
-	                                    _react2.default.createElement(_reactDataGrid2.default, {
-	                                        columns: This.state.cols,
-	                                        rowGetter: This.rowGetter,
-	                                        rowsCount: This.state.rows.length,
-	                                        minHeight: 530 })
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                'h2',
-	                                null,
-	                                _react2.default.createElement(
-	                                    'a',
-	                                    { onClick: This.show.bind(This, i) },
-	                                    i + 1 + ". " + d.split("/")[2]
-	                                )
-	                            )
-	                        );
-	                    })
+	                    _reactSkylight2.default,
+	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: "res_popup", title: "Summary Result" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { style: { "color": "black" } },
+	                        _react2.default.createElement(_reactDataGrid2.default, {
+	                            onGridSort: This.handlePopupGridSort,
+	                            columns: This.state.cols,
+	                            rowGetter: This.popupRowGetter,
+	                            rowsCount: This.state.rows.length,
+	                            minHeight: 330 })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    null,
+	                    _react2.default.createElement(_reactDataGrid2.default, {
+	                        onGridSort: This.handleOuterGridSort,
+	                        columns: This._cols,
+	                        rowGetter: This.outerRowGetter,
+	                        rowsCount: This.state.results.length,
+	                        minHeight: 550 })
 	                )
 	            );
 	        }

@@ -131,6 +131,9 @@ export default class DashBoard extends React.Component{
         else if (this.state.JAC_outputName.length==0){
             alert("Empty output name.")
         }
+        else if(!this.state.JAC_outputName.match(/^[a-zA-Z][a-zA-Z0-9]*$/)){
+            alert("Result name needs to be letters and number only")
+        }
         else{
             this.setState({btnDisabled:true,stopBtnDis:false});
             $("#btn_stopRunning").removeClass("btn-default").addClass("btn-danger")

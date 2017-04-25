@@ -75,7 +75,7 @@ export default class JacConfigPopup extends React.Component{
 
     render(){
         var myBigGreenDialog = {
-          backgroundColor: '#00897B',
+          backgroundColor: '#337ab7',
           color: '#ffffff',
           width: '70%',
           height: '550px',
@@ -128,8 +128,8 @@ export default class JacConfigPopup extends React.Component{
                                     onChange={this.jsonChange}
                                     style={{"minWidth": "100%","minHeight":"320px"}}></textarea><br/>
                         </div>
-                        <button className="btn btn-primary pull-right" onClick={this.clickOnJsonBtn}>{this.btn_text()}</button>
-                        <button className="btn btn-danger"
+                        <button className="btn btn-default pull-right" onClick={this.clickOnJsonBtn}>{this.btn_text()}</button>
+                        <button className="btn btn-default"
                                 ref="save"
                                 onClick={this.save}
                                 style={this.props.saveBtnStyle}>
