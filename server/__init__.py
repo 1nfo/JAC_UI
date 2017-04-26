@@ -6,7 +6,7 @@ app.config.update(
     DEBUG=True,
     SECRET_KEY='48065a15-fc1c-4eec-829d-cc8faeea0356',
     PERMANENT_SESSION_LIFETIME=timedelta(seconds=6000),
-    SQLALCHEMY_DATABASE_URI="sqlite:///users.db",
+    SQLALCHEMY_DATABASE_URI="sqlite:///pydtusers.db",
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     SESSION_TYPE = 'redis'
 )

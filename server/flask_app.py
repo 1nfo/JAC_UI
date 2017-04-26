@@ -3,6 +3,7 @@ from flask_login import LoginManager , login_required , login_user, logout_user
 from werkzeug.utils import secure_filename
 from .socket_app import *
 from .SimpleModel import User, db
+from .PaydiantAuthentication import PaydiantAuthentication as PydtAuth
 import json, os
 
 
@@ -75,11 +76,18 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        registeredUser = User.query.filter_by(username=username).first()
-        if registeredUser != None and registeredUser.password == password:
+        if PydtAuth().verify(username,password):
+            registeredUser = User.query.filter_by(username=username).first()
+            if registeredUser == None:
+                new_user = User(username,User.query.all().__len__())
+                with app.app_context():
+                    db.session.add(new_user)
+                    db.session.commit()
+                registeredUser = User.query.filter_by(username=username).first()
             login_user(registeredUser)
             session["credentials"] = registeredUser.getCredentials()
             session["username"] = username
+            session["superAccess"] = registeredUser.access==1
             init_costom_config()
             if not validateCredentials(): return redirect( "/credential" )
             return redirect( request.args.get("next") or "/command" )

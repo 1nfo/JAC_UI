@@ -1,7 +1,7 @@
 from flask import request, session
 from flask_socketio import SocketIO, emit
 from .Redisable import redisReady, RedisableManagers
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, ParamValidationError
 import json, os
 import JmeterAwsConf as JAC
 
@@ -68,7 +68,7 @@ def init_costom_config():
 def validateCredentials():
     try:
         JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]])).client
-    except ClientError:
+    except (ClientError,ParamValidationError):
         return False
     return True
 
@@ -135,7 +135,7 @@ def startCluster(data):
     successOrNot = False
     clusterMngr=clusterMngrs[session["_id"]]
     if not createOrNot and not username==data["user"]:
-        if username=="admin":emit("redirect",{"msg":"Admin access.\n"},room=request.sid)
+        if session["superAccess"]:emit("redirect",{"msg":"Admin access.\n"},room=request.sid)
         else:emit("redirect",{"msg":"You are not the owner of this cluster.\nRead-only access.\n\n"},room=request.sid)
     with jredirectors[request.sid]:
         if createOrNot:
@@ -189,7 +189,7 @@ def startCluster(data):
     clusterMngrs[session["_id"]] = clusterMngr
     emit('cluster_started',
          json.dumps({"clusID": clusterID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files,
-                     "description":description, "user":username, "executable":createOrNot or username==data["user"] or username=="admin"}),
+                     "description":description, "user":username, "executable":createOrNot or username==data["user"] or session["superAccess"]}),
          room=clusterMngr.sid)
 
 # respective dir should be removed as well

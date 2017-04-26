@@ -10,20 +10,20 @@ class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer,primary_key=True)
     username = db.Column(db.String(20), unique=True)
-    password = db.Column(db.String(20))
     aws_access_key_id = db.Column(db.String(50))
     aws_secret_access_key = db.Column(db.String(50))
     role = db.Column(db.String(50))
+    access = db.Column(db.Integer)
 
-    def __init__(self , username , password , id , active=True):
+    def __init__(self , username , id , active=True):
         self.id = id
         self.username = username
-        self.password = password
         self.active = active
         self.authenticated = True
         self.aws_access_key_id=""
         self.aws_secret_access_key=""
         self.role=""
+        self.access=0
 
     def get_id(self):
         return self.id
