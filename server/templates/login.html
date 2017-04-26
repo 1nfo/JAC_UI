@@ -17,15 +17,46 @@
             <div class="card card-container">
                 <h2 class='login_title text-center'>Login</h2>
                 <hr/>
-                <form class="form-signin" method="POST">
+                <form class="form-signin">
                     <!-- <p class="input_title">Email</p> -->
                     <input class="login_box" id="inputUsername"  type=text name=username placeholder="username" required autofocus>
                     <!-- <p class="input_title">Password</p> -->
                     <input class="login_box" type=password name=password placeholder="password" id="inputPassword" required>
-                    <button class="btn btn-lg btn-primary" type="submit">Login</button><br><a class="text-center" href="/register">Register</a>
+                    <button id="login_btn" class="btn btn-lg btn-primary" >Login</button>
                 </form>
-                <p class="text-danger" style="display:{{display}}">Invalid username or password<p>
+                <div style="height:50px"><br/><p class="text-danger" id="invalid_hint" style="display:none">Invalid username or password<p></div>
             </div>
+            <script src="{{ url_for('static',filename = 'js/jquery.js' )}}"></script>
+            <script type="text/javascript">
+                $("#login_btn").click(function(e){
+                    e.preventDefault()
+                    $.ajax({
+                        async: false,
+                        cache: false,
+                        type: 'post',
+                        dataType: 'json',
+                        data: ({
+                            'username': $('#inputUsername').val(),
+                            'password': $('#inputPassword').val()
+                        }),
+                        url: '/login',
+                        success: function (data) {
+                            console.log(data)
+                            if (data["success"] === '1') {  // server returns a "1" for success
+                                window.location = data["url"]
+                            } else {
+                                document.getElementById("invalid_hint").style.display="block"
+                                setTimeout(function(){document.getElementById("invalid_hint").style.display="none"},3000,)
+                            }
+                        },
+                        error: function () {
+                            // something went wrong with the request
+                             document.getElementById("invalid_hint").style.display="block"
+                             setTimeout(function(){document.getElementById("invalid_hint").style.display="none"},3000,)
+                        }
+                    });
+                })
+            </script>>
         </div>
     </body>
 </html>

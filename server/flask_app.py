@@ -90,11 +90,11 @@ def login():
             session["superAccess"] = registeredUser.access==1
             init_costom_config()
             if not validateCredentials(): return redirect( "/credential" )
-            return redirect( request.args.get("next") or "/command" )
+            return json.dumps({"success":"1","url":request.args.get("next") or "/command"})
         else:
-            return render_template("login.html", title=title, display="block")
+            return json.dumps("0")
     else:
-        return render_template("login.html", title=title, display="none")
+        return render_template("login.html", title=title)
 
 # logout page
 @app.route('/logout')
@@ -104,27 +104,6 @@ def logout():
     del session["username"]
     return redirect('/')
 
-
-@app.route('/register' , methods = ['GET' , 'POST'])
-def register():
-    # del session["username"]
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        new_user = User(username , password , User.query.all().__len__())
-        with app.app_context():
-            db.session.add(new_user)
-            db.session.commit()
-        return Response("<p>Registered Successfully<p><p><a href='/login'>login</a><p>")
-    else:
-        return Response("Not available now <br> <a href='/login'>login</a>")
-        return Response('''
-        <form action="" method="post">
-            <p><input type=text name=username placeholder="Enter username">
-            <p><input type=password name=password placeholder="Enter password">
-            <p><input type=submit value=Register>
-        </form>
-        ''')
 
 # update credentials.
 @app.route("/credential", methods = ["GET", "POST"])
