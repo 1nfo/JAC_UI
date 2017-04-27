@@ -1,0 +1,7 @@
+.*
+uploads/*
+node_module*
+__py*
+*.db
+*.pyc
+*.pem
