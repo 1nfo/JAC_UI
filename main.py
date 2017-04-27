@@ -8,7 +8,11 @@ if __name__ == "__main__":
         with app.app_context():
             db.create_all()
     # server option make host externally visible
-    if "server" in sys.argv:
+    if "cmd" in sys.argv:
+        cmd = sys.argv.index("cmd")+1
+        if len(sys.argv)>cmd:
+            exec(sys.argv[cmd])
+    elif "server" in sys.argv:
         socketio.run(app, host="0.0.0.0", port=80, debug=True)
     else:
         socketio.run(app, debug=True)
