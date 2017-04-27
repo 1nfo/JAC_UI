@@ -1,0 +1,24 @@
+{
+  "InstType": {
+    "master": "t2.micro",
+    "slave": "t2.micro"
+  },
+  "pemFilePath": "Jmeter_test_key_pair.pem",
+  "region": "us-west-2",
+  "zone": "us-west-2a",
+  "security_groups": [
+    "Jmeter_test_group"
+  ],
+  "username": "ubuntu",
+  "ami": {
+    "slave" : "ami-8e9d02ee",
+    "master" : "ami-48980728"
+  },
+  "cmdRunnerPath":"/usr/local/apache-jmeter-2.13/lib/cmdrunner-2.0.jar",
+  "propertiesPath":"/usr/local/apache-jmeter-2.13/bin/jmeter.properties",
+  "logstash_conf_dir":"/etc/logstash/conf.d",
+  "es_IP":"172.31.18.135:9200",
+  "instance_home":"/home/ubuntu/",
+  "s3_bucket":"jmeteroutput",
+  "s3_role":{"Arn":"arn:aws:iam::061217841322:instance-profile/jmeter_s3access"}
+}

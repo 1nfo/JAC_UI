@@ -3,7 +3,7 @@ from flask_socketio import SocketIO, emit
 from .Redisable import redisReady, RedisableManagers
 from botocore.exceptions import ClientError, ParamValidationError
 import json, os
-import JmeterAwsConf as JAC
+from . import JmeterAwsConf as JAC
 
 UPLOAD_PATH = 'uploads/'
 
