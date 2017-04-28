@@ -9,11 +9,19 @@ Back-end: Flask, Flask-socketio, Flask-Session, Flask-SQLAlchemy, Redis and [Jme
 
 ## Deployment step
 
-check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
+docker bulid:
+	
+	docker build -t jac .
+	
+docker run
+
+	docker run -p 0.0.0.0:80:80 -it jac start 
+
+~~check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
 
 socketio-flask embedded with eventlet/gevent, so it has wsgi.
 
-check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#deployment)
+check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#deployment)~~
 
 
 ## To do
