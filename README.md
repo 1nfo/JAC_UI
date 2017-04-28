@@ -7,7 +7,31 @@ For developer, webpack needs to be install to generate bundle.js.
 Front-end: Bootstrap, JQurey, React.js, and socket.io.js  
 Back-end: Flask, Flask-socketio, Flask-Session, Flask-SQLAlchemy, Redis and [JmeterAwsConf](https://github.pydt.lan/szhao/JmeterAwsConf)
 
-## Deployment step
+## Deployment
+
+### MAC OS 
+
+Deployment on mac is generally for developing and testing. So it's good idea to use virtualenv.  
+
+See this repo [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
+
+### windows
+
+Since multiprocessing package requires picklable object, this app is hard to run on windows OS. Please use Virtual Machine or Docker.
+
+### linux
+
+Refer to [Dockerfile]() under this repo. 
+
+DON'T FORGET TO:  
+
+1. Put Jmeter\_test\_key\_pair.pem under home directory.
+2. Clone this repo to you server.
+3. Start redis server first before application.
+4. Bind port 80 requires sudo.
+5. Add "server" flag `sudo python3 main.py server`
+
+### docker
 
 docker bulid:
 	
@@ -17,55 +41,43 @@ docker run
 
 	docker run -p 0.0.0.0:80:80 -it jac start 
 
-~~check [AWS_TEST](https://github.pydt.lan/szhao/AWS_TEST)
-
-socketio-flask embedded with eventlet/gevent, so it has wsgi.
-
-check deployment [details](https://flask-socketio.readthedocs.io/en/latest/#deployment)~~
-
-
-## To do
-0. [√]redis detect 
-1. [?]thread blocking ..fixed?
-3. task level info, ip >> id, more tag
-3. [√]afterReady -> reactjs; post -> socket
-3. [√]deploy on aws
-6. [√]pass users credentials (user login if sharing one credential)
-7. readonly task ( task locker / is exclusively accessing neccessary?)
-8. socket no response sometimes, not reproducible
-9. encrypt request
-10. user register?
-11. font-end, popup interface
 
 ## basic component
 
+### Flask
+URL routing and api.
+
+### JmeterAwsConf
+Controller / Managers
+
 ### SQLAlchemy
-Save user's aws credentials.
+Save user's aws credentials.   
+ORM.   
+SQLite3.  
 
-### React.js
-Generate bundles.js to control "command" page behavior. One page application.
+### React.js 
 
+Front-end, one-page js application. Mixed with Socket.io    
 
-### socket io
-socket io is responsible for building a socket connection when user accessing "command" page. It will pass user's command like creating instance and starting jmeter test on instance. It also forwards some outputs from jmeter test cluster to report the testing progress.
+Under clientJS directory.   
+For developer, please install npm and webpack.  
+**npm** for managing javascript package, see package.json  
+**webpack** for generating bundles.js in index.html. see webpack.config.js.
+
+### Socket.io
+socket io is responsible for building a socket connection when users stay on "command" page. It will pass user's commands, like creating instance and starting jmeter test on remote instances. It also forwards some outputs from jmeter test cluster so as to report the testing progress.
 
 ### Redis
 Redis has two purposes here.  
 
 1. It is required by Flask-Session to create a server-side session. 
-2. Redis is useful to share objects between the requests. specifically, to store \<class JmeterAwsConf.Manager.TaskManager \>, so taskmanager can be reused between the requests. 
+2. Redis is useful to share objects between the requests. specifically, to store \<class JmeterAwsConf.Manager.TaskManager \>, so taskmanager can be reused between the requests. Global variables should works as well under linux. 
 
-**More about 2:** 
-Now taskmanager is wrapped by server/Redisable.py and uses separated db in redis, but theoretically this wrapper can be merged into Flask-Session.  
 
-Actually, using redis to store taskmanager might be not very necessary. Because taskmanager is used only when socket is connected and no use after socket disconnected. Just using a global variable during the socket connection should be fine. But if object is required to be shared between the normal http request instead of using socket, then this redisable manager is necessary.
+**NOTE:** In order to make object saved in redis, this object must be picklable. To make objects redis-able, unpickable element of these object, like boto3.client,  must be deleted before dumping and reconstruct right after loading.
 
-**NOTE:** In order to make object saved in redis, this object must be picklable. Reconstruct unpickable object like boto3.client.
-
-## workflow & Request/Response ("command" page)
-
-0. redirect to /command:   
-	**function** assign a new session id.
+## Workflow & Request/Response ("command" page)
+ 
 1. socketio connected call "connect"   
    **function** connect socketio, start bgthread, init a new taskMngr to taskMngrs
 2. click create or resume
@@ -75,15 +87,15 @@ Actually, using redis to store taskmanager might be not very necessary. Because 
 	   **function** update jac config under: [ip,config] --> [socketio event init_config emit customconfig]
 	2. resume: call /post/getTaskIDs   
 	   **function** get a list of available tasks: [] --> [task list]
-3. click confirm /click task to resume: call /post/taskName   
+3.** click confirm /click task to resume**: call /post/taskName   
    **function** create a task cluster: [ip, task id, task name, salve number, create or resume, description] --> [task id, slace number, file list, description]
-4. upload call /uploadFiles   
+4. **upload**: call /uploadFiles   
    **function** upload files: [task id, files] --> [success or not]
-5. run call socketio event "startRunning"   
-   **function** running jmeter test plan: [task id, jmx] --> [] second python process running and emit socketio event taskFinished after finished.
-6. stop call /post/stop   
+5. **run**: call socketio event "startRunning"   
+   **function** running jmeter test plan: [task id, jmx, result name] --> [] second python process running and emit socketio event taskFinished after finished.
+6. **stop**: call /post/stop   
    **function** stop running task (terminate second python process, kill jmeter process): [taskID] --> [success or not]
-7. del task call /post/cleanup   
+7. **delete**: call /post/cleanup   
    **function** terminate cluster, remove uploads dir [] --> [success or not]
-6. socketio disconnected call "disconnect"  
+6. **socketio disconnected**: call "disconnect"  
    **function** del taskMngr from taskMngrs

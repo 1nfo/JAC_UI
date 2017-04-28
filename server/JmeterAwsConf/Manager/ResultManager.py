@@ -19,6 +19,7 @@ class ResultManager(Manager,BotoSession):
 
     def list(self):
         res = self.client.list_objects(Bucket=self.config.s3bucket,Prefix=self.user+"/"+"summary/")
+        if not "Contents" in res: return []
         return [
             {
                 "Key":i["Key"],
