@@ -29,6 +29,18 @@ const DownloadLinkFormat = React.createClass({
   }
 });
 
+// Custom Formatter component
+const DeleteLinkFormat = React.createClass({
+
+  render() {
+    const i = this.props.value.i
+    return (
+      <div >
+        <button className="btn btn-link" onClick={this.props.value.func.bind(this,i)}>Delete</button>
+      </div>);
+  }
+});
+
 
 export default class ResultPanel extends React.Component{
     constructor(props) {
@@ -96,6 +108,12 @@ export default class ResultPanel extends React.Component{
                 name:"",
                 width:105,
                 formatter:DownloadLinkFormat
+            },
+            {
+                key:"Delete",
+                name:"",
+                width:80,
+                formatter:DeleteLinkFormat
             }
         ]
         autoBind(this)
@@ -138,6 +156,9 @@ export default class ResultPanel extends React.Component{
                 document.body.removeChild(element);
             }
         })
+        socket.on("return_del_ack",function(){
+            ;
+        })
     }
 
     listResults(){
@@ -162,7 +183,8 @@ export default class ResultPanel extends React.Component{
         return Object.assign(
             {
                 "Details":{func:this.popup,i:i},
-                "Download":{func:this.download,i:i}
+                "Download":{func:this.download,i:i},
+                "Delete":{func:this.delete,i:i}
             },
             this.getOuterRows()[i]
         )
@@ -178,6 +200,14 @@ export default class ResultPanel extends React.Component{
         var This = this;
         this.setState({popups:false,rowNum:i});
         this.socket.emit("get_sum_result",{"path":This.getOuterRows()[i]["Key"]})
+    }
+
+    delete(i,_){
+        if(confirm("Do you want to delete this summary log?")){
+            var Key = this.getOuterRows()[i]["Key"]
+            this.socket.emit("del_sum_result",{"path":Key})
+            this.setState({rows:this.state.rows.filter(function(r){return r.Key!=Key})});
+        }
     }
 
     handleOuterGridSort(sortColumn, sortDirection){

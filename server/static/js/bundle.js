@@ -23211,6 +23211,23 @@
 	    }
 	});
 
+	// Custom Formatter component
+	var DeleteLinkFormat = _react2.default.createClass({
+	    displayName: "DeleteLinkFormat",
+	    render: function render() {
+	        var i = this.props.value.i;
+	        return _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(
+	                "button",
+	                { className: "btn btn-link", onClick: this.props.value.func.bind(this, i) },
+	                "Delete"
+	            )
+	        );
+	    }
+	});
+
 	var ResultPanel = function (_React$Component) {
 	    _inherits(ResultPanel, _React$Component);
 
@@ -23275,6 +23292,11 @@
 	            name: "",
 	            width: 105,
 	            formatter: DownloadLinkFormat
+	        }, {
+	            key: "Delete",
+	            name: "",
+	            width: 80,
+	            formatter: DeleteLinkFormat
 	        }];
 	        (0, _reactAutobind2.default)(_this);
 	        _this.socket = _this.props.socket;
@@ -23317,6 +23339,9 @@
 	                    document.body.removeChild(element);
 	                }
 	            });
+	            socket.on("return_del_ack", function () {
+	                ;
+	            });
 	        }
 	    }, {
 	        key: "listResults",
@@ -23344,7 +23369,8 @@
 	        value: function outerRowGetter(i) {
 	            return Object.assign({
 	                "Details": { func: this.popup, i: i },
-	                "Download": { func: this.download, i: i }
+	                "Download": { func: this.download, i: i },
+	                "Delete": { func: this.delete, i: i }
 	            }, this.getOuterRows()[i]);
 	        }
 	    }, {
@@ -23360,6 +23386,17 @@
 	            var This = this;
 	            this.setState({ popups: false, rowNum: i });
 	            this.socket.emit("get_sum_result", { "path": This.getOuterRows()[i]["Key"] });
+	        }
+	    }, {
+	        key: "delete",
+	        value: function _delete(i, _) {
+	            if (confirm("Do you want to delete this summary log?")) {
+	                var Key = this.getOuterRows()[i]["Key"];
+	                this.socket.emit("del_sum_result", { "path": Key });
+	                this.setState({ rows: this.state.rows.filter(function (r) {
+	                        return r.Key != Key;
+	                    }) });
+	            }
 	        }
 	    }, {
 	        key: "handleOuterGridSort",

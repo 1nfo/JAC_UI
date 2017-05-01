@@ -35,3 +35,6 @@ class ResultManager(Manager,BotoSession):
     def get(self,path):
         body = self.client.get_object(Bucket=self.config.s3bucket,Key=path)["Body"]
         return body.read().decode('utf-8').strip()
+
+    def delete(self,path):
+        return self.client.delete_object(Bucket=self.config.s3bucket,Key=path)

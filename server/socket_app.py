@@ -255,3 +255,11 @@ def get_sum_result(data):
     clusterMngr = clusterMngrs[session["_id"]]
     res = clusterMngr.resMngr.get(data["path"])
     emit("return_sum_result",json.dumps({"res":res}))
+
+# delete summary result
+@socketio.on("del_sum_result", namespace="/redirect")
+def del_sum_result(data):
+    clusterMngr = clusterMngrs[session["_id"]]
+    res = clusterMngr.resMngr.delete(data["path"])
+    # print(res)
+    emit("return_del_ack",json.dumps({"ack":True}))
