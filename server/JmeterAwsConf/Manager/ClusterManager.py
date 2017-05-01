@@ -161,7 +161,7 @@ class ClusterManager(Manager):
     #  2. -l output, the output file name
     def runTest(self, jmx, output):
         self.print("\nrunning test now ...")
-        output+="_"+now()
+        output+="_"+self.instMngr.clusterName+"_"+jmx+"_"+now()
         # logstash conf files
         jmxParser = JMXParser(JMX("%s/%s"%(self.UploadPath,jmx)))
         jmxParser.setOutput(output)

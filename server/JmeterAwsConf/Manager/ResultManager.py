@@ -24,6 +24,8 @@ class ResultManager(Manager,BotoSession):
             {
                 "Key":i["Key"],
                 "Name":i["Key"].split("/")[-1].split("_")[0],
+                "Cluster":i["Key"].split("/")[-1].split("_")[1],
+                "JMX":i["Key"].split("/")[-1].split("_")[2],
                 "LastModified":i["LastModified"].strftime("%Y/%m/%d %H:%M:%S"),
                 "Size":i["Size"]
             }

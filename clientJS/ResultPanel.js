@@ -1,6 +1,7 @@
 import React from "react";
 import SkyLight from 'react-skylight';
 import ReactDataGrid from "react-data-grid"
+import {Toolbar,Data} from "react-data-grid-addons"
 import autoBind from 'react-autobind';
 
 
@@ -34,45 +35,66 @@ export default class ResultPanel extends React.Component{
         super(props)
         this.state = {
             popups:true,
-            originalResults:[],
-            results:[],
+            innerRows:[],
             cols:[],
-            originalRows:[],
+            originalInnerRows:[],
             rows:[],
-            rowNum:-1
+            rowNum:-1,
+            filter:{},
+            sortColumn: null,
+            sortDirection: null
         }
         this._cols = [
             {
                 key:"Name",
-                name:"Name",
-                width:200,
+                name:"Result Name",
+                width:150,
                 resizable:true,
-                sortable:true
+                sortable:true,
+                filterable: true
+            },
+            {
+                key:"Cluster",
+                name:"Cluster Name",
+                width:150,
+                resizable:true,
+                sortable:true,
+                filterable: true
+            },
+            {
+                key:"JMX",
+                name:"JMX",
+                width:150,
+                resizable:true,
+                sortable:true,
+                filterable: true
             },
             {
                 key:"LastModified",
                 name:"LastModified",
-                width:250,
+                width:200,
                 resizable:true,
-                sortable:true
+                sortable:true,
+                filterable: true
             },
             {
                 key:"Size",
                 name:"Size",
-                width:150,
+                width:120,
                 resizable:true,
-                sortable:true
+                sortable:true,
+                filterable: true
             },
             {
                 key:"Details",
                 name:"",
-                width:120,
+                width:85,
                 formatter:PopupFormat
             },
             {
                 key:"Download",
                 name:"",
-                width:120,
+                width:105,
                 formatter:DownloadLinkFormat
             }
         ]
@@ -85,14 +107,14 @@ export default class ResultPanel extends React.Component{
         var This = this;
         socket.on("return_sum_results", function(data){
             data = JSON.parse(data)
-            This.setState({results:data["res"],originalResults:data["res"].slice(0)})
+            This.setState({rows:data["res"]})
         })
         socket.on("return_sum_result", function(data){
             var table = JSON.parse(data)["res"]
             if (This.state.popups){
                 var header = table.split("\n")[0]
-                var rows = table.split("\n").slice(1)
-                var originalRows = rows.slice(0)
+                var innerRows = table.split("\n").slice(1)
+                var originalInnerRows = innerRows.slice(0)
                 var cols = header.split(",").map(
                     function(d,i){
                         var prefix = "aggregate_report_";
@@ -103,13 +125,13 @@ export default class ResultPanel extends React.Component{
                             sortable:true
                         }
                     })
-                This.setState({"cols":cols,"rows":rows,"originalRows":originalRows})
+                This.setState({"cols":cols,"innerRows":innerRows,"originalInnerRows":originalInnerRows})
                 This.refs.res_popup.show();
             }
             else {
                 var element = document.createElement('a');
                 element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(table));
-                element.setAttribute('download', This.state.results[This.state.rowNum]["Name"]+".csv");
+                element.setAttribute('download', This.state.innerRows[This.state.rowNum]["Name"]+".csv");
                 element.style.display = 'none';
                 document.body.appendChild(element);
                 element.click();
@@ -122,8 +144,12 @@ export default class ResultPanel extends React.Component{
         this.socket.emit("list_sum_results")
     }
 
+    getOuterRows(){
+        return Data.Selectors.getRows(this.state);
+    }
+
     popupRowGetter(i) {
-        var d = this.state.rows[i]
+        var d = this.state.innerRows[i]
         var ret = {}
         var arr = d.split(",")
         for(let i=0;i<arr.length;i++){
@@ -138,30 +164,22 @@ export default class ResultPanel extends React.Component{
                 "Details":{func:this.popup,i:i},
                 "Download":{func:this.download,i:i}
             },
-            this.state.results[i]
+            this.getOuterRows()[i]
         )
     }
 
     popup(i,_){
         this.setState({popups:true});
-        this.socket.emit("get_sum_result",{"path":this.state.results[i]["Key"]})
+        this.socket.emit("get_sum_result",{"path":this.state.rows[i]["Key"]})
     }
 
     download(i,_){
         this.setState({popups:false,rowNum:i});
-        this.socket.emit("get_sum_result",{"path":this.state.results[i]["Key"]})
+        this.socket.emit("get_sum_result",{"path":this.state.rows[i]["Key"]})
     }
 
     handleOuterGridSort(sortColumn, sortDirection){
-        const comparer = (a, b) => {
-          if (sortDirection === 'ASC') {
-            return (a[sortColumn] > b[sortColumn]) ? 1 : -1;
-          } else if (sortDirection === 'DESC') {
-            return (a[sortColumn] < b[sortColumn]) ? 1 : -1;
-          }
-        }
-        const results = sortDirection === 'NONE' ? this.state.originalResults.slice(0) : this.state.results.sort(comparer);
-        this.setState({ results })
+        this.setState({sortColumn,sortDirection})
     }
 
     handlePopupGridSort(sortColumn, sortDirection){
@@ -172,8 +190,23 @@ export default class ResultPanel extends React.Component{
             return (a[sortColumn] < b[sortColumn]) ? 1 : -1;
           }
         }
-        const rows = sortDirection === 'NONE' ? this.state.originalRows.slice(0) : this.state.rows.sort(comparer);
-        this.setState({ rows })
+        const innerRows = sortDirection === 'NONE' ? this.state.originalInnerRows.slice(0) : this.state.innerRows.sort(comparer);
+        this.setState({ innerRows })
+    }
+
+    handleOuterFilterChange(filter) {
+        let newFilters = Object.assign({}, this.state.filters);
+        if (filter.filterTerm) {
+          newFilters[filter.column.key] = filter;
+        } else {
+          delete newFilters[filter.column.key];
+        }
+        this.setState({ filters: newFilters });
+    }
+
+    onClearOuterFilters() {
+        // all filters removed
+        this.setState({filters: {} });
     }
 
     render(){
@@ -198,17 +231,23 @@ export default class ResultPanel extends React.Component{
                             onGridSort={This.handlePopupGridSort}
                             columns={This.state.cols}
                             rowGetter={This.popupRowGetter}
-                            rowsCount={This.state.rows.length}
-                            minHeight={330} />
+                            rowsCount={This.state.innerRows.length}
+                            minHeight={330}
+                        />
                     </div>
                 </SkyLight>
                 <div >
                     <ReactDataGrid
                         onGridSort={This.handleOuterGridSort}
+                        enableCellSelect={true}
                         columns={This._cols}
                         rowGetter={This.outerRowGetter}
-                        rowsCount={This.state.results.length}
-                        minHeight={550} />
+                        rowsCount={This.getOuterRows().length}
+                        minHeight={550}
+                        onAddFilter={This.handleOuterFilterChange}
+                        onClearFilters={This.onClearOuterFilters}
+                        toolbar={<Toolbar enableFilter={true}/>}
+                    />
                 </div>
             </div>
         );

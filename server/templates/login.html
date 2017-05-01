@@ -41,7 +41,6 @@
                         }),
                         url: '/login',
                         success: function (data) {
-                            console.log(data)
                             if (data["success"] === '1') {  // server returns a "1" for success
                                 window.location = data["url"]
                             } else {
