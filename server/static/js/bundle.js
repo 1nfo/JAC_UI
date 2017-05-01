@@ -23188,7 +23188,7 @@
 	            _react2.default.createElement(
 	                "button",
 	                { className: "btn btn-link", onClick: this.props.value.func.bind(this, i) },
-	                "Details"
+	                "Detail"
 	            )
 	        );
 	    }
@@ -23350,14 +23350,16 @@
 	    }, {
 	        key: "popup",
 	        value: function popup(i, _) {
+	            var This = this;
 	            this.setState({ popups: true });
-	            this.socket.emit("get_sum_result", { "path": this.state.rows[i]["Key"] });
+	            this.socket.emit("get_sum_result", { "path": This.getOuterRows()[i]["Key"] });
 	        }
 	    }, {
 	        key: "download",
 	        value: function download(i, _) {
+	            var This = this;
 	            this.setState({ popups: false, rowNum: i });
-	            this.socket.emit("get_sum_result", { "path": this.state.rows[i]["Key"] });
+	            this.socket.emit("get_sum_result", { "path": This.getOuterRows()[i]["Key"] });
 	        }
 	    }, {
 	        key: "handleOuterGridSort",

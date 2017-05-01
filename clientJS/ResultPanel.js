@@ -12,7 +12,7 @@ const PopupFormat = React.createClass({
     const i = this.props.value.i
     return (
       <div >
-        <button className="btn btn-link" onClick={this.props.value.func.bind(this,i)}>Details</button>
+        <button className="btn btn-link" onClick={this.props.value.func.bind(this,i)}>Detail</button>
       </div>);
   }
 });
@@ -169,13 +169,15 @@ export default class ResultPanel extends React.Component{
     }
 
     popup(i,_){
+        var This = this;
         this.setState({popups:true});
-        this.socket.emit("get_sum_result",{"path":this.state.rows[i]["Key"]})
+        this.socket.emit("get_sum_result",{"path":This.getOuterRows()[i]["Key"]})
     }
 
     download(i,_){
+        var This = this;
         this.setState({popups:false,rowNum:i});
-        this.socket.emit("get_sum_result",{"path":this.state.rows[i]["Key"]})
+        this.socket.emit("get_sum_result",{"path":This.getOuterRows()[i]["Key"]})
     }
 
     handleOuterGridSort(sortColumn, sortDirection){
