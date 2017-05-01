@@ -23310,6 +23310,7 @@
 	            var This = this;
 	            socket.on("return_sum_results", function (data) {
 	                data = JSON.parse(data);
+	                if (data.res.length == 0) alert("No Summary Result!");
 	                This.setState({ rows: data["res"] });
 	            });
 	            socket.on("return_sum_result", function (data) {

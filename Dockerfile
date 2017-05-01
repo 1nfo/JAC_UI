@@ -14,7 +14,7 @@ RUN sudo apt-get -y install redis-server
 # Add requirements.txt
 ADD . / /webapp/
 # don't forget ssh key# don't forget ssh key# don't forget ssh key
-ADD ./Jmeter_test_key_pair.pem /webapp
+ADD ./JAC_key_pair.pem /webapp
  
 # Set the default directory for our environment
 ENV HOME /webapp

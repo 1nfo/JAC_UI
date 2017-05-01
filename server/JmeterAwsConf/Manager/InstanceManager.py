@@ -122,11 +122,12 @@ class InstanceManager(Manager,BotoSession):
         return res
 
     # internal use, lanuch a number of instances, with the same image ID, instance type, security groups and area
-    def creatInstances(self, ImageID, num, InstanceType, SecurityGroups, area, verbose, role={}):
+    def creatInstances(self, ImageID, num, InstanceType, SecurityGroups, area, KeyName, verbose=None, role={}):
         res = self.client.run_instances(ImageId=ImageID, MinCount=num, MaxCount=num, \
                                         InstanceType=InstanceType, SecurityGroups=SecurityGroups, \
                                         Placement={"AvailabilityZone": area},\
-                                        IamInstanceProfile=role)
+                                        IamInstanceProfile=role,\
+                                        KeyName=KeyName)
         self.print(res, verbose)
         return res
 
@@ -169,7 +170,8 @@ class InstanceManager(Manager,BotoSession):
         if not self.master:
             imageID = self.config.ami["master"]
             instType = self.config.instType["master"] if not instType else instType
-            res = self.creatInstances(imageID, 1, instType, self.config.securityGroups, self.config.zone, verbose, role=self.config.s3_role)
+            res = self.creatInstances(imageID, 1, instType, self.config.securityGroups,self.config.zone,
+                                      self.config.KeyName,verbose,self.config.s3_role)
             ID = res['Instances'][0]["InstanceId"]
             self.client.create_tags(Resources=[ID], Tags=[{'Key': TAG_NAME, 'Value': TAGVAL_NAME + self.clusterName},
                                                           {'Key': TAG_ROLE, 'Value': 'Master'},
@@ -188,7 +190,8 @@ class InstanceManager(Manager,BotoSession):
     def addSlaves(self, num, instType=None, verbose=None):
         imageID = self.config.ami["slave"]
         instType = self.config.instType["slave"] if not instType else instType
-        res = self.creatInstances(imageID, num, instType, self.config.securityGroups, self.config.zone, verbose)
+        res = self.creatInstances(imageID, num, instType, self.config.securityGroups,
+                                  self.config.zone, self.config.KeyName,verbose)
         IDs = [i["InstanceId"] for i in res['Instances']]
         self.client.create_tags(Resources=IDs, Tags=[{'Key': TAG_NAME, 'Value': TAGVAL_NAME + self.clusterName},
                                                      {'Key': TAG_ROLE, 'Value': 'Slave'},

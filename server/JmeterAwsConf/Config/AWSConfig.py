@@ -20,3 +20,4 @@ class AWSConfig(Config):
         self.role = kargs["role"]
         self.s3_role = kargs["s3_role"]
         self.s3bucket = kargs["s3_bucket"]
+        self.KeyName = kargs["pemFilePath"].split("/")[-1].split(".")[0]

@@ -139,7 +139,7 @@ def startCluster(data):
         else:emit("redirect",{"msg":"You are not the owner of this cluster.\nRead-only access.\n\n"},room=request.sid)
     with jredirectors[request.sid]:
         if createOrNot:
-            try:
+            # try:
                 clusterMngr.setConfig(customConfigs[username])
                 clusterMngr.resMngr.setUser(username)
                 clusterMngr.create(clusterName,user=username)
@@ -152,9 +152,9 @@ def startCluster(data):
                 with open(os.path.join(UPLOAD_PATH,clusterID,".JAC_config.json"),"w") as f:
                     f.write(json.dumps(clusterMngr.config))
                 successOrNot = True
-            except Exception as exception:
-                print(exception)
-                clusterMngr.cleanup()
+            # except Exception as exception:
+            #     print(exception)
+            #     clusterMngr.cleanup()
         else:
             try:
                 config = json.loads(open(UPLOAD_PATH+clusterID+"/.JAC_config.json").read())

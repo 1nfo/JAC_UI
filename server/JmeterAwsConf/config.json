@@ -3,21 +3,21 @@
     "master": "t2.micro",
     "slave": "t2.micro"
   },
-  "pemFilePath": "Jmeter_test_key_pair.pem",
-  "region": "us-west-2",
-  "zone": "us-west-2a",
+  "pemFilePath": "JAC_key_pair.pem",
+  "region": "us-east-1",
+  "zone": "us-east-1a",
   "security_groups": [
-    "Jmeter_test_group"
+    "JAC_cluster"
   ],
   "username": "ubuntu",
   "ami": {
-    "slave" : "ami-8e9d02ee",
-    "master" : "ami-48980728"
+    "slave": "ami-70c1a266",
+    "master": "ami-85c7a493"
   },
   "cmdRunnerPath":"/usr/local/apache-jmeter-2.13/lib/cmdrunner-2.0.jar",
   "propertiesPath":"/usr/local/apache-jmeter-2.13/bin/jmeter.properties",
   "logstash_conf_dir":"/etc/logstash/conf.d",
-  "es_IP":"172.31.18.135:9200",
+  "es_IP":"172.31.28.78:9200",
   "instance_home":"/home/ubuntu/",
   "s3_bucket":"jmeteroutput",
   "s3_role":{"Arn":"arn:aws:iam::061217841322:instance-profile/jmeter_s3access"}
