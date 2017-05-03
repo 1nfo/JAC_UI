@@ -84,7 +84,7 @@ class SSHConnectionManager(Manager):
 
     def putSlaves(self,src,des,callback=None,verbose=None):
         for i,slave in enumerate(self.slavesConn.values()):
-            self.print("Upload to slave #%d"%i,verbose=verbose)
+            self.print("Upload to slave #%d"%(i+1),verbose=verbose)
             slave.put(src,des,callback)
 
 

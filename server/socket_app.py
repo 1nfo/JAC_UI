@@ -119,7 +119,9 @@ def updateConfig(data):
 @socketio.on("get_cluster_ids", namespace="/redirect")
 def getClusterIDs():
     li = JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]])).getDupClusterIds()
-    emit("cluster_ids",json.dumps(li),room=request.sid)
+    # divide cluster list based on username
+    res = [[i for i in li if i[2]==session["username"]],[i for i in li if i[2]!=session["username"]]]
+    emit("cluster_ids",json.dumps(res),room=request.sid)
 
 # start a created cluster or resume from previous one.
 @socketio.on("start_cluster", namespace="/redirect")

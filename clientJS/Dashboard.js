@@ -19,7 +19,7 @@ export default class DashBoard extends React.Component{
             readonly:false,
             btnDisabled:true,
             stopBtnDis:true,
-            clusList:[],
+            clusList:[[],[]],
             executable:true
         };
         var This = this;
@@ -62,7 +62,7 @@ export default class DashBoard extends React.Component{
         socket.on("cluster_ids",function(data){
             var data = JSON.parse(data)
             if (data.length==0) {
-                This.setState({clusList:[]})
+                This.setState({clusList:[[],[]]})
                 alert("No running instance!")
             } else {
                 This.setState({clusList:data})
@@ -86,7 +86,7 @@ export default class DashBoard extends React.Component{
                     JAC_clusDesc:data["description"],
                     JAC_user:data["user"],
                     readonly:true,
-                    clusList:[],
+                    clusList:[[],[]],
                     executable:data["executable"]
                 })
         })
@@ -164,12 +164,12 @@ export default class DashBoard extends React.Component{
         this.props.socket.emit("get_cluster_ids")
     }
 
-    clickOnResumeClus(index,e){
+    clickOnResumeClus(liIndex,index,e){
         this.setState({
             btnDisabled:true,
-            JAC_clusID:this.state.clusList[index][0],
+            JAC_clusID:this.state.clusList[liIndex][index][0],
             JAC_clusName:$(e.target).val(),
-            JAC_user:this.state.clusList[index][2]
+            JAC_user:this.state.clusList[liIndex][index][2]
         },this.confirm)
     }
 

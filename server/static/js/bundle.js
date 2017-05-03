@@ -21883,7 +21883,7 @@
 	            readonly: false,
 	            btnDisabled: true,
 	            stopBtnDis: true,
-	            clusList: [],
+	            clusList: [[], []],
 	            executable: true
 	        };
 	        var This = _this;
@@ -21939,7 +21939,7 @@
 	            socket.on("cluster_ids", function (data) {
 	                var data = JSON.parse(data);
 	                if (data.length == 0) {
-	                    This.setState({ clusList: [] });
+	                    This.setState({ clusList: [[], []] });
 	                    alert("No running instance!");
 	                } else {
 	                    This.setState({ clusList: data });
@@ -21963,7 +21963,7 @@
 	                    JAC_clusDesc: data["description"],
 	                    JAC_user: data["user"],
 	                    readonly: true,
-	                    clusList: [],
+	                    clusList: [[], []],
 	                    executable: data["executable"]
 	                });
 	            });
@@ -22040,12 +22040,12 @@
 	        }
 	    }, {
 	        key: "clickOnResumeClus",
-	        value: function clickOnResumeClus(index, e) {
+	        value: function clickOnResumeClus(liIndex, index, e) {
 	            this.setState({
 	                btnDisabled: true,
-	                JAC_clusID: this.state.clusList[index][0],
+	                JAC_clusID: this.state.clusList[liIndex][index][0],
 	                JAC_clusName: $(e.target).val(),
-	                JAC_user: this.state.clusList[index][2]
+	                JAC_user: this.state.clusList[liIndex][index][2]
 	            }, this.confirm);
 	        }
 	    }, {
@@ -22370,14 +22370,39 @@
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-4" },
-	                        this.props.clusList.map(function (d, i) {
+	                        _react2.default.createElement(
+	                            "p",
+	                            { className: "text-center" },
+	                            "Your Clusters"
+	                        ),
+	                        this.props.clusList[0].map(function (d, i) {
 	                            return _react2.default.createElement(
 	                                "div",
 	                                { className: "panel", key: d[0] },
 	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
 	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
 	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
-	                                    onClick: This.props.clickOnResumeClus.bind(This, i),
+	                                    onClick: This.props.clickOnResumeClus.bind(This, 0, i),
+	                                    readOnly: true })
+	                            );
+	                        })
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-4" },
+	                        _react2.default.createElement(
+	                            "p",
+	                            { className: "text-center" },
+	                            "Others'"
+	                        ),
+	                        this.props.clusList[1].map(function (d, i) {
+	                            return _react2.default.createElement(
+	                                "div",
+	                                { className: "panel", key: d[0] },
+	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
+	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
+	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
+	                                    onClick: This.props.clickOnResumeClus.bind(This, 1, i),
 	                                    readOnly: true })
 	                            );
 	                        })

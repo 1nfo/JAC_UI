@@ -70,13 +70,28 @@ export const InputBlock_clusInfo = React.createClass({
                         </div>
                         <div className="row panel" style={{display: this.calc(3)}}>
                             <div className="col-md-4" >
-                                {this.props.clusList.map(function(d,i){
+                                <p className="text-center">Your Clusters</p>
+                                {this.props.clusList[0].map(function(d,i){
                                     return (
                                             <div className='panel' key={d[0]}>
                                                 <input className={"btn btn-default clusToResume"}
                                                        value={d[0].split("_",1)} disabled={This.props.btnDisabled}
                                                        title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
-                                                       onClick={This.props.clickOnResumeClus.bind(This,i)}
+                                                       onClick={This.props.clickOnResumeClus.bind(This,0,i)}
+                                                       readOnly/>
+                                            </div>
+                                        );
+                                })}
+                            </div>
+                            <div className="col-md-4" >
+                                <p className="text-center">Others'</p>
+                                {this.props.clusList[1].map(function(d,i){
+                                    return (
+                                            <div className='panel' key={d[0]}>
+                                                <input className={"btn btn-default clusToResume"}
+                                                       value={d[0].split("_",1)} disabled={This.props.btnDisabled}
+                                                       title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
+                                                       onClick={This.props.clickOnResumeClus.bind(This,1,i)}
                                                        readOnly/>
                                             </div>
                                         );
