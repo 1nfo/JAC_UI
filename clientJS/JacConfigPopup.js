@@ -46,6 +46,11 @@ export default class JacConfigPopup extends React.Component{
         return this.state.json_mode?"BACK":"SHOW JSON"
     }
 
+    styleDisplay(){
+      if(this.props.superAccess==1) return "block";
+      else return "none"
+    }
+
     jsonChange(e){
         this.setState({"json":e.target.value,"config":JSON.parse(e.target.value)})
     }
@@ -128,7 +133,9 @@ export default class JacConfigPopup extends React.Component{
                                     onChange={this.jsonChange}
                                     style={{"minWidth": "100%","minHeight":"320px"}}></textarea><br/>
                         </div>
-                        <button className="btn btn-default pull-right" onClick={this.clickOnJsonBtn}>{this.btn_text()}</button>
+                        <button className="btn btn-default pull-right"
+                                style={{display:this.styleDisplay()}}
+                                onClick={this.clickOnJsonBtn}>{this.btn_text()}</button>
                         <button className="btn btn-default"
                                 ref="save"
                                 onClick={this.save}

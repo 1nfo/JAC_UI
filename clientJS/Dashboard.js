@@ -20,7 +20,8 @@ export default class DashBoard extends React.Component{
             btnDisabled:true,
             stopBtnDis:true,
             clusList:[[],[]],
-            executable:true
+            executable:true,
+            superAccess:0
         };
         var This = this;
         this.handle = {
@@ -87,7 +88,8 @@ export default class DashBoard extends React.Component{
                     JAC_user:data["user"],
                     readonly:true,
                     clusList:[[],[]],
-                    executable:data["executable"]
+                    executable:data["executable"],
+                    superAccess:data["superAccess"]
                 })
         })
 

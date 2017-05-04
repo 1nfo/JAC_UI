@@ -43,9 +43,10 @@ def background_thread():
 
 # remove some configs that should be invisible to user
 def configFilter(config):
-    filter_list = set(["aws_access_key_id", "aws_secret_access_key","role", # these are credentials
-                       "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath", # there is no changes unless AWS side settings changed
-                       "region","zone"]) # won't change under current assumption
+    filter_list = set(["aws_access_key_id", "aws_secret_access_key","role" # these are credentials
+                       # , "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath" # there is no changes unless AWS side settings changed
+                       # , "region","zone"# won't change under current assumption
+                       ])
     res = {k:config[k] for k in config if k not in filter_list}
     return res
 
@@ -190,7 +191,7 @@ def startCluster(data):
         print("")
     clusterMngrs[session["_id"]] = clusterMngr
     emit('cluster_started',
-         json.dumps({"clusID": clusterID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files,
+         json.dumps({"clusID": clusterID, "slaveNum": slaveNum, "jmxList": jmxList, "files": files, "superAccess": session["superAccess"],
                      "description":description, "user":username, "executable":createOrNot or username==data["user"] or session["superAccess"]}),
          room=clusterMngr.sid)
 

@@ -19,7 +19,8 @@ export const InputBlock_clusInfo = React.createClass({
         return {"fileStatus":""};
     },
 
-    calc(bit,enabled=true){
+    calc(bit,enabled=true,superAccess=false){
+        if(superAccess) return "block";
         if( enabled &&((1<<bit)&this.props.display)>0) return "block";
         return "none";
     },
@@ -39,7 +40,8 @@ export const InputBlock_clusInfo = React.createClass({
                     <div>
                         <JacConfigPopup style={{display: this.calc(0)}} config={this.props.JAC_config}
                                         socket={this.props.socket} confChange={this.props.confChange}
-                                        saveBtnStyle={{display:this.calc(6,this.props.executable)}} />
+                                        superAccess={this.props.superAccess}
+                                        saveBtnStyle={{display:this.calc(6,this.props.executable,this.props.superAccess)}} />
                         <br/>
                         <div className="row panel" style={{display: this.calc(1)}}>
                             <div className="col-md-3"><label>Cluster Name</label></div>
@@ -69,8 +71,8 @@ export const InputBlock_clusInfo = React.createClass({
                             </div>
                         </div>
                         <div className="row panel" style={{display: this.calc(3)}}>
-                            <div className="col-md-4" >
-                                <p className="text-center">Your Clusters</p>
+                            <div className="col-md-4 text-center" >
+                                <p>Your Clusters</p>
                                 {this.props.clusList[0].map(function(d,i){
                                     return (
                                             <div className='panel' key={d[0]}>
@@ -83,8 +85,8 @@ export const InputBlock_clusInfo = React.createClass({
                                         );
                                 })}
                             </div>
-                            <div className="col-md-4" >
-                                <p className="text-center">Others'</p>
+                            <div className="col-md-4 text-center" >
+                                <p>Others'</p>
                                 {this.props.clusList[1].map(function(d,i){
                                     return (
                                             <div className='panel' key={d[0]}>
