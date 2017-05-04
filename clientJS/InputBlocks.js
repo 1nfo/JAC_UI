@@ -50,7 +50,7 @@ export const InputBlock_clusInfo = React.createClass({
                             <div className="col-md-1" style={{display: this.calc(2)}}>
                                 <button className={"btn btn-danger btn-sm"} disabled={this.props.btnDisabled}
                                    onClick={this.props.deleteFunc} style={this.props.executable?{}:{display:"none"}}>
-                                   Delete
+                                   Terminate
                                 </button>
                             </div>
                         </div>

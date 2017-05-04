@@ -1,12 +1,5 @@
 from .ResponseParser import *
-
-TAG_CLUSTERID = "__JAC_CLUSTERID__"
-TAG_CLUSTERNAME = "__JAC_CLUSTERNAME__"
-TAG_NAME = "Name"
-TAGVAL_NAME = "JAC_"
-TAG_ROLE = "__JAC_ROLE__"
-TAG_CLUSTERDESC = "__JAC_CLUSTERDESC__"
-TAG_USER = "__JAC_USER__"
+from ..Util.Tags import *
 
 
 # responsible for parsing describe instances response

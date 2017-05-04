@@ -178,7 +178,8 @@ class InstanceManager(Manager,BotoSession):
                                                           {'Key': TAG_CLUSTERNAME, "Value": self.clusterName},
                                                           {'Key': TAG_CLUSTERID, "Value": self.clusterID},
                                                           {'Key': TAG_CLUSTERDESC, "Value": self.clusterDesc},
-                                                          {"Key": TAG_USER, "Value": self.user}])
+                                                          {"Key": TAG_USER, "Value": self.user}] + ADDITIOAL_TAGS
+                                                    )
             self.updateInstances()
             return ID
         else:
@@ -197,7 +198,8 @@ class InstanceManager(Manager,BotoSession):
                                                      {'Key': TAG_ROLE, 'Value': 'Slave'},
                                                      {'Key': TAG_CLUSTERNAME, "Value": self.clusterName},
                                                      {'Key': TAG_CLUSTERID, "Value": self.clusterID},
-                                                     {"Key": TAG_USER, "Value": self.user}])
+                                                     {"Key": TAG_USER, "Value": self.user}] + ADDITIOAL_TAGS
+                                               )
         self.updateInstances()
         return IDs
 

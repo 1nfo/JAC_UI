@@ -21604,7 +21604,7 @@
 
 	var _reactAutobind2 = _interopRequireDefault(_reactAutobind);
 
-	var _ResultPanel = __webpack_require__(192);
+	var _ResultPanel = __webpack_require__(186);
 
 	var _ResultPanel2 = _interopRequireDefault(_ResultPanel);
 
@@ -21852,7 +21852,7 @@
 
 	var _reactAutobind2 = _interopRequireDefault(_reactAutobind);
 
-	var _InputBlocks = __webpack_require__(186);
+	var _InputBlocks = __webpack_require__(195);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -21938,7 +21938,7 @@
 
 	            socket.on("cluster_ids", function (data) {
 	                var data = JSON.parse(data);
-	                if (data.length == 0) {
+	                if (data[0].length == 0 && data[1].length == 0) {
 	                    This.setState({ clusList: [[], []] });
 	                    alert("No running instance!");
 	                } else {
@@ -22094,8 +22094,10 @@
 	    }, {
 	        key: "delete",
 	        value: function _delete() {
-	            this.setState({ btnDisabled: true });
-	            this.props.socket.emit("terminate_cluster");
+	            if (confirm("Are you sure to terminate this cluster?")) {
+	                this.setState({ btnDisabled: true });
+	                this.props.socket.emit("terminate_cluster");
+	            }
 	        }
 	    }, {
 	        key: "stop",
@@ -22225,320 +22227,6 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.InputBlock_clusInfo = exports.InputBlock_start = undefined;
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _JacConfigPopup = __webpack_require__(187);
-
-	var _JacConfigPopup2 = _interopRequireDefault(_JacConfigPopup);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var InputBlock_start = exports.InputBlock_start = _react2.default.createClass({
-	    displayName: "InputBlock_start",
-	    render: function render() {
-	        return _react2.default.createElement(
-	            "div",
-	            { className: "row panel" },
-	            _react2.default.createElement(
-	                "div",
-	                { className: "col-md-4" },
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "btn-group" },
-	                    _react2.default.createElement(
-	                        "button",
-	                        { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.createFunc },
-	                        "create"
-	                    ),
-	                    _react2.default.createElement(
-	                        "button",
-	                        { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.resumeFunc },
-	                        "resume"
-	                    )
-	                )
-	            )
-	        );
-	    }
-	});
-
-	var InputBlock_clusInfo = exports.InputBlock_clusInfo = _react2.default.createClass({
-	    displayName: "InputBlock_clusInfo",
-	    getInitialState: function getInitialState() {
-	        return { "fileStatus": "" };
-	    },
-	    calc: function calc(bit) {
-	        var enabled = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-
-	        if (enabled && (1 << bit & this.props.display) > 0) return "block";
-	        return "none";
-	    },
-	    fileChange: function fileChange(e) {
-	        var input = $(e.target),
-	            numFiles = input.get(0).files ? input.get(0).files.length : 1,
-	            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-	        log = numFiles > 1 ? numFiles + ' files selected' : label;
-	        var log = numFiles > 1 ? numFiles + ' files selected' : label;
-	        this.setState({ "fileStatus": log });
-	    },
-	    render: function render() {
-	        var This = this;
-	        return _react2.default.createElement(
-	            "div",
-	            null,
-	            _react2.default.createElement(
-	                "div",
-	                null,
-	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config,
-	                    socket: this.props.socket, confChange: this.props.confChange,
-	                    saveBtnStyle: { display: this.calc(6, this.props.executable) } }),
-	                _react2.default.createElement("br", null),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel", style: { display: this.calc(1) } },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement(
-	                            "label",
-	                            null,
-	                            "Cluster Name"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement("input", { type: "text", className: "form-control", onChange: this.props.nameChange,
-	                            value: this.props.JAC_clusName, readOnly: this.props.readonly })
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-1", style: { display: this.calc(2) } },
-	                        _react2.default.createElement(
-	                            "button",
-	                            { className: "btn btn-danger btn-sm", disabled: this.props.btnDisabled,
-	                                onClick: this.props.deleteFunc, style: this.props.executable ? {} : { display: "none" } },
-	                            "Delete"
-	                        )
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel", style: { display: this.calc(1) } },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement(
-	                            "label",
-	                            null,
-	                            "Slave Num"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement("input", { id: "jac_slaveNum", type: "text", className: "form-control", onChange: this.props.numChange,
-	                            value: this.props.JAC_SLAVENUM, readOnly: this.props.readonly })
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel", style: { display: this.calc(1) } },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement(
-	                            "label",
-	                            null,
-	                            "Cluster Description"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-5" },
-	                        _react2.default.createElement("textarea", { className: "form-control", readOnly: this.props.readonly,
-	                            value: this.props.JAC_clusDesc, onChange: this.props.descChange,
-	                            style: { "minWidth": "100%", "height": this.props.readonly ? "34px" : "100px" } })
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel", style: { display: this.calc(3) } },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-4" },
-	                        _react2.default.createElement(
-	                            "p",
-	                            { className: "text-center" },
-	                            "Your Clusters"
-	                        ),
-	                        this.props.clusList[0].map(function (d, i) {
-	                            return _react2.default.createElement(
-	                                "div",
-	                                { className: "panel", key: d[0] },
-	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
-	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
-	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
-	                                    onClick: This.props.clickOnResumeClus.bind(This, 0, i),
-	                                    readOnly: true })
-	                            );
-	                        })
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-4" },
-	                        _react2.default.createElement(
-	                            "p",
-	                            { className: "text-center" },
-	                            "Others'"
-	                        ),
-	                        this.props.clusList[1].map(function (d, i) {
-	                            return _react2.default.createElement(
-	                                "div",
-	                                { className: "panel", key: d[0] },
-	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
-	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
-	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
-	                                    onClick: This.props.clickOnResumeClus.bind(This, 1, i),
-	                                    readOnly: true })
-	                            );
-	                        })
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel", style: { display: this.calc(4) } },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-4" },
-	                        _react2.default.createElement(
-	                            "button",
-	                            { className: "btn btn-primary", disabled: this.props.btnDisabled,
-	                                onClick: this.props.confirmFunc },
-	                            "confirm"
-	                        )
-	                    )
-	                )
-	            ),
-	            _react2.default.createElement(
-	                "div",
-	                { style: { display: this.calc(5, this.props.executable) } },
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel" },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement(
-	                            "label",
-	                            null,
-	                            "Upload Path"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-5" },
-	                        _react2.default.createElement(
-	                            "div",
-	                            { className: "input-group" },
-	                            _react2.default.createElement(
-	                                "div",
-	                                { className: "input-group-btn" },
-	                                _react2.default.createElement(
-	                                    "label",
-	                                    { className: "btn btn-default", disabled: this.props.btnDisabled },
-	                                    "Browse",
-	                                    _react2.default.createElement("input", { id: "jac_uploadFiles", type: "file", onChange: this.fileChange,
-	                                        name: "file", style: { display: "none" }, multiple: true, disabled: this.props.btnDisabled })
-	                                ),
-	                                _react2.default.createElement(
-	                                    "button",
-	                                    { className: "btn btn-primary", disabled: this.props.btnDisabled,
-	                                        onClick: this.props.uploadFunc },
-	                                    "Upload"
-	                                )
-	                            ),
-	                            _react2.default.createElement("input", { id: "uploaded_files_status", type: "text", value: this.state.fileStatus,
-	                                className: "form-control", readOnly: true })
-	                        )
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel" },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement(
-	                            "label",
-	                            null,
-	                            "JMX to run"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-1" },
-	                        _react2.default.createElement("select", { id: "jac_JMXName" })
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel" },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement(
-	                            "label",
-	                            null,
-	                            "Result name"
-	                        )
-	                    ),
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-3" },
-	                        _react2.default.createElement("input", { className: "form-control", onChange: this.props.outputChange,
-	                            value: this.props.JAC_outputName })
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    "div",
-	                    { className: "row panel" },
-	                    _react2.default.createElement(
-	                        "div",
-	                        { className: "col-md-4" },
-	                        _react2.default.createElement(
-	                            "div",
-	                            { className: "btn-group" },
-	                            _react2.default.createElement(
-	                                "button",
-	                                { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.runFunc },
-	                                "run"
-	                            ),
-	                            _react2.default.createElement(
-	                                "button",
-	                                { className: "btn btn-default", disabled: this.props.stopBtnDis, id: "btn_stopRunning", onClick: this.props.stopFunc },
-	                                "stop"
-	                            )
-	                        )
-	                    )
-	                )
-	            )
-	        );
-	    }
-	});
-
-/***/ },
-/* 187 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -22546,649 +22234,15 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactSkylight = __webpack_require__(188);
+	var _reactSkylight = __webpack_require__(187);
 
 	var _reactSkylight2 = _interopRequireDefault(_reactSkylight);
 
-	var _reactAutobind = __webpack_require__(184);
-
-	var _reactAutobind2 = _interopRequireDefault(_reactAutobind);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var JacConfigPopup = function (_React$Component) {
-	    _inherits(JacConfigPopup, _React$Component);
-
-	    function JacConfigPopup(props) {
-	        _classCallCheck(this, JacConfigPopup);
-
-	        var _this = _possibleConstructorReturn(this, (JacConfigPopup.__proto__ || Object.getPrototypeOf(JacConfigPopup)).call(this, props));
-
-	        var This = _this;
-	        _this.state = { "config": { "InstType": {}, "ami": {} }, "json": "", "json_mode": false };
-	        _this.types = ["t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "r4.large", "r4.xlarge", "r4.2xlarge", "r4.4xlarge", "r4.8xlarge", "r4.16xlarge", "x1.16xlarge", "x1.32xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "i3.large", "i3.xlarge", "i3.2xlarge", "i3.4xlarge", "i3.8xlarge", "i3.16xlarge", "p2.xlarge", "p2.8xlarge", "p2.16xlarge", "g2.2xlarge", "g2.8xlarge"];
-	        _this.changes = {
-	            mt: function mt(e) {
-	                var config = This.state.config;config.InstType.master = e.target.value;This.inputChanges(config);
-	            },
-	            st: function st(e) {
-	                var config = This.state.config;config.InstType.slave = e.target.value;This.inputChanges(config);
-	            },
-	            sg: function sg(e) {
-	                var config = This.state.config;config.security_groups = e.target.value.split(",");This.inputChanges(config);
-	            },
-	            mi: function mi(e) {
-	                var config = This.state.config;config.ami.master = e.target.value;This.inputChanges(config);
-	            },
-	            si: function si(e) {
-	                var config = This.state.config;config.ami.slave = e.target.value;This.inputChanges(config);
-	            },
-	            es: function es(e) {
-	                var config = This.state.config;config.es_IP = e.target.value;This.inputChanges(config);
-	            }
-	        };
-	        (0, _reactAutobind2.default)(_this);
-	        return _this;
-	    }
-
-	    _createClass(JacConfigPopup, [{
-	        key: 'type_append',
-	        value: function type_append(t, i) {
-	            return _react2.default.createElement(
-	                'option',
-	                { key: i },
-	                t
-	            );
-	        }
-	    }, {
-	        key: 'show',
-	        value: function show() {
-	            this.setState({ "json": this.props.config, "config": JSON.parse(this.props.config), "json_mode": false });
-	            this.refs.jac_configJson.show();
-	        }
-	    }, {
-	        key: 'clickOnJsonBtn',
-	        value: function clickOnJsonBtn() {
-	            this.setState({ "json_mode": !this.state.json_mode });
-	        }
-	    }, {
-	        key: 'jsonDisplay',
-	        value: function jsonDisplay() {
-	            return this.state.json_mode ? {} : { display: "none" };
-	        }
-	    }, {
-	        key: 'inputDisplay',
-	        value: function inputDisplay() {
-	            return this.state.json_mode ? { display: "none" } : {};
-	        }
-	    }, {
-	        key: 'btn_text',
-	        value: function btn_text() {
-	            return this.state.json_mode ? "BACK" : "SHOW JSON";
-	        }
-	    }, {
-	        key: 'jsonChange',
-	        value: function jsonChange(e) {
-	            this.setState({ "json": e.target.value, "config": JSON.parse(e.target.value) });
-	        }
-	    }, {
-	        key: 'inputChanges',
-	        value: function inputChanges(obj) {
-	            this.setState({ "config": obj, "json": JSON.stringify(obj, null, "\t") });
-	        }
-	    }, {
-	        key: 'save',
-	        value: function save() {
-	            var This = this;
-	            var jsonToSave = this.refs.textarea.value;
-	            var IS_JSON = true;
-	            try {
-	                var json = $.parseJSON(jsonToSave);
-	            } catch (err) {
-	                console.log(err);
-	                IS_JSON = false;
-	            }
-	            if (!IS_JSON) alert("Invaild JSON format");else {
-	                this.props.socket.emit("update_config", { "config": jsonToSave });
-	                this.props.socket.on("config_updated", function (d) {
-	                    if (d["success"] == 1) This.props.confChange(jsonToSave);
-	                });
-	            }
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            var myBigGreenDialog = {
-	                backgroundColor: '#337ab7',
-	                color: '#ffffff',
-	                width: '70%',
-	                height: '550px',
-	                marginTop: '-300px',
-	                marginLeft: '-35%'
-	            };
-	            var input_class = "form-control";
-	            return _react2.default.createElement(
-	                'div',
-	                { id: 'jac_config_area', style: this.props.style },
-	                _react2.default.createElement(
-	                    'section',
-	                    null,
-	                    _react2.default.createElement(
-	                        'button',
-	                        { className: "btn btn-success btn-sm",
-	                            onClick: this.show },
-	                        ' Configuration'
-	                    )
-	                ),
-	                _react2.default.createElement(
-	                    _reactSkylight2.default,
-	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Cluster Configuration' },
-	                    _react2.default.createElement(
-	                        'div',
-	                        { style: this.inputDisplay() },
-	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'row' },
-	                            _react2.default.createElement(
-	                                'div',
-	                                { className: 'col-lg-6' },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    'Master Instance Type: '
-	                                ),
-	                                _react2.default.createElement(
-	                                    'select',
-	                                    { value: this.state.config.InstType.master, onChange: this.changes.mt,
-	                                        className: input_class },
-	                                    this.types.map(this.type_append)
-	                                )
-	                            ),
-	                            _react2.default.createElement(
-	                                'div',
-	                                { className: 'col-lg-6' },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    'Slave Instance Type: '
-	                                ),
-	                                _react2.default.createElement(
-	                                    'select',
-	                                    { value: this.state.config.InstType.slave, onChange: this.changes.st,
-	                                        className: input_class },
-	                                    this.types.map(this.type_append)
-	                                )
-	                            )
-	                        ),
-	                        _react2.default.createElement('br', null),
-	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'row' },
-	                            _react2.default.createElement(
-	                                'div',
-	                                { className: 'col-lg-12' },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    'Instance Security Group: '
-	                                ),
-	                                _react2.default.createElement('input', { value: this.state.config.security_groups, onChange: this.changes.sg, className: input_class })
-	                            )
-	                        ),
-	                        _react2.default.createElement('br', null),
-	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'row' },
-	                            _react2.default.createElement(
-	                                'div',
-	                                { className: 'col-lg-6' },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    'Master Image: '
-	                                ),
-	                                _react2.default.createElement('input', { value: this.state.config.ami.master, className: input_class, onChange: this.changes.mi })
-	                            ),
-	                            _react2.default.createElement(
-	                                'div',
-	                                { className: 'col-lg-6' },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    'Slave Image: '
-	                                ),
-	                                _react2.default.createElement('input', { value: this.state.config.ami.slave, className: input_class, onChange: this.changes.si })
-	                            )
-	                        ),
-	                        _react2.default.createElement('br', null),
-	                        _react2.default.createElement(
-	                            'div',
-	                            { className: 'row' },
-	                            _react2.default.createElement(
-	                                'div',
-	                                { className: 'col-lg-12' },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    'Elasticsearch Server URL: '
-	                                ),
-	                                _react2.default.createElement('input', { value: this.state.config.es_IP, className: input_class, onChange: this.changes.es })
-	                            )
-	                        ),
-	                        _react2.default.createElement('br', null)
-	                    ),
-	                    _react2.default.createElement(
-	                        'div',
-	                        { style: this.jsonDisplay() },
-	                        _react2.default.createElement(
-	                            'span',
-	                            null,
-	                            'JSON'
-	                        ),
-	                        _react2.default.createElement('textarea', { value: this.state.json,
-	                            className: 'form-control',
-	                            ref: 'textarea',
-	                            onChange: this.jsonChange,
-	                            style: { "minWidth": "100%", "minHeight": "320px" } }),
-	                        _react2.default.createElement('br', null)
-	                    ),
-	                    _react2.default.createElement(
-	                        'button',
-	                        { className: 'btn btn-default pull-right', onClick: this.clickOnJsonBtn },
-	                        this.btn_text()
-	                    ),
-	                    _react2.default.createElement(
-	                        'button',
-	                        { className: 'btn btn-default',
-	                            ref: 'save',
-	                            onClick: this.save,
-	                            style: this.props.saveBtnStyle },
-	                        'SAVE'
-	                    )
-	                )
-	            );
-	        }
-	    }]);
-
-	    return JacConfigPopup;
-	}(_react2.default.Component);
-
-	exports.default = JacConfigPopup;
-
-/***/ },
-/* 188 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _skylight = __webpack_require__(189);
-
-	Object.defineProperty(exports, 'default', {
-	  enumerable: true,
-	  get: function get() {
-	    return _interopRequireDefault(_skylight).default;
-	  }
-	});
-
-	var _skylightstateless = __webpack_require__(190);
-
-	Object.defineProperty(exports, 'SkyLightStateless', {
-	  enumerable: true,
-	  get: function get() {
-	    return _interopRequireDefault(_skylightstateless).default;
-	  }
-	});
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-/***/ },
-/* 189 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _skylightstateless = __webpack_require__(190);
-
-	var _skylightstateless2 = _interopRequireDefault(_skylightstateless);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var isOpening = function isOpening(s1, s2) {
-	  return !s1.isVisible && s2.isVisible;
-	};
-	var isClosing = function isClosing(s1, s2) {
-	  return s1.isVisible && !s2.isVisible;
-	};
-
-	var SkyLight = (function (_React$Component) {
-	  _inherits(SkyLight, _React$Component);
-
-	  function SkyLight(props) {
-	    _classCallCheck(this, SkyLight);
-
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SkyLight).call(this, props));
-
-	    _this.state = { isVisible: false };
-	    return _this;
-	  }
-
-	  _createClass(SkyLight, [{
-	    key: 'componentWillUpdate',
-	    value: function componentWillUpdate(nextProps, nextState) {
-	      if (isOpening(this.state, nextState) && this.props.beforeOpen) {
-	        this.props.beforeOpen();
-	      }
-
-	      if (isClosing(this.state, nextState) && this.props.beforeClose) {
-	        this.props.beforeClose();
-	      }
-	    }
-	  }, {
-	    key: 'componentDidUpdate',
-	    value: function componentDidUpdate(prevProps, prevState) {
-	      if (isOpening(prevState, this.state) && this.props.afterOpen) {
-	        this.props.afterOpen();
-	      }
-
-	      if (isClosing(prevState, this.state) && this.props.afterClose) {
-	        this.props.afterClose();
-	      }
-	    }
-	  }, {
-	    key: 'show',
-	    value: function show() {
-	      this.setState({ isVisible: true });
-	    }
-	  }, {
-	    key: 'hide',
-	    value: function hide() {
-	      this.setState({ isVisible: false });
-	    }
-	  }, {
-	    key: '_onOverlayClicked',
-	    value: function _onOverlayClicked() {
-	      if (this.props.hideOnOverlayClicked) {
-	        this.hide();
-	      }
-
-	      if (this.props.onOverlayClicked) {
-	        this.props.onOverlayClicked();
-	      }
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var _this2 = this;
-
-	      return _react2.default.createElement(_skylightstateless2.default, _extends({}, this.props, {
-	        isVisible: this.state.isVisible,
-	        onOverlayClicked: function onOverlayClicked() {
-	          return _this2._onOverlayClicked();
-	        },
-	        onCloseClicked: function onCloseClicked() {
-	          return _this2.hide();
-	        }
-	      }));
-	    }
-	  }]);
-
-	  return SkyLight;
-	})(_react2.default.Component);
-
-	exports.default = SkyLight;
-
-	SkyLight.displayName = 'SkyLight';
-
-	SkyLight.propTypes = _extends({}, _skylightstateless2.default.sharedPropTypes, {
-	  afterClose: _react2.default.PropTypes.func,
-	  afterOpen: _react2.default.PropTypes.func,
-	  beforeClose: _react2.default.PropTypes.func,
-	  beforeOpen: _react2.default.PropTypes.func,
-	  hideOnOverlayClicked: _react2.default.PropTypes.bool
-	});
-
-	SkyLight.defaultProps = _extends({}, _skylightstateless2.default.defaultProps, {
-	  hideOnOverlayClicked: false
-	});
-
-/***/ },
-/* 190 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _styles = __webpack_require__(191);
-
-	var _styles2 = _interopRequireDefault(_styles);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var SkyLightStateless = (function (_React$Component) {
-	  _inherits(SkyLightStateless, _React$Component);
-
-	  function SkyLightStateless() {
-	    _classCallCheck(this, SkyLightStateless);
-
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(SkyLightStateless).apply(this, arguments));
-	  }
-
-	  _createClass(SkyLightStateless, [{
-	    key: 'onOverlayClicked',
-	    value: function onOverlayClicked() {
-	      if (this.props.onOverlayClicked) {
-	        this.props.onOverlayClicked();
-	      }
-	    }
-	  }, {
-	    key: 'onCloseClicked',
-	    value: function onCloseClicked() {
-	      if (this.props.onCloseClicked) {
-	        this.props.onCloseClicked();
-	      }
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      var _this2 = this;
-
-	      var mergeStyles = function mergeStyles(key) {
-	        return Object.assign({}, _styles2.default[key], _this2.props[key]);
-	      };
-	      var isVisible = this.props.isVisible;
-
-	      var dialogStyles = mergeStyles('dialogStyles');
-	      var overlayStyles = mergeStyles('overlayStyles');
-	      var closeButtonStyle = mergeStyles('closeButtonStyle');
-	      var titleStyle = mergeStyles('titleStyle');
-	      overlayStyles.display = dialogStyles.display = 'block';
-
-	      var overlay = undefined;
-	      if (this.props.showOverlay) {
-	        overlay = _react2.default.createElement('div', { className: 'skylight-overlay',
-	          onClick: function onClick() {
-	            return _this2.onOverlayClicked();
-	          },
-	          style: overlayStyles
-	        });
-	      }
-
-	      return isVisible ? _react2.default.createElement(
-	        'section',
-	        { className: 'skylight-wrapper' },
-	        overlay,
-	        _react2.default.createElement(
-	          'div',
-	          { className: 'skylight-dialog', style: dialogStyles },
-	          _react2.default.createElement(
-	            'a',
-	            { role: 'button', className: 'skylight-close-button',
-	              onClick: function onClick() {
-	                return _this2.onCloseClicked();
-	              },
-	              style: closeButtonStyle
-	            },
-	            '×'
-	          ),
-	          _react2.default.createElement(
-	            'h2',
-	            { style: titleStyle },
-	            this.props.title
-	          ),
-	          this.props.children
-	        )
-	      ) : _react2.default.createElement('div', null);
-	    }
-	  }]);
-
-	  return SkyLightStateless;
-	})(_react2.default.Component);
-
-	exports.default = SkyLightStateless;
-
-	SkyLightStateless.displayName = 'SkyLightStateless';
-
-	SkyLightStateless.sharedPropTypes = {
-	  closeButtonStyle: _react2.default.PropTypes.object,
-	  dialogStyles: _react2.default.PropTypes.object,
-	  onCloseClicked: _react2.default.PropTypes.func,
-	  onOverlayClicked: _react2.default.PropTypes.func,
-	  overlayStyles: _react2.default.PropTypes.object,
-	  showOverlay: _react2.default.PropTypes.bool,
-	  title: _react2.default.PropTypes.string,
-	  titleStyle: _react2.default.PropTypes.object
-	};
-
-	SkyLightStateless.propTypes = _extends({}, SkyLightStateless.sharedPropTypes, {
-	  isVisible: _react2.default.PropTypes.bool
-	});
-
-	SkyLightStateless.defaultProps = {
-	  title: '',
-	  showOverlay: true,
-	  overlayStyles: _styles2.default.overlayStyles,
-	  dialogStyles: _styles2.default.dialogStyles,
-	  closeButtonStyle: _styles2.default.closeButtonStyle
-	};
-
-/***/ },
-/* 191 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var styles = {
-	  overlayStyles: {
-	    position: 'fixed',
-	    top: '0px',
-	    left: '0px',
-	    width: '100%',
-	    height: '100%',
-	    zIndex: '99',
-	    backgroundColor: 'rgba(0,0,0,0.3)'
-	  },
-	  dialogStyles: {
-	    width: '50%',
-	    height: '400px',
-	    position: 'fixed',
-	    top: '50%',
-	    left: '50%',
-	    marginTop: '-200px',
-	    marginLeft: '-25%',
-	    backgroundColor: '#fff',
-	    borderRadius: '2px',
-	    zIndex: '100',
-	    padding: '15px',
-	    boxShadow: '0px 0px 4px rgba(0,0,0,.14),0px 4px 8px rgba(0,0,0,.28)'
-	  },
-	  title: {
-	    marginTop: '0px'
-	  },
-	  closeButtonStyle: {
-	    cursor: 'pointer',
-	    position: 'absolute',
-	    fontSize: '1.8em',
-	    right: '10px',
-	    top: '0px'
-	  }
-	};
-
-	exports.default = styles;
-
-/***/ },
-/* 192 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactSkylight = __webpack_require__(188);
-
-	var _reactSkylight2 = _interopRequireDefault(_reactSkylight);
-
-	var _reactDataGrid = __webpack_require__(193);
+	var _reactDataGrid = __webpack_require__(191);
 
 	var _reactDataGrid2 = _interopRequireDefault(_reactDataGrid);
 
-	var _reactDataGridAddons = __webpack_require__(195);
+	var _reactDataGridAddons = __webpack_require__(193);
 
 	var _reactAutobind = __webpack_require__(184);
 
@@ -23524,13 +22578,356 @@
 	exports.default = ResultPanel;
 
 /***/ },
-/* 193 */
+/* 187 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(194);
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _skylight = __webpack_require__(188);
+
+	Object.defineProperty(exports, 'default', {
+	  enumerable: true,
+	  get: function get() {
+	    return _interopRequireDefault(_skylight).default;
+	  }
+	});
+
+	var _skylightstateless = __webpack_require__(189);
+
+	Object.defineProperty(exports, 'SkyLightStateless', {
+	  enumerable: true,
+	  get: function get() {
+	    return _interopRequireDefault(_skylightstateless).default;
+	  }
+	});
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /***/ },
-/* 194 */
+/* 188 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _skylightstateless = __webpack_require__(189);
+
+	var _skylightstateless2 = _interopRequireDefault(_skylightstateless);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var isOpening = function isOpening(s1, s2) {
+	  return !s1.isVisible && s2.isVisible;
+	};
+	var isClosing = function isClosing(s1, s2) {
+	  return s1.isVisible && !s2.isVisible;
+	};
+
+	var SkyLight = (function (_React$Component) {
+	  _inherits(SkyLight, _React$Component);
+
+	  function SkyLight(props) {
+	    _classCallCheck(this, SkyLight);
+
+	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(SkyLight).call(this, props));
+
+	    _this.state = { isVisible: false };
+	    return _this;
+	  }
+
+	  _createClass(SkyLight, [{
+	    key: 'componentWillUpdate',
+	    value: function componentWillUpdate(nextProps, nextState) {
+	      if (isOpening(this.state, nextState) && this.props.beforeOpen) {
+	        this.props.beforeOpen();
+	      }
+
+	      if (isClosing(this.state, nextState) && this.props.beforeClose) {
+	        this.props.beforeClose();
+	      }
+	    }
+	  }, {
+	    key: 'componentDidUpdate',
+	    value: function componentDidUpdate(prevProps, prevState) {
+	      if (isOpening(prevState, this.state) && this.props.afterOpen) {
+	        this.props.afterOpen();
+	      }
+
+	      if (isClosing(prevState, this.state) && this.props.afterClose) {
+	        this.props.afterClose();
+	      }
+	    }
+	  }, {
+	    key: 'show',
+	    value: function show() {
+	      this.setState({ isVisible: true });
+	    }
+	  }, {
+	    key: 'hide',
+	    value: function hide() {
+	      this.setState({ isVisible: false });
+	    }
+	  }, {
+	    key: '_onOverlayClicked',
+	    value: function _onOverlayClicked() {
+	      if (this.props.hideOnOverlayClicked) {
+	        this.hide();
+	      }
+
+	      if (this.props.onOverlayClicked) {
+	        this.props.onOverlayClicked();
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _this2 = this;
+
+	      return _react2.default.createElement(_skylightstateless2.default, _extends({}, this.props, {
+	        isVisible: this.state.isVisible,
+	        onOverlayClicked: function onOverlayClicked() {
+	          return _this2._onOverlayClicked();
+	        },
+	        onCloseClicked: function onCloseClicked() {
+	          return _this2.hide();
+	        }
+	      }));
+	    }
+	  }]);
+
+	  return SkyLight;
+	})(_react2.default.Component);
+
+	exports.default = SkyLight;
+
+	SkyLight.displayName = 'SkyLight';
+
+	SkyLight.propTypes = _extends({}, _skylightstateless2.default.sharedPropTypes, {
+	  afterClose: _react2.default.PropTypes.func,
+	  afterOpen: _react2.default.PropTypes.func,
+	  beforeClose: _react2.default.PropTypes.func,
+	  beforeOpen: _react2.default.PropTypes.func,
+	  hideOnOverlayClicked: _react2.default.PropTypes.bool
+	});
+
+	SkyLight.defaultProps = _extends({}, _skylightstateless2.default.defaultProps, {
+	  hideOnOverlayClicked: false
+	});
+
+/***/ },
+/* 189 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _styles = __webpack_require__(190);
+
+	var _styles2 = _interopRequireDefault(_styles);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var SkyLightStateless = (function (_React$Component) {
+	  _inherits(SkyLightStateless, _React$Component);
+
+	  function SkyLightStateless() {
+	    _classCallCheck(this, SkyLightStateless);
+
+	    return _possibleConstructorReturn(this, Object.getPrototypeOf(SkyLightStateless).apply(this, arguments));
+	  }
+
+	  _createClass(SkyLightStateless, [{
+	    key: 'onOverlayClicked',
+	    value: function onOverlayClicked() {
+	      if (this.props.onOverlayClicked) {
+	        this.props.onOverlayClicked();
+	      }
+	    }
+	  }, {
+	    key: 'onCloseClicked',
+	    value: function onCloseClicked() {
+	      if (this.props.onCloseClicked) {
+	        this.props.onCloseClicked();
+	      }
+	    }
+	  }, {
+	    key: 'render',
+	    value: function render() {
+	      var _this2 = this;
+
+	      var mergeStyles = function mergeStyles(key) {
+	        return Object.assign({}, _styles2.default[key], _this2.props[key]);
+	      };
+	      var isVisible = this.props.isVisible;
+
+	      var dialogStyles = mergeStyles('dialogStyles');
+	      var overlayStyles = mergeStyles('overlayStyles');
+	      var closeButtonStyle = mergeStyles('closeButtonStyle');
+	      var titleStyle = mergeStyles('titleStyle');
+	      overlayStyles.display = dialogStyles.display = 'block';
+
+	      var overlay = undefined;
+	      if (this.props.showOverlay) {
+	        overlay = _react2.default.createElement('div', { className: 'skylight-overlay',
+	          onClick: function onClick() {
+	            return _this2.onOverlayClicked();
+	          },
+	          style: overlayStyles
+	        });
+	      }
+
+	      return isVisible ? _react2.default.createElement(
+	        'section',
+	        { className: 'skylight-wrapper' },
+	        overlay,
+	        _react2.default.createElement(
+	          'div',
+	          { className: 'skylight-dialog', style: dialogStyles },
+	          _react2.default.createElement(
+	            'a',
+	            { role: 'button', className: 'skylight-close-button',
+	              onClick: function onClick() {
+	                return _this2.onCloseClicked();
+	              },
+	              style: closeButtonStyle
+	            },
+	            '×'
+	          ),
+	          _react2.default.createElement(
+	            'h2',
+	            { style: titleStyle },
+	            this.props.title
+	          ),
+	          this.props.children
+	        )
+	      ) : _react2.default.createElement('div', null);
+	    }
+	  }]);
+
+	  return SkyLightStateless;
+	})(_react2.default.Component);
+
+	exports.default = SkyLightStateless;
+
+	SkyLightStateless.displayName = 'SkyLightStateless';
+
+	SkyLightStateless.sharedPropTypes = {
+	  closeButtonStyle: _react2.default.PropTypes.object,
+	  dialogStyles: _react2.default.PropTypes.object,
+	  onCloseClicked: _react2.default.PropTypes.func,
+	  onOverlayClicked: _react2.default.PropTypes.func,
+	  overlayStyles: _react2.default.PropTypes.object,
+	  showOverlay: _react2.default.PropTypes.bool,
+	  title: _react2.default.PropTypes.string,
+	  titleStyle: _react2.default.PropTypes.object
+	};
+
+	SkyLightStateless.propTypes = _extends({}, SkyLightStateless.sharedPropTypes, {
+	  isVisible: _react2.default.PropTypes.bool
+	});
+
+	SkyLightStateless.defaultProps = {
+	  title: '',
+	  showOverlay: true,
+	  overlayStyles: _styles2.default.overlayStyles,
+	  dialogStyles: _styles2.default.dialogStyles,
+	  closeButtonStyle: _styles2.default.closeButtonStyle
+	};
+
+/***/ },
+/* 190 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var styles = {
+	  overlayStyles: {
+	    position: 'fixed',
+	    top: '0px',
+	    left: '0px',
+	    width: '100%',
+	    height: '100%',
+	    zIndex: '99',
+	    backgroundColor: 'rgba(0,0,0,0.3)'
+	  },
+	  dialogStyles: {
+	    width: '50%',
+	    height: '400px',
+	    position: 'fixed',
+	    top: '50%',
+	    left: '50%',
+	    marginTop: '-200px',
+	    marginLeft: '-25%',
+	    backgroundColor: '#fff',
+	    borderRadius: '2px',
+	    zIndex: '100',
+	    padding: '15px',
+	    boxShadow: '0px 0px 4px rgba(0,0,0,.14),0px 4px 8px rgba(0,0,0,.28)'
+	  },
+	  title: {
+	    marginTop: '0px'
+	  },
+	  closeButtonStyle: {
+	    cursor: 'pointer',
+	    position: 'absolute',
+	    fontSize: '1.8em',
+	    right: '10px',
+	    top: '0px'
+	  }
+	};
+
+	exports.default = styles;
+
+/***/ },
+/* 191 */
+/***/ function(module, exports, __webpack_require__) {
+
+	module.exports = __webpack_require__(192);
+
+/***/ },
+/* 192 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -36430,13 +35827,13 @@
 	;
 
 /***/ },
-/* 195 */
+/* 193 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(196);
+	module.exports = __webpack_require__(194);
 
 /***/ },
-/* 196 */
+/* 194 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -92866,6 +92263,611 @@
 	/******/ ])))
 	});
 	;
+
+/***/ },
+/* 195 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.InputBlock_clusInfo = exports.InputBlock_start = undefined;
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _JacConfigPopup = __webpack_require__(196);
+
+	var _JacConfigPopup2 = _interopRequireDefault(_JacConfigPopup);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var InputBlock_start = exports.InputBlock_start = _react2.default.createClass({
+	    displayName: "InputBlock_start",
+	    render: function render() {
+	        return _react2.default.createElement(
+	            "div",
+	            { className: "row panel" },
+	            _react2.default.createElement(
+	                "div",
+	                { className: "col-md-4" },
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "btn-group" },
+	                    _react2.default.createElement(
+	                        "button",
+	                        { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.createFunc },
+	                        "create"
+	                    ),
+	                    _react2.default.createElement(
+	                        "button",
+	                        { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.resumeFunc },
+	                        "resume"
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+	var InputBlock_clusInfo = exports.InputBlock_clusInfo = _react2.default.createClass({
+	    displayName: "InputBlock_clusInfo",
+	    getInitialState: function getInitialState() {
+	        return { "fileStatus": "" };
+	    },
+	    calc: function calc(bit) {
+	        var enabled = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+	        if (enabled && (1 << bit & this.props.display) > 0) return "block";
+	        return "none";
+	    },
+	    fileChange: function fileChange(e) {
+	        var input = $(e.target),
+	            numFiles = input.get(0).files ? input.get(0).files.length : 1,
+	            label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+	        log = numFiles > 1 ? numFiles + ' files selected' : label;
+	        var log = numFiles > 1 ? numFiles + ' files selected' : label;
+	        this.setState({ "fileStatus": log });
+	    },
+	    render: function render() {
+	        var This = this;
+	        return _react2.default.createElement(
+	            "div",
+	            null,
+	            _react2.default.createElement(
+	                "div",
+	                null,
+	                _react2.default.createElement(_JacConfigPopup2.default, { style: { display: this.calc(0) }, config: this.props.JAC_config,
+	                    socket: this.props.socket, confChange: this.props.confChange,
+	                    saveBtnStyle: { display: this.calc(6, this.props.executable) } }),
+	                _react2.default.createElement("br", null),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel", style: { display: this.calc(1) } },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Cluster Name"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement("input", { type: "text", className: "form-control", onChange: this.props.nameChange,
+	                            value: this.props.JAC_clusName, readOnly: this.props.readonly })
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-1", style: { display: this.calc(2) } },
+	                        _react2.default.createElement(
+	                            "button",
+	                            { className: "btn btn-danger btn-sm", disabled: this.props.btnDisabled,
+	                                onClick: this.props.deleteFunc, style: this.props.executable ? {} : { display: "none" } },
+	                            "Terminate"
+	                        )
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel", style: { display: this.calc(1) } },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Slave Num"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement("input", { id: "jac_slaveNum", type: "text", className: "form-control", onChange: this.props.numChange,
+	                            value: this.props.JAC_SLAVENUM, readOnly: this.props.readonly })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel", style: { display: this.calc(1) } },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Cluster Description"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-5" },
+	                        _react2.default.createElement("textarea", { className: "form-control", readOnly: this.props.readonly,
+	                            value: this.props.JAC_clusDesc, onChange: this.props.descChange,
+	                            style: { "minWidth": "100%", "height": this.props.readonly ? "34px" : "100px" } })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel", style: { display: this.calc(3) } },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-4" },
+	                        _react2.default.createElement(
+	                            "p",
+	                            { className: "text-center" },
+	                            "Your Clusters"
+	                        ),
+	                        this.props.clusList[0].map(function (d, i) {
+	                            return _react2.default.createElement(
+	                                "div",
+	                                { className: "panel", key: d[0] },
+	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
+	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
+	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
+	                                    onClick: This.props.clickOnResumeClus.bind(This, 0, i),
+	                                    readOnly: true })
+	                            );
+	                        })
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-4" },
+	                        _react2.default.createElement(
+	                            "p",
+	                            { className: "text-center" },
+	                            "Others'"
+	                        ),
+	                        this.props.clusList[1].map(function (d, i) {
+	                            return _react2.default.createElement(
+	                                "div",
+	                                { className: "panel", key: d[0] },
+	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
+	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
+	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
+	                                    onClick: This.props.clickOnResumeClus.bind(This, 1, i),
+	                                    readOnly: true })
+	                            );
+	                        })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel", style: { display: this.calc(4) } },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-4" },
+	                        _react2.default.createElement(
+	                            "button",
+	                            { className: "btn btn-primary", disabled: this.props.btnDisabled,
+	                                onClick: this.props.confirmFunc },
+	                            "confirm"
+	                        )
+	                    )
+	                )
+	            ),
+	            _react2.default.createElement(
+	                "div",
+	                { style: { display: this.calc(5, this.props.executable) } },
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Upload Path"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-5" },
+	                        _react2.default.createElement(
+	                            "div",
+	                            { className: "input-group" },
+	                            _react2.default.createElement(
+	                                "div",
+	                                { className: "input-group-btn" },
+	                                _react2.default.createElement(
+	                                    "label",
+	                                    { className: "btn btn-default", disabled: this.props.btnDisabled },
+	                                    "Browse",
+	                                    _react2.default.createElement("input", { id: "jac_uploadFiles", type: "file", onChange: this.fileChange,
+	                                        name: "file", style: { display: "none" }, multiple: true, disabled: this.props.btnDisabled })
+	                                ),
+	                                _react2.default.createElement(
+	                                    "button",
+	                                    { className: "btn btn-primary", disabled: this.props.btnDisabled,
+	                                        onClick: this.props.uploadFunc },
+	                                    "Upload"
+	                                )
+	                            ),
+	                            _react2.default.createElement("input", { id: "uploaded_files_status", type: "text", value: this.state.fileStatus,
+	                                className: "form-control", readOnly: true })
+	                        )
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "JMX to run"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-1" },
+	                        _react2.default.createElement("select", { id: "jac_JMXName" })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement(
+	                            "label",
+	                            null,
+	                            "Result name"
+	                        )
+	                    ),
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-3" },
+	                        _react2.default.createElement("input", { className: "form-control", onChange: this.props.outputChange,
+	                            value: this.props.JAC_outputName })
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    "div",
+	                    { className: "row panel" },
+	                    _react2.default.createElement(
+	                        "div",
+	                        { className: "col-md-4" },
+	                        _react2.default.createElement(
+	                            "div",
+	                            { className: "btn-group" },
+	                            _react2.default.createElement(
+	                                "button",
+	                                { className: "btn btn-primary", disabled: this.props.btnDisabled, onClick: this.props.runFunc },
+	                                "run"
+	                            ),
+	                            _react2.default.createElement(
+	                                "button",
+	                                { className: "btn btn-default", disabled: this.props.stopBtnDis, id: "btn_stopRunning", onClick: this.props.stopFunc },
+	                                "stop"
+	                            )
+	                        )
+	                    )
+	                )
+	            )
+	        );
+	    }
+	});
+
+/***/ },
+/* 196 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactSkylight = __webpack_require__(187);
+
+	var _reactSkylight2 = _interopRequireDefault(_reactSkylight);
+
+	var _reactAutobind = __webpack_require__(184);
+
+	var _reactAutobind2 = _interopRequireDefault(_reactAutobind);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var JacConfigPopup = function (_React$Component) {
+	    _inherits(JacConfigPopup, _React$Component);
+
+	    function JacConfigPopup(props) {
+	        _classCallCheck(this, JacConfigPopup);
+
+	        var _this = _possibleConstructorReturn(this, (JacConfigPopup.__proto__ || Object.getPrototypeOf(JacConfigPopup)).call(this, props));
+
+	        var This = _this;
+	        _this.state = { "config": { "InstType": {}, "ami": {} }, "json": "", "json_mode": false };
+	        _this.types = ["t2.nano", "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "r4.large", "r4.xlarge", "r4.2xlarge", "r4.4xlarge", "r4.8xlarge", "r4.16xlarge", "x1.16xlarge", "x1.32xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "i3.large", "i3.xlarge", "i3.2xlarge", "i3.4xlarge", "i3.8xlarge", "i3.16xlarge", "p2.xlarge", "p2.8xlarge", "p2.16xlarge", "g2.2xlarge", "g2.8xlarge"];
+	        _this.changes = {
+	            mt: function mt(e) {
+	                var config = This.state.config;config.InstType.master = e.target.value;This.inputChanges(config);
+	            },
+	            st: function st(e) {
+	                var config = This.state.config;config.InstType.slave = e.target.value;This.inputChanges(config);
+	            },
+	            sg: function sg(e) {
+	                var config = This.state.config;config.security_groups = e.target.value.split(",");This.inputChanges(config);
+	            },
+	            mi: function mi(e) {
+	                var config = This.state.config;config.ami.master = e.target.value;This.inputChanges(config);
+	            },
+	            si: function si(e) {
+	                var config = This.state.config;config.ami.slave = e.target.value;This.inputChanges(config);
+	            },
+	            es: function es(e) {
+	                var config = This.state.config;config.es_IP = e.target.value;This.inputChanges(config);
+	            }
+	        };
+	        (0, _reactAutobind2.default)(_this);
+	        return _this;
+	    }
+
+	    _createClass(JacConfigPopup, [{
+	        key: 'type_append',
+	        value: function type_append(t, i) {
+	            return _react2.default.createElement(
+	                'option',
+	                { key: i },
+	                t
+	            );
+	        }
+	    }, {
+	        key: 'show',
+	        value: function show() {
+	            this.setState({ "json": this.props.config, "config": JSON.parse(this.props.config), "json_mode": false });
+	            this.refs.jac_configJson.show();
+	        }
+	    }, {
+	        key: 'clickOnJsonBtn',
+	        value: function clickOnJsonBtn() {
+	            this.setState({ "json_mode": !this.state.json_mode });
+	        }
+	    }, {
+	        key: 'jsonDisplay',
+	        value: function jsonDisplay() {
+	            return this.state.json_mode ? {} : { display: "none" };
+	        }
+	    }, {
+	        key: 'inputDisplay',
+	        value: function inputDisplay() {
+	            return this.state.json_mode ? { display: "none" } : {};
+	        }
+	    }, {
+	        key: 'btn_text',
+	        value: function btn_text() {
+	            return this.state.json_mode ? "BACK" : "SHOW JSON";
+	        }
+	    }, {
+	        key: 'jsonChange',
+	        value: function jsonChange(e) {
+	            this.setState({ "json": e.target.value, "config": JSON.parse(e.target.value) });
+	        }
+	    }, {
+	        key: 'inputChanges',
+	        value: function inputChanges(obj) {
+	            this.setState({ "config": obj, "json": JSON.stringify(obj, null, "\t") });
+	        }
+	    }, {
+	        key: 'save',
+	        value: function save() {
+	            var This = this;
+	            var jsonToSave = this.refs.textarea.value;
+	            var IS_JSON = true;
+	            try {
+	                var json = $.parseJSON(jsonToSave);
+	            } catch (err) {
+	                console.log(err);
+	                IS_JSON = false;
+	            }
+	            if (!IS_JSON) alert("Invaild JSON format");else {
+	                this.props.socket.emit("update_config", { "config": jsonToSave });
+	                this.props.socket.on("config_updated", function (d) {
+	                    if (d["success"] == 1) This.props.confChange(jsonToSave);
+	                });
+	            }
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var myBigGreenDialog = {
+	                backgroundColor: '#337ab7',
+	                color: '#ffffff',
+	                width: '70%',
+	                height: '550px',
+	                marginTop: '-300px',
+	                marginLeft: '-35%'
+	            };
+	            var input_class = "form-control";
+	            return _react2.default.createElement(
+	                'div',
+	                { id: 'jac_config_area', style: this.props.style },
+	                _react2.default.createElement(
+	                    'section',
+	                    null,
+	                    _react2.default.createElement(
+	                        'button',
+	                        { className: "btn btn-success btn-sm",
+	                            onClick: this.show },
+	                        ' Configuration'
+	                    )
+	                ),
+	                _react2.default.createElement(
+	                    _reactSkylight2.default,
+	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Cluster Configuration' },
+	                    _react2.default.createElement(
+	                        'div',
+	                        { style: this.inputDisplay() },
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Master Instance Type: '
+	                                ),
+	                                _react2.default.createElement(
+	                                    'select',
+	                                    { value: this.state.config.InstType.master, onChange: this.changes.mt,
+	                                        className: input_class },
+	                                    this.types.map(this.type_append)
+	                                )
+	                            ),
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Slave Instance Type: '
+	                                ),
+	                                _react2.default.createElement(
+	                                    'select',
+	                                    { value: this.state.config.InstType.slave, onChange: this.changes.st,
+	                                        className: input_class },
+	                                    this.types.map(this.type_append)
+	                                )
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-12' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Instance Security Group: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.security_groups, onChange: this.changes.sg, className: input_class })
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Master Image: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.ami.master, className: input_class, onChange: this.changes.mi })
+	                            ),
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-6' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Slave Image: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.ami.slave, className: input_class, onChange: this.changes.si })
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'div',
+	                            { className: 'row' },
+	                            _react2.default.createElement(
+	                                'div',
+	                                { className: 'col-lg-12' },
+	                                _react2.default.createElement(
+	                                    'span',
+	                                    null,
+	                                    'Elasticsearch Server URL: '
+	                                ),
+	                                _react2.default.createElement('input', { value: this.state.config.es_IP, className: input_class, onChange: this.changes.es })
+	                            )
+	                        ),
+	                        _react2.default.createElement('br', null)
+	                    ),
+	                    _react2.default.createElement(
+	                        'div',
+	                        { style: this.jsonDisplay() },
+	                        _react2.default.createElement(
+	                            'span',
+	                            null,
+	                            'JSON'
+	                        ),
+	                        _react2.default.createElement('textarea', { value: this.state.json,
+	                            className: 'form-control',
+	                            ref: 'textarea',
+	                            onChange: this.jsonChange,
+	                            style: { "minWidth": "100%", "minHeight": "320px" } }),
+	                        _react2.default.createElement('br', null)
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { className: 'btn btn-default pull-right', onClick: this.clickOnJsonBtn },
+	                        this.btn_text()
+	                    ),
+	                    _react2.default.createElement(
+	                        'button',
+	                        { className: 'btn btn-default',
+	                            ref: 'save',
+	                            onClick: this.save,
+	                            style: this.props.saveBtnStyle },
+	                        'SAVE'
+	                    )
+	                )
+	            );
+	        }
+	    }]);
+
+	    return JacConfigPopup;
+	}(_react2.default.Component);
+
+	exports.default = JacConfigPopup;
 
 /***/ }
 /******/ ]);

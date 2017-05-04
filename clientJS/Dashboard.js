@@ -61,7 +61,7 @@ export default class DashBoard extends React.Component{
 
         socket.on("cluster_ids",function(data){
             var data = JSON.parse(data)
-            if (data.length==0) {
+            if (data[0].length==0&&data[1].length==0) {
                 This.setState({clusList:[[],[]]})
                 alert("No running instance!")
             } else {
@@ -218,8 +218,10 @@ export default class DashBoard extends React.Component{
     }
 
     delete(){
-        this.setState({btnDisabled:true});
-        this.props.socket.emit("terminate_cluster");
+        if (confirm("Are you sure to terminate this cluster?")){
+            this.setState({btnDisabled:true});
+            this.props.socket.emit("terminate_cluster");
+        }
     }
 
     stop(){
