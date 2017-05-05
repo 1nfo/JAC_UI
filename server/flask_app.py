@@ -89,7 +89,7 @@ def login():
             session["username"] = username
             session["superAccess"] = registeredUser.access==1
             init_costom_config()
-            if not validateCredentials(): return redirect( "/credential" )
+            if not validateCredentials(): return json.dumps({"success":"1","url":"/credential"})
             return json.dumps({"success":"1","url":request.args.get("next") or "/command"})
         else:
             return json.dumps("0")

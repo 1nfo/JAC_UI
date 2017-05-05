@@ -110,6 +110,7 @@ def refreshConfig():
 def updateConfig(data):
     global customConfigs
     config = data["config"]
+    assert True ## limit instance types here
     username = session["username"]
     updatedConfig = json.loads(config)
     updatedConfig = {k:updatedConfig[k] for k in updatedConfig if k in customConfigs[username]}
@@ -137,6 +138,7 @@ def startCluster(data):
     description = data["description"]
     successOrNot = False
     clusterMngr=clusterMngrs[session["_id"]]
+    assert slaveNum<=5
     if not createOrNot and not username==data["user"]:
         if session["superAccess"]:emit("redirect",{"msg":"Admin access.\n"},room=request.sid)
         else:emit("redirect",{"msg":"You are not the owner of this cluster.\nRead-only access.\n\n"},room=request.sid)

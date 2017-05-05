@@ -21,7 +21,7 @@ socketio.init_app(app)
 login_manager.init_app(app)
 
 # if no db it will create one.
-db_path = "server/"+app.config["SQLALCHEMY_DATABASE_URI"].split("/")[-1]
+db_path = os.path.join(os.path.dirname(__file__),app.config["SQLALCHEMY_DATABASE_URI"].split("/")[-1])
 if not os.path.exists(db_path):
     with app.app_context():
         db.create_all()
