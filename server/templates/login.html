@@ -24,36 +24,43 @@
                     <input class="login_box" type=password name=password placeholder="password" id="inputPassword" required>
                     <button id="login_btn" class="btn btn-lg btn-primary" >Login</button>
                 </form>
-                <div style="height:50px"><br/><p class="text-danger" id="invalid_hint" style="display:none">Invalid username or password<p></div>
+                <div class="text-danger" id="invalid_hints" ><br/></div>
             </div>
             <script src="{{ url_for('static',filename = 'js/jquery.js' )}}"></script>
             <script type="text/javascript">
+                var hint = function(str){
+                    var p = $("<p/>").append(str)
+                    $("#invalid_hints").append(p);
+                    setTimeout(function(){p.remove();},3000,)
+                }
+
                 $("#login_btn").click(function(e){
                     e.preventDefault()
-                    $.ajax({
-                        async: false,
-                        cache: false,
-                        type: 'post',
-                        dataType: 'json',
-                        data: ({
-                            'username': $('#inputUsername').val(),
-                            'password': $('#inputPassword').val()
-                        }),
-                        url: '/login',
-                        success: function (data) {
-                            if (data["success"] === '1') {  // server returns a "1" for success
-                                window.location = data["url"]
-                            } else {
-                                document.getElementById("invalid_hint").style.display="block"
-                                setTimeout(function(){document.getElementById("invalid_hint").style.display="none"},3000,)
+                    if($('#inputUsername').val()=="") hint("Empty Username")
+                    else {
+                        $.ajax({
+                            async: false,
+                            cache: false,
+                            type: 'post',
+                            dataType: 'json',
+                            data: ({
+                                'username': $('#inputUsername').val(),
+                                'password': $('#inputPassword').val()
+                            }),
+                            url: '/login',
+                            success: function (data) {
+                                if (data["success"] === '1') {  // server returns a "1" for success
+                                    window.location = data["url"]
+                                } else {
+                                    hint("Invalid username or password")
+                                }
+                            },
+                            error: function () {
+                                // something went wrong with the request
+                                hint("There is an error when validating user")
                             }
-                        },
-                        error: function () {
-                            // something went wrong with the request
-                             document.getElementById("invalid_hint").style.display="block"
-                             setTimeout(function(){document.getElementById("invalid_hint").style.display="none"},3000,)
-                        }
-                    });
+                        });
+                    }
                 })
             </script>
         </div>
