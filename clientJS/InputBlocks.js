@@ -16,13 +16,17 @@ export const InputBlock_start = React.createClass({
 
 export const InputBlock_clusInfo = React.createClass({
     getInitialState(){
-        return {"fileStatus":""};
+        return {"fileStatus":"",clkStatus:true};
     },
 
     calc(bit,enabled=true,superAccess=false){
         if(superAccess) return "block";
         if( enabled &&((1<<bit)&this.props.display)>0) return "block";
         return "none";
+    },
+
+    descExpand(){
+        this.setState({clkStatus:!this.state.clkStatus})
     },
 
     fileChange(e){
@@ -36,6 +40,7 @@ export const InputBlock_clusInfo = React.createClass({
 
     render(){
         var This = this;
+        var descHeight = this.props.readonly&&this.state.clkStatus?"34px":"100px";
         return (<div>
                     <div>
                         <JacConfigPopup style={{display: this.calc(0)}} config={this.props.JAC_config}
@@ -65,9 +70,9 @@ export const InputBlock_clusInfo = React.createClass({
                         <div className="row panel" style={{display: this.calc(1)}}>
                             <div className="col-md-3"><label>Cluster Description</label></div>
                             <div className="col-md-5">
-                                <textarea className="form-control" readOnly={this.props.readonly}
+                                <textarea className="form-control" readOnly={this.props.readonly} onClick={this.descExpand}
                                           value={this.props.JAC_clusDesc} onChange={this.props.descChange}
-                                          style={{"minWidth": "100%","height":this.props.readonly?"34px":"100px"}} />
+                                          style={{"minWidth": "100%","height":descHeight}} />
                             </div>
                         </div>
                         <div className="row panel" style={{display: this.calc(3)}}>

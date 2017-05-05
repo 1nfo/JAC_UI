@@ -22272,7 +22272,7 @@
 	var InputBlock_clusInfo = exports.InputBlock_clusInfo = _react2.default.createClass({
 	    displayName: "InputBlock_clusInfo",
 	    getInitialState: function getInitialState() {
-	        return { "fileStatus": "" };
+	        return { "fileStatus": "", clkStatus: true };
 	    },
 	    calc: function calc(bit) {
 	        var enabled = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
@@ -22281,6 +22281,9 @@
 	        if (superAccess) return "block";
 	        if (enabled && (1 << bit & this.props.display) > 0) return "block";
 	        return "none";
+	    },
+	    descExpand: function descExpand() {
+	        this.setState({ clkStatus: !this.state.clkStatus });
 	    },
 	    fileChange: function fileChange(e) {
 	        var input = $(e.target),
@@ -22292,6 +22295,7 @@
 	    },
 	    render: function render() {
 	        var This = this;
+	        var descHeight = this.props.readonly && this.state.clkStatus ? "34px" : "100px";
 	        return _react2.default.createElement(
 	            "div",
 	            null,
@@ -22366,9 +22370,9 @@
 	                    _react2.default.createElement(
 	                        "div",
 	                        { className: "col-md-5" },
-	                        _react2.default.createElement("textarea", { className: "form-control", readOnly: this.props.readonly,
+	                        _react2.default.createElement("textarea", { className: "form-control", readOnly: this.props.readonly, onClick: this.descExpand,
 	                            value: this.props.JAC_clusDesc, onChange: this.props.descChange,
-	                            style: { "minWidth": "100%", "height": this.props.readonly ? "34px" : "100px" } })
+	                            style: { "minWidth": "100%", "height": descHeight } })
 	                    )
 	                ),
 	                _react2.default.createElement(
