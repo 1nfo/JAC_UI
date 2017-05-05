@@ -1,7 +1,7 @@
 from .flask_app import socketio, app, db, login_manager
 from flask_session import Session
 from datetime import timedelta
-import uuid
+import uuid, os
 
 
 app.config.update(
@@ -19,4 +19,10 @@ db.init_app(app)
 sess.init_app(app)
 socketio.init_app(app)
 login_manager.init_app(app)
+
+# if no db it will create one.
+db_path = "server/"+app.config["SQLALCHEMY_DATABASE_URI"].split("/")[-1]
+if not os.path.exists(db_path):
+    with app.app_context():
+        db.create_all()
 

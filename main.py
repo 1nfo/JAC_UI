@@ -1,18 +1,20 @@
 from server import *
 import sys, os
 
+# from eventlet import wsgi
+# import eventlet
+
 if __name__ == "__main__":
-    # if no db it will create one.
-    db_path = "server/"+app.config["SQLALCHEMY_DATABASE_URI"].split("/")[-1]
-    if not os.path.exists(db_path):
-        with app.app_context():
-            db.create_all()
-    # server option make host externally visible
+    DEBUG = True
     if "cmd" in sys.argv:
         cmd = sys.argv.index("cmd")+1
         if len(sys.argv)>cmd:
             exec(sys.argv[cmd])
     elif "server" in sys.argv:
-        socketio.run(app, host="0.0.0.0", port=80, debug=True)
+        ## socketio.run(app) runs a production ready server if eventlet installed
+        #  the two commands below should be equivalent.
+        #  wsgi.server(eventlet.listen(('', 80)), app)
+        #  socketio.run(app,host="0.0.0.0",port=80)
+        socketio.run(app, host="0.0.0.0", port=80, debug=DEBUG)
     else:
-        socketio.run(app, debug=True)
+        socketio.run(app, debug=DEBUG)
