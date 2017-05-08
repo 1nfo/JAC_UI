@@ -31,7 +31,7 @@
                 var hint = function(str){
                     var p = $("<p/>").append(str)
                     $("#invalid_hints").append(p);
-                    setTimeout(function(){p.remove();},3000,)
+                    setTimeout(function(){p.remove();},3000)
                 }
 
                 $("#login_btn").click(function(e){
@@ -41,13 +41,13 @@
                         $.ajax({
                             async: false,
                             cache: false,
-                            type: 'post',
+                            type: 'POST',
                             dataType: 'json',
                             data: ({
                                 'username': $('#inputUsername').val(),
                                 'password': $('#inputPassword').val()
                             }),
-                            url: '/login',
+                            url: '/login/',
                             success: function (data) {
                                 if (data["success"] === '1') {  // server returns a "1" for success
                                     window.location = data["url"]

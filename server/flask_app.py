@@ -69,7 +69,7 @@ def load_user(userid):
     return User.query.get(userid)
 
 # login page
-@app.route('/login' , methods=['GET' , 'POST'])
+@app.route('/login/' , methods=['GET' , 'POST'])
 def login():
     session.permanent=True
     title="Jmeter Cloud Testing -- Login"
