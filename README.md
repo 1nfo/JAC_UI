@@ -28,7 +28,7 @@ After test is done, user should terminate their cluster.
 --- README.md  
 --- Dockerfile  [Docker build file]   
 --- clientJs/  [react client javascript]  
---- main.py    [application entree]   
+--- main.py    [application entry]   
 --- package.json  [npm js packages]   
 --- requirements.txt  [python packages]     
 --- start.sh   [shortcut for docker]  
@@ -55,17 +55,20 @@ Refer to [Dockerfile]() under this repo.
 
 DON'T FORGET TO:  
 
-1. Put Jmeter\_test\_key\_pair.pem under home directory.
+1. Put JAC\_key\_pair.pem under home directory.
 2. Clone this repo to you server.
 3. Start redis server first before application.
 4. Bind port 80 requires sudo.
 5. Add "server" flag `sudo python3 main.py server`
 
 ### docker
+cd to this directory and put the AWS EC2 JAC\_key\_pair.pem here.
 
 docker bulid:
 	
 	docker build -t jac .
+	
+after building:
 	
 docker run
 
