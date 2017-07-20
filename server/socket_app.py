@@ -247,19 +247,30 @@ def stopRunning(data):
         print("Stopped\n")
     emit("cluster_stopped",room=request.sid)
 
-# list summary resuts
+# list summary results
 @socketio.on("list_sum_results", namespace="/redirect")
 def list_sum_results():
     clusterMngr = clusterMngrs[session["_id"]]
     res = clusterMngr.resMngr.list()
     emit("return_sum_results",json.dumps({"res":res}))
 
-# get summary resut
+# get summary result
 @socketio.on("get_sum_result", namespace="/redirect")
 def get_sum_result(data):
     clusterMngr = clusterMngrs[session["_id"]]
     res = clusterMngr.resMngr.get(data["path"])
     emit("return_sum_result",json.dumps({"res":res}))
+
+# download log
+@socketio.on("get_log_result", namespace="/redirect")
+def get_log_result(data):
+    clusterMngr = clusterMngrs[session["_id"]]
+
+    arr = data["path"].split("/")
+    log_path = "/".join(arr[:-2]+arr[-1:])
+
+    res = clusterMngr.resMngr.get(log_path)
+    emit("return_log_result",json.dumps({"res":res}))
 
 # delete summary result
 @socketio.on("del_sum_result", namespace="/redirect")

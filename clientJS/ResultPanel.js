@@ -46,7 +46,6 @@ export default class ResultPanel extends React.Component{
     constructor(props) {
         super(props)
         this.state = {
-            popups:true,
             innerRows:[],
             cols:[],
             originalInnerRows:[],
@@ -123,40 +122,44 @@ export default class ResultPanel extends React.Component{
     componentDidMount(){
         var socket = this.socket;
         var This = this;
+
         socket.on("return_sum_results", function(data){
             data = JSON.parse(data)
             if(data.res.length==0) alert("No Summary Result!")
             This.setState({rows:data["res"]})
         })
+
+        socket.on("return_log_result",function(data){
+            var table = JSON.parse(data)["res"]
+            console.log(This)
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(table));
+            element.setAttribute('download', This.getOuterRows()[This.state.rowNum]["Name"]+".csv");
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        })
+
         socket.on("return_sum_result", function(data){
             var table = JSON.parse(data)["res"]
-            if (This.state.popups){
-                var header = table.split("\n")[0]
-                var innerRows = table.split("\n").slice(1)
-                var originalInnerRows = innerRows.slice(0)
-                var cols = header.split(",").map(
-                    function(d,i){
-                        var prefix = "aggregate_report_";
-                        return {
-                            key:i.toString(),
-                            name:d.startsWith(prefix)?d.split(prefix)[1]:d,
-                            resizable:true,
-                            sortable:true
-                        }
-                    })
-                This.setState({"cols":cols,"innerRows":innerRows,"originalInnerRows":originalInnerRows})
-                This.refs.res_popup.show();
-            }
-            else {
-                var element = document.createElement('a');
-                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(table));
-                element.setAttribute('download', This.state.innerRows[This.state.rowNum]["Name"]+".csv");
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-            }
+            var header = table.split("\n")[0]
+            var innerRows = table.split("\n").slice(1)
+            var originalInnerRows = innerRows.slice(0)
+            var cols = header.split(",").map(
+                function(d,i){
+                    var prefix = "aggregate_report_";
+                    return {
+                        key:i.toString(),
+                        name:d.startsWith(prefix)?d.split(prefix)[1]:d,
+                        resizable:true,
+                        sortable:true
+                    }
+                })
+            This.setState({"cols":cols,"innerRows":innerRows,"originalInnerRows":originalInnerRows})
+            This.refs.res_popup.show();
         })
+
         socket.on("return_del_ack",function(){
             ;
         })
@@ -193,14 +196,13 @@ export default class ResultPanel extends React.Component{
 
     popup(i,_){
         var This = this;
-        this.setState({popups:true});
         this.socket.emit("get_sum_result",{"path":This.getOuterRows()[i]["Key"]})
     }
 
     download(i,_){
         var This = this;
-        this.setState({popups:false,rowNum:i});
-        this.socket.emit("get_sum_result",{"path":This.getOuterRows()[i]["Key"]})
+        this.setState({rowNum:i});
+        this.socket.emit("get_log_result",{"path":This.getOuterRows()[i]["Key"]})
     }
 
     delete(i,_){
