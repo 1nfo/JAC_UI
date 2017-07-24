@@ -76,7 +76,11 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if PydtAuth().verify(username,password):
+        try:
+            verified = PydtAuth().verify(username,password)
+        except Exception as e:
+            return json.dumps({"exception":"1","msg":str(e)})
+        if verified:
             registeredUser = User.query.filter_by(username=username).first()
             if registeredUser == None:
                 new_user = User(username,User.query.all().__len__())
@@ -92,7 +96,7 @@ def login():
             if not validateCredentials(): return json.dumps({"success":"1","url":"/credential"})
             return json.dumps({"success":"1","url":request.args.get("next") or "/command"})
         else:
-            return json.dumps("0")
+            return json.dumps({"success":"0"})
     else:
         return render_template("login.html", title=title)
 

@@ -14,3 +14,4 @@ class PaydiantAuthentication(object):
             return False
         except Exception as e:
             print(e)
+            raise e

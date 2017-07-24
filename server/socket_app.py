@@ -36,21 +36,18 @@ def background_thread():
         for sid in jredirectors:
             r = jredirectors[sid]
             if len(r.buff.getvalue()):
-                socketio.emit('redirect',
-                              {'msg': r.flush()},
-                              namespace='/redirect',
-                              room=sid)
+                socketio.emit('redirect', {'msg': r.flush()},namespace='/redirect', room=sid)
 
 # remove some configs that should be invisible to user
 def configFilter(config):
     filter_list = set(["aws_access_key_id", "aws_secret_access_key","role" # these are credentials
-                       # , "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath" # there is no changes unless AWS side settings changed
+                       # , "propertiesPath", "username", "instance_home", "logstash_conf_dir", "pemFilePath" # there is no changes for these configs unless AWS side settings changed
                        # , "region","zone"# won't change under current assumption
                        ])
     res = {k:config[k] for k in config if k not in filter_list}
     return res
 
-# parse to json before return response
+# parse to json before returning response
 def configJson(config):
     return {'config': json.dumps(configFilter(config), indent="\t")}
 
