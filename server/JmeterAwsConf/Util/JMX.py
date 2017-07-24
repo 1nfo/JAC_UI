@@ -24,6 +24,10 @@ class JMX(object):
         children = self.resCollector.find('.//value[@class="SampleSaveConfiguration"]').getchildren()
         return {c.tag:transfer(c.text) for c in children }
 
+    def setHeaderAsTrue(self):
+        self.jmx.find('.//ResultCollector[@guiclass="SummaryReport"]//value[@class="SampleSaveConfiguration"]//fieldNames').text = "true"
+        self.jmx.write(self.path)
+
     # def isSaveAsXML(self):
     #     return self.jmx.find('.//ResultCollector[@guiclass="SummaryReport"]//value[@class="SampleSaveConfiguration"]//xml').text=="true"
 

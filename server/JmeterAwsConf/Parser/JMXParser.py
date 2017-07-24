@@ -28,6 +28,8 @@ class JMXParser(object):
                 cols+=self.mapping[i]
         return cols
 
+    def defaultChanges(self):
+        self.jmx.setHeaderAsTrue()
 
     def setOutput(self,name):
         return self.jmx.setOutputFilename(name)

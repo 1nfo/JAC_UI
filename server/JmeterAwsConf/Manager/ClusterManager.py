@@ -161,31 +161,42 @@ class ClusterManager(Manager):
     #  2. -l output, the output file name
     def runTest(self, jmx, output):
         self.print("\nrunning test now ...")
-        output+="_"+self.instMngr.clusterName+"_"+jmx.split(".")[0]+"_"+now()
-        # logstash conf files
+        output+="_"+self.instMngr.clusterName+"_"+jmx.split(".")[0]+"_"+now()+".jtl"
+        # update jmx files:
         jmxParser = JMXParser(JMX("%s/%s"%(self.UploadPath,jmx)))
+        jmxParser.defaultChanges()
         jmxParser.setOutput(output)
         mergedOutput = "merged.csv"
         confFile = jmxParser.getConf("/home/ubuntu/"+mergedOutput,self.instMngr.clusterID,self.config["es_IP"]);
         confCmd = 'source .profile && echo \'%s\' > .tmpConf && sudo mv .tmpConf %s/jmeterlog.conf'%(
             confFile,self.config["logstash_conf_dir"])
-        runJmeterCmd = "source .profile && cd %s && : > %s && jmeter -n -t %s -r " % (
+        runJmeterCmd = "source .profile && cd %s && rm -f %s && jmeter -n -t %s -r " % (
             self.instMngr.clusterName, output, jmx)
+        aggCmd = ('source .profile && cd {0} && JMeterPluginsCMD.sh --generate-csv {1}.agg --input-jtl {1} --plugin-type AggregateReport'+\
+                 ' && aws s3 cp {1}.agg s3://{2}/{3}/summary/{1}')\
+                 .format(self.instMngr.clusterName,output,self.config["s3_bucket"],self.instMngr.user)
+        rmHeaderCmd = '''awk 'NR>1 {{print $0}}' {0}/{1} >> {0}/{1}'''.format(self.instMngr.clusterName,output)
         awkCmd = '''awk -v RS='"' 'NR % 2 == 0 {{ gsub(/\\n/, "") }} {{ printf("%s%s", $0, RT) }}' {0}/{1} >> {2}'''.format(
             self.instMngr.clusterName,output,mergedOutput)
         s3Cmd = "source .profile && cd %s && aws s3 cp %s s3://%s/%s/%s" % \
                 (self.instMngr.clusterName, output, self.config["s3_bucket"], self.instMngr.user, output)
-        aggCmd = ('source .profile && cd {0} && JMeterPluginsCMD.sh --generate-csv {1}.agg --input-jtl {1} --plugin-type AggregateReport'+\
-                 ' && aws s3 cp {1}.agg s3://{2}/{3}/summary/{1}')\
-                 .format(self.instMngr.clusterName,output,self.config["s3_bucket"],self.instMngr.user)
+
         self.connMngr.connectMaster()
         self.connMngr.putMaster(os.path.join(self.UploadPath,jmx),self.instMngr.clusterName)
+        # update logstash conf files
         self.connMngr.cmdMaster(confCmd)
+        # restart logstash
         self.connMngr.cmdMaster("sudo systemctl restart logstash.service")
+        # run test
         self.connMngr.cmdMaster(runJmeterCmd, verbose=True)
-        self.connMngr.cmdMaster(awkCmd)
+        # generate aggregate report and upload it to s3
         self.connMngr.cmdMaster(aggCmd)
+        # remove header after aggregation
+        self.connMngr.cmdMaster(rmHeaderCmd)
+        # upload original log to s3
         self.connMngr.cmdMaster(s3Cmd, verbose=True)
+        # append the results to mergedOutput
+        self.connMngr.cmdMaster(awkCmd)
         self.connMngr.closeMaster()
 
     #  terminate all nodes
