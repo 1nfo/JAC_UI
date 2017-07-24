@@ -25,7 +25,7 @@ class InstanceManager(Manager,BotoSession):
             # tmp = sess.assume_role(RoleArn=self.config.role,RoleSessionName="session_"+self.clusterName)["Credentials"]
             # ret = Session(aws_access_key_id=tmp["AccessKeyId"], aws_secret_access_key=tmp["SecretAccessKey"],
                                 #                aws_session_token=tmp["SessionToken"], region_name=self.config.session_param["region_name"])
-            sess = self.newSess(self.clusterName)
+            sess = self.newSess(self.user)
             if item == "client":
                 ret = self.__dict__[item] = sess.client("ec2")
             elif item == "iam":
@@ -36,7 +36,8 @@ class InstanceManager(Manager,BotoSession):
 
 
     # set cluster name and id
-    def setCluster(self, clusterName, clusterID=None, user=None):
+    def setCluster(self, clusterName, user, clusterID=None):
+        self.user = user
         if clusterName and clusterID is None:
             res = self.getDupClusterIds(clusterName)
             if len(res) > 0:
@@ -46,7 +47,6 @@ class InstanceManager(Manager,BotoSession):
         self.clusterID = clusterID if clusterID else res[0] if res else self._genID(clusterName,user)
         self.master = None
         self.slaves = []
-        self.user = user
         self.updateInstances()
 
     # set cluster description

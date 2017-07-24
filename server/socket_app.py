@@ -65,7 +65,9 @@ def init_costom_config():
 # using user's config to validate aws access
 def validateCredentials():
     try:
-        JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]])).client
+        mngr = JAC.Manager.ResultManager(JAC.AWSConfig(**customConfigs[session["username"]]))
+        mngr.setUser(session["username"])
+        mngr.client
     except (ClientError,ParamValidationError):
         return False
     return True
@@ -117,7 +119,9 @@ def updateConfig(data):
 # while click resume
 @socketio.on("get_cluster_ids", namespace="/redirect")
 def getClusterIDs():
-    li = JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]])).getDupClusterIds()
+    mngr = JAC.InstanceManager(JAC.AWSConfig(**customConfigs[session["username"]]))
+    mngr.user=session["username"]
+    li = mngr.getDupClusterIds()
     # divide cluster list based on username
     res = [[i for i in li if i[2]==session["username"]],[i for i in li if i[2]!=session["username"]]]
     emit("cluster_ids",json.dumps(res),room=request.sid)
