@@ -8,10 +8,7 @@ class PaydiantAuthentication(object):
     def verify(self,username,password):
         if not username or not password: return False
         try:
-            
-            return True
             Connection(self.server, username+"@pydt.lan", password, auto_bind=True)
-            
             return True
         except LDAPBindError:
             return False
