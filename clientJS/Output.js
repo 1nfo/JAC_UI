@@ -1,6 +1,6 @@
 import React from "react";
 import ScrollArea from 'react-scrollbar';
-
+import ConnectStatus from "./ConnectStatus";
 
 class ConnectionStatus extends React.Component{
     constructor(props){
@@ -13,7 +13,7 @@ class ConnectionStatus extends React.Component{
                            style={{lineHeight:2}} aria-hidden="true"/>
                     <button className="btn btn-default pull-right" id="btn_clear"
                                 onClick={() => this.props.clearFunc()}>
-                        clear screen
+                        Clear Screen
                     </button>
                 </div>);
     }
@@ -36,6 +36,10 @@ const Output = React.createClass({
 
     render(){
         var scrollbarStyles = {borderRadius: 5};
+        var socket = this.props.socket;
+
+
+
         return (<div className="col-lg-5">
                     <div className="panel panel-primary">
                         <ConnectionStatus clearFunc={this.clear}/>
@@ -49,7 +53,12 @@ const Output = React.createClass({
                                     >
                             <Console ref="console"/>
                         </ScrollArea>
+
+
                     </div>
+                    <ConnectStatus socket={this.socket}/>
+
+
                 </div>)
     }
 });

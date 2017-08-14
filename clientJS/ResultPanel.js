@@ -260,7 +260,7 @@ export default class ResultPanel extends React.Component{
                     <button className="btn btn-primary" onClick={this.listResults}>Refresh result list</button>
                 </div>
                 <br/>
-                <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="res_popup" title="Summary Result" >
+                <SkyLight hideOnOverlayClicked ref="res_popup" title="Summary Result" >
                     <div style={{"color":"black"}}>
                          <ReactDataGrid
                             onGridSort={This.handlePopupGridSort}

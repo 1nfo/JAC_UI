@@ -40,14 +40,26 @@ export default class DashBoard extends React.Component{
 
         socket.on("connect",function(){
             $('#connIcon').removeClass();
-            $('#connIcon').addClass("glyphicon glyphicon-ok")
+            $('#connIcon').addClass("glyphicon glyphicon-list-alt")
             $('#connIcon').empty()
-            $('#connIcon').append(" Connected")
+            $('#connIcon').append(" Output"); //connected
+            
+            $('#socketStatusVal').removeClass();
+            $('#socketStatusVal').addClass("glyphicon glyphicon-ok");
+            $('#socketStatusVal').empty();
+            $('#socketStatusVal').append(" Connected"); //connected
+
             socket.on('disconnect', function() {
                 $('#connIcon').removeClass();
-                $('#connIcon').addClass("glyphicon glyphicon-remove")
+                $('#connIcon').addClass("glyphicon glyphicon-list-alt")
                 $('#connIcon').empty()
-                $('#connIcon').append(" Disconnected")
+                $('#connIcon').append(" Output") //disconnected
+
+                $('#socketStatusVal').removeClass();
+                $('#socketStatusVal').addClass("glyphicon glyphicon-remove");
+                $('#socketStatusVal').empty();
+                $('#socketStatusVal').append(" Disconnected"); //disconnected
+                
                 This.setState({btnDisabled:true})
             });
             socket.on('connect_timeout', function() {
@@ -100,12 +112,12 @@ export default class DashBoard extends React.Component{
             $.each(data["jmxList"],function(i,d){
                 $("#jac_JMXName").append("<option value=\""+d+"\">"+d+"</option>")
             })
-            alert("succeed");
+            alert("Uploaded Successfully!");
         })
 
         socket.on('time_out', function(){
             This.setState({ btnDisabled:false})
-            alert("Instances are still initializing, check aws web console or try again later");
+            alert("Instances are still initializing, check AWS web console or try again later");
         })
 
         socket.on("cluster_stopped", function(){
