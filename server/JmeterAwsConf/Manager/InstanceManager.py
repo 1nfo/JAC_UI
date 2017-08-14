@@ -114,7 +114,7 @@ class InstanceManager(Manager,BotoSession):
         return res
 
     # internal use, stop a list of instances
-    def terminateInstances(self, IDs, verbose):
+    def terminateInstances(self, IDs, verbose):          
         res = self.client.terminate_instances(InstanceIds=IDs) if IDs else "No instance in the list"
         self.print("Terminate instances:" + str(IDs), verbose)
         self.print(json.dumps(res, indent=2), verbose)

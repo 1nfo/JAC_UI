@@ -4,10 +4,10 @@ import JacConfigPopup from "./JacConfigPopup"
 export const InputBlock_start = React.createClass({
     render(){
         return (<div className="row panel">
-                    <div className="col-md-4">
+                    <div className="col-md-8">
                         <div className="btn-group">
-                            <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.createFunc}>create</button>
-                            <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.resumeFunc}>resume</button>
+                            <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.createFunc}>New Cluster</button>
+                            <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.resumeFunc}>List of Clusters</button>
                         </div>
                      </div>
                 </div>);
@@ -37,6 +37,7 @@ export const InputBlock_clusInfo = React.createClass({
         var log = numFiles > 1 ? numFiles + ' files selected' : label;
         this.setState({"fileStatus":log})
     },
+
 
     render(){
         var This = this;
@@ -76,21 +77,26 @@ export const InputBlock_clusInfo = React.createClass({
                             </div>
                         </div>
                         <div className="row panel" style={{display: this.calc(3)}}>
-                            <div className="col-md-4 text-center" >
+                            <div className="col-md-6 text-center" >
                                 <p>Your Clusters</p>
                                 {this.props.clusList[0].map(function(d,i){
+                                    console.log(d,i);
                                     return (
                                             <div className='panel' key={d[0]}>
-                                                <input className={"btn btn-default clusToResume"}
-                                                       value={d[0].split("_",1)} disabled={This.props.btnDisabled}
-                                                       title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
-                                                       onClick={This.props.clickOnResumeClus.bind(This,0,i)}
-                                                       readOnly/>
+
+                                                <div className="btn-group">
+                                                    <input className={"btn btn-default clusToResume"}
+                                                           value={d[0].split("_",1)} disabled={This.props.btnDisabled}
+                                                           title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
+                                                           onClick={This.props.clickOnResumeClus.bind(This,0,i)}
+                                                           readOnly/>
+                                                    <button className={"btn btn-danger"} onClick={This.props.deleteFunc}>Terminate</button>
+                                                </div>    
                                             </div>
                                         );
                                 })}
                             </div>
-                            <div className="col-md-4 text-center" >
+                            <div className="col-md-6 text-center" >
                                 <p>Others'</p>
                                 {this.props.clusList[1].map(function(d,i){
                                     return (
@@ -114,7 +120,7 @@ export const InputBlock_clusInfo = React.createClass({
                     </div>
                     <div style={{display: this.calc(5,this.props.executable)}}>
                         <div className="row panel">
-                            <div className="col-md-3"><label>Upload Path</label></div>
+                            <div className="col-md-3"><label>Select upload file</label></div>
                             <div className="col-md-5">
                                 <div className="input-group">
                                     <div className="input-group-btn">
@@ -123,6 +129,19 @@ export const InputBlock_clusInfo = React.createClass({
                                         <input id="jac_uploadFiles" type="file" onChange={this.fileChange}
                                                name="file" style={{display: "none"}} multiple  disabled={this.props.btnDisabled}/>
                                         </label>
+                                       
+                                    </div>
+                                   
+                                </div>
+                            </div>
+                        </div>
+                         <div className="row panel">
+                            <div className="col-md-3"><label>Upload file</label></div>
+                            <div className="col-md-5">
+                                <div className="input-group">
+                                    <div className="input-group-btn">
+                                        
+                                        
                                         <button className={"btn btn-primary"} disabled={this.props.btnDisabled}
                                                 onClick={this.props.uploadFunc}>Upload</button>
                                     </div>
@@ -131,6 +150,12 @@ export const InputBlock_clusInfo = React.createClass({
                                 </div>
                             </div>
                         </div>
+
+
+
+
+
+
                         <div className="row panel" >
                             <div className="col-md-3"><label>JMX to run</label></div>
                             <div className="col-md-1"><select id="jac_JMXName"></select></div>

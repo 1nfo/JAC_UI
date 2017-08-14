@@ -247,8 +247,8 @@ export default class ResultPanel extends React.Component{
     render(){
         var This = this;
         var myBigGreenDialog = {
-          backgroundColor: '#337ab7',
-          color: '#ffffff',
+          backgroundColor: '#fff',
+          color: '#000',
           width: '70%',
           height: '450px',
           marginTop: '-250px',

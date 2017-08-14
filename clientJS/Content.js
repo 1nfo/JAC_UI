@@ -1,9 +1,8 @@
 import React from 'react';
 import Output from './Output';
-import DashBoard from './DashBoard'
+import DashBoard from './DashBoard';
 import autoBind from 'react-autobind';
-import ResultPanel from "./ResultPanel"
-
+import ResultPanel from "./ResultPanel";
 
 export default class Content extends React.Component{
     constructor(props) {
