@@ -247,8 +247,8 @@ export default class ResultPanel extends React.Component{
     render(){
         var This = this;
         var myBigGreenDialog = {
-          backgroundColor: '#337ab7',
-          color: '#ffffff',
+          backgroundColor: '#fff',
+          color: '#000',
           width: '70%',
           height: '450px',
           marginTop: '-250px',
@@ -260,7 +260,7 @@ export default class ResultPanel extends React.Component{
                     <button className="btn btn-primary" onClick={this.listResults}>Refresh result list</button>
                 </div>
                 <br/>
-                <SkyLight hideOnOverlayClicked ref="res_popup" title="Summary Result" >
+                <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="res_popup" title="Summary Result" >
                     <div style={{"color":"black"}}>
                          <ReactDataGrid
                             onGridSort={This.handlePopupGridSort}

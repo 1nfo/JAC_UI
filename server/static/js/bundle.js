@@ -22291,10 +22291,6 @@
 
 	var _ResultPanel2 = _interopRequireDefault(_ResultPanel);
 
-	var _ConnectStatus = __webpack_require__(189);
-
-	var _ConnectStatus2 = _interopRequireDefault(_ConnectStatus);
-
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -22450,8 +22446,16 @@
 	            return _react2.default.createElement(
 	                "div",
 	                { className: "panel-heading" },
-	                _react2.default.createElement("span", { id: "connIcon", className: "glyphicon",
-	                    style: { lineHeight: 2 }, "aria-hidden": "true" }),
+	                _react2.default.createElement(
+	                    "span",
+	                    { className: "glyphicon glyphicon-list-alt",
+	                        style: { lineHeight: 2 }, "aria-hidden": "true" },
+	                    _react2.default.createElement(
+	                        "span",
+	                        null,
+	                        "\xA0Output"
+	                    )
+	                ),
 	                _react2.default.createElement(
 	                    "button",
 	                    { className: "btn btn-default pull-right", id: "btn_clear",
@@ -22552,51 +22556,6 @@
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	/*export default class ConnectStatus extends React.Component{
-	    constructor(props) {
-	        super(props);
-	        
-	    }
-
-	    componentDidMount(){
-	        var This = this
-	        var socket = this.props.socket
-
-	        socket.on("connect",function(){
-	            $('#connIcon').removeClass();
-	            $('#connIcon').addClass("glyphicon glyphicon-ok")
-	            $('#connIcon').empty()
-	            $('#connIcon').append(" Socket Connected") //connected
-	            socket.on('disconnect', function() {
-	                $('#connIcon').removeClass();
-	                $('#connIcon').addClass("glyphicon glyphicon-remove")
-	                $('#connIcon').empty()
-	                $('#connIcon').append(" Socket Disconnected") //disconnected
-	                This.setState({btnDisabled:true})
-	            });
-	           
-	        })
-	    }
-
-	    render() {
-
-	      
-	        return (
-	            <div className="panel panel-primary">
-	                
-	                    <div className="panel-heading">
-	                        Socket Connection Status
-	                        
-	                    </div>
-	            <div className="panel-body">
-	                 <span  id="connIcon" className="glyphicon"
-	                           style={{lineHeight:2}} aria-hidden="true"/>
-	           </div>   
-	                
-	            </div>);
-	    }
-	}*/
-
 	var ConnectStatus = function (_React$Component) {
 	    _inherits(ConnectStatus, _React$Component);
 
@@ -22610,25 +22569,6 @@
 
 	        return _this;
 	    }
-	    /* componentDidMount(){
-	         var This = this;
-	         var socket = this.props.socket;
-	          socket.on("connect",function(){
-	             $('#socketStatusVal').removeClass();
-	             $('#socketStatusVal').addClass("glyphicon glyphicon-ok")
-	             $('#socketStatusVal').empty()
-	             $('#socketStatusVal').append(" Socket Connected") //connected
-	             socket.on('disconnect', function() {
-	                 $('#socketStatusVal').removeClass();
-	                 $('#socketStatusVal').addClass("glyphicon glyphicon-remove");
-	                 $('#socketStatusVal').empty();
-	                 $('#socketStatusVal').append(" Socket Disconnected"); //disconnected
-	                 
-	             });
-	            
-	         })
-	     }*/
-
 
 	    _createClass(ConnectStatus, [{
 	        key: "render",
@@ -22826,10 +22766,6 @@
 	            var socket = this.props.socket;
 
 	            socket.on("connect", function () {
-	                $('#connIcon').removeClass();
-	                $('#connIcon').addClass("glyphicon glyphicon-list-alt");
-	                $('#connIcon').empty();
-	                $('#connIcon').append(" Output"); //connected
 
 	                $('#socketStatusVal').removeClass();
 	                $('#socketStatusVal').addClass("glyphicon glyphicon-ok");
@@ -22837,10 +22773,6 @@
 	                $('#socketStatusVal').append(" Connected"); //connected
 
 	                socket.on('disconnect', function () {
-	                    $('#connIcon').removeClass();
-	                    $('#connIcon').addClass("glyphicon glyphicon-list-alt");
-	                    $('#connIcon').empty();
-	                    $('#connIcon').append(" Output"); //disconnected
 
 	                    $('#socketStatusVal').removeClass();
 	                    $('#socketStatusVal').addClass("glyphicon glyphicon-remove");
@@ -23088,7 +23020,7 @@
 	            { className: "row panel" },
 	            _react2.default.createElement(
 	                "div",
-	                { className: "col-md-4" },
+	                { className: "col-md-8" },
 	                _react2.default.createElement(
 	                    "div",
 	                    { className: "btn-group" },
@@ -23132,11 +23064,6 @@
 	        var log = numFiles > 1 ? numFiles + ' files selected' : label;
 	        this.setState({ "fileStatus": log });
 	    },
-
-
-	    /* deleteClusterOutofDashboard(name,id,..){
-	      },*/
-
 	    render: function render() {
 	        var This = this;
 	        var descHeight = this.props.readonly && this.state.clkStatus ? "34px" : "100px";
@@ -23224,7 +23151,7 @@
 	                    { className: "row panel", style: { display: this.calc(3) } },
 	                    _react2.default.createElement(
 	                        "div",
-	                        { className: "col-md-4 text-center" },
+	                        { className: "col-md-6 text-center" },
 	                        _react2.default.createElement(
 	                            "p",
 	                            null,
@@ -23235,22 +23162,26 @@
 	                            return _react2.default.createElement(
 	                                "div",
 	                                { className: "panel", key: d[0] },
-	                                _react2.default.createElement("input", { className: "btn btn-default clusToResume",
-	                                    value: d[0].split("_", 1), disabled: This.props.btnDisabled,
-	                                    title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
-	                                    onClick: This.props.clickOnResumeClus.bind(This, 0, i),
-	                                    readOnly: true }),
 	                                _react2.default.createElement(
-	                                    "button",
-	                                    { className: "btn btn-danger btn-sm", onClick: This.props.deleteFunc },
-	                                    "Terminate"
+	                                    "div",
+	                                    { className: "btn-group" },
+	                                    _react2.default.createElement("input", { className: "btn btn-default clusToResume",
+	                                        value: d[0].split("_", 1), disabled: This.props.btnDisabled,
+	                                        title: (d[1].length > 0 ? "Description: " + d[1] + "<br/>" : "") + "User: " + d[2] + "<br/>Cluster ID: " + d[0],
+	                                        onClick: This.props.clickOnResumeClus.bind(This, 0, i),
+	                                        readOnly: true }),
+	                                    _react2.default.createElement(
+	                                        "button",
+	                                        { className: "btn btn-danger", onClick: This.props.deleteFunc },
+	                                        "Terminate"
+	                                    )
 	                                )
 	                            );
 	                        })
 	                    ),
 	                    _react2.default.createElement(
 	                        "div",
-	                        { className: "col-md-4 text-center" },
+	                        { className: "col-md-6 text-center" },
 	                        _react2.default.createElement(
 	                            "p",
 	                            null,
@@ -23556,8 +23487,8 @@
 	        key: 'render',
 	        value: function render() {
 	            var myBigGreenDialog = {
-	                backgroundColor: '#337ab7',
-	                color: '#ffffff',
+	                backgroundColor: '#fff',
+	                color: '#000',
 	                width: '70%',
 	                height: '550px',
 	                marginTop: '-300px',
@@ -23579,7 +23510,7 @@
 	                ),
 	                _react2.default.createElement(
 	                    _reactSkylight2.default,
-	                    { hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Cluster Configuration' },
+	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: 'jac_configJson', title: 'Cluster Configuration' },
 	                    _react2.default.createElement(
 	                        'div',
 	                        { style: this.inputDisplay() },
@@ -24510,8 +24441,8 @@
 	        value: function render() {
 	            var This = this;
 	            var myBigGreenDialog = {
-	                backgroundColor: '#337ab7',
-	                color: '#ffffff',
+	                backgroundColor: '#fff',
+	                color: '#000',
 	                width: '70%',
 	                height: '450px',
 	                marginTop: '-250px',
@@ -24532,7 +24463,7 @@
 	                _react2.default.createElement("br", null),
 	                _react2.default.createElement(
 	                    _reactSkylight2.default,
-	                    { hideOnOverlayClicked: true, ref: "res_popup", title: "Summary Result" },
+	                    { dialogStyles: myBigGreenDialog, hideOnOverlayClicked: true, ref: "res_popup", title: "Summary Result" },
 	                    _react2.default.createElement(
 	                        "div",
 	                        { style: { "color": "black" } },

@@ -39,10 +39,7 @@ export default class DashBoard extends React.Component{
         var socket = this.props.socket
 
         socket.on("connect",function(){
-            $('#connIcon').removeClass();
-            $('#connIcon').addClass("glyphicon glyphicon-list-alt")
-            $('#connIcon').empty()
-            $('#connIcon').append(" Output"); //connected
+            
             
             $('#socketStatusVal').removeClass();
             $('#socketStatusVal').addClass("glyphicon glyphicon-ok");
@@ -50,10 +47,7 @@ export default class DashBoard extends React.Component{
             $('#socketStatusVal').append(" Connected"); //connected
 
             socket.on('disconnect', function() {
-                $('#connIcon').removeClass();
-                $('#connIcon').addClass("glyphicon glyphicon-list-alt")
-                $('#connIcon').empty()
-                $('#connIcon').append(" Output") //disconnected
+               
 
                 $('#socketStatusVal').removeClass();
                 $('#socketStatusVal').addClass("glyphicon glyphicon-remove");

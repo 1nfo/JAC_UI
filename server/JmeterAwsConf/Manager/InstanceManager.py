@@ -114,8 +114,7 @@ class InstanceManager(Manager,BotoSession):
         return res
 
     # internal use, stop a list of instances
-    def terminateInstances(self, IDs, verbose):
-        self.print("inside terminate Instances")    
+    def terminateInstances(self, IDs, verbose):          
         res = self.client.terminate_instances(InstanceIds=IDs) if IDs else "No instance in the list"
         self.print("Terminate instances:" + str(IDs), verbose)
         self.print(json.dumps(res, indent=2), verbose)
@@ -157,7 +156,6 @@ class InstanceManager(Manager,BotoSession):
 
     def terminateMaster(self, verbose=None):
         if (self.master):
-            self.print("Inside terminateMaster function")
             return self.terminateInstances([self.master["InstanceId"]], verbose)
         else:
             return "No master running"

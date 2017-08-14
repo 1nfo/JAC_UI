@@ -9,8 +9,10 @@ class ConnectionStatus extends React.Component{
 
     render(){
         return( <div className="panel-heading">
-                    <span  id="connIcon" className="glyphicon"
-                           style={{lineHeight:2}} aria-hidden="true"/>
+                    <span className="glyphicon glyphicon-list-alt"
+                           style={{lineHeight:2}} aria-hidden="true"> 
+                        <span>&nbsp;Output</span>
+                        </span>
                     <button className="btn btn-default pull-right" id="btn_clear"
                                 onClick={() => this.props.clearFunc()}>
                         Clear Screen
@@ -36,8 +38,7 @@ const Output = React.createClass({
 
     render(){
         var scrollbarStyles = {borderRadius: 5};
-        var socket = this.props.socket;
-
+       
 
 
         return (<div className="col-lg-5">
@@ -56,7 +57,7 @@ const Output = React.createClass({
 
 
                     </div>
-                    <ConnectStatus socket={this.socket}/>
+                    <ConnectStatus />
 
 
                 </div>)

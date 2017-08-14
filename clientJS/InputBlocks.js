@@ -4,7 +4,7 @@ import JacConfigPopup from "./JacConfigPopup"
 export const InputBlock_start = React.createClass({
     render(){
         return (<div className="row panel">
-                    <div className="col-md-4">
+                    <div className="col-md-8">
                         <div className="btn-group">
                             <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.createFunc}>New Cluster</button>
                             <button className={"btn btn-primary"} disabled={this.props.btnDisabled} onClick={this.props.resumeFunc}>List of Clusters</button>
@@ -38,9 +38,6 @@ export const InputBlock_clusInfo = React.createClass({
         this.setState({"fileStatus":log})
     },
 
-   /* deleteClusterOutofDashboard(name,id,..){
-
-    },*/
 
     render(){
         var This = this;
@@ -80,24 +77,26 @@ export const InputBlock_clusInfo = React.createClass({
                             </div>
                         </div>
                         <div className="row panel" style={{display: this.calc(3)}}>
-                            <div className="col-md-4 text-center" >
+                            <div className="col-md-6 text-center" >
                                 <p>Your Clusters</p>
                                 {this.props.clusList[0].map(function(d,i){
                                     console.log(d,i);
                                     return (
                                             <div className='panel' key={d[0]}>
-                                                <input className={"btn btn-default clusToResume"}
-                                                       value={d[0].split("_",1)} disabled={This.props.btnDisabled}
-                                                       title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
-                                                       onClick={This.props.clickOnResumeClus.bind(This,0,i)}
-                                                       readOnly/>
-                                                <button className={"btn btn-danger btn-sm"} onClick={This.props.deleteFunc}>Terminate</button>
-                                                
+
+                                                <div className="btn-group">
+                                                    <input className={"btn btn-default clusToResume"}
+                                                           value={d[0].split("_",1)} disabled={This.props.btnDisabled}
+                                                           title={(d[1].length>0?"Description: "+d[1]+"<br/>":"")+"User: "+d[2]+"<br/>Cluster ID: "+d[0]}
+                                                           onClick={This.props.clickOnResumeClus.bind(This,0,i)}
+                                                           readOnly/>
+                                                    <button className={"btn btn-danger"} onClick={This.props.deleteFunc}>Terminate</button>
+                                                </div>    
                                             </div>
                                         );
                                 })}
                             </div>
-                            <div className="col-md-4 text-center" >
+                            <div className="col-md-6 text-center" >
                                 <p>Others'</p>
                                 {this.props.clusList[1].map(function(d,i){
                                     return (

@@ -77,9 +77,9 @@ def login():
         username = request.form['username']
         password = request.form['password']
         try:
-            print(username)
+            
             verified = PydtAuth().verify(username,password)
-            print(verified)
+            
         except Exception as e:
             return json.dumps({"exception":"1","msg":str(e)})
         if verified:

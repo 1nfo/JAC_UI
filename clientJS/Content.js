@@ -3,7 +3,6 @@ import Output from './Output';
 import DashBoard from './DashBoard';
 import autoBind from 'react-autobind';
 import ResultPanel from "./ResultPanel";
-import ConnectStatus from "./ConnectStatus";
 
 export default class Content extends React.Component{
     constructor(props) {
