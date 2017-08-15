@@ -247,12 +247,20 @@ export default class ResultPanel extends React.Component{
     render(){
         var This = this;
         var myBigGreenDialog = {
-          backgroundColor: '#fff',
-          color: '#000',
+          backgroundColor: '#337ab7',
+          color: '#ffffff',
           width: '70%',
           height: '450px',
           marginTop: '-250px',
           marginLeft: '-35%',
+        };
+        var closeButtonStyle = {
+          cursor: 'pointer',
+          position: 'absolute',
+          fontSize: '1.8em',
+          right: '10px',
+          top: '0',
+          color:"#ffffff"
         };
         return (
             <div className="col-lg-12">
@@ -260,7 +268,7 @@ export default class ResultPanel extends React.Component{
                     <button className="btn btn-primary" onClick={this.listResults}>Refresh result list</button>
                 </div>
                 <br/>
-                <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="res_popup" title="Summary Result" >
+                <SkyLight dialogStyles={myBigGreenDialog} closeButtonStyle={closeButtonStyle} hideOnOverlayClicked ref="res_popup" title="Summary Result" >
                     <div style={{"color":"black"}}>
                          <ReactDataGrid
                             onGridSort={This.handlePopupGridSort}

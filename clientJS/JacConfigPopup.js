@@ -80,13 +80,21 @@ export default class JacConfigPopup extends React.Component{
 
     render(){
         var myBigGreenDialog = {
-          backgroundColor: '#fff',
-          color: '#000',
+          backgroundColor: '#337ab7',
+          color: '#ffffff',
           width: '70%',
           height: '550px',
           marginTop: '-300px',
           marginLeft: '-35%',
         };
+        var closeButtonStyle = {
+          cursor: 'pointer',
+          position: 'absolute',
+          fontSize: '1.8em',
+          right: '10px',
+          top: '0',
+          color:"#ffffff"
+        }
         var input_class = "form-control";
         return (
                <div id="jac_config_area" style={this.props.style}>
@@ -95,11 +103,11 @@ export default class JacConfigPopup extends React.Component{
                                 onClick={this.show}> Configuration
                         </button>
                     </section>
-                     
-                     
 
 
-                    <SkyLight dialogStyles={myBigGreenDialog} hideOnOverlayClicked ref="jac_configJson" title="Cluster Configuration">
+
+
+                    <SkyLight dialogStyles={myBigGreenDialog} closeButtonStyle={closeButtonStyle} hideOnOverlayClicked ref="jac_configJson" title="Cluster Configuration">
                         <div style={this.inputDisplay()}>
                           <div className="row">
                             <div className="col-lg-6"><span>Master Instance Type: </span>
