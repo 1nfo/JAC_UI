@@ -5,3 +5,4 @@ __py*
 *.db
 *.pyc
 *.pem
+server/static/js/bundle.js
