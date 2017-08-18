@@ -8,6 +8,7 @@ from ..Util import JMX, now
 from ..Parser import JMXParser
 import os
 from copy import deepcopy
+import time
 
 
 class ClusterManager(Manager):
@@ -59,6 +60,7 @@ class ClusterManager(Manager):
         elif diff > 0:
             self.instMngr.addSlaves(diff)
         self.instMngr.startAll()
+        time.sleep(300)
         self.print("Launched.")
 
     #  update the test plan directory you want to upload,
@@ -142,19 +144,19 @@ class ClusterManager(Manager):
 
     #  stop master jmeter
     def stopMasterJmeter(self, verbose=None):
-        self.print("Killing jmeter in Master")
+        self.print("Terminating jmeter in Master")
         self.connMngr.connectMaster()
         self.connMngr.cmdMaster("ps aux | grep jmeter | awk '{print $2}' | xargs kill")
         self.connMngr.closeMaster()
-        self.print("Master Killed.")
+        self.print("Master Terminated.")
 
     #  stop all slaves' jmeter-server
     def stopSlavesServer(self, verbose=None):
-        self.print("Killing jmeter server in slaves", verbose)
+        self.print("Terminating jmeter server in slaves", verbose)
         self.connMngr.connectSlaves()
         self.connMngr.cmdSlaves("ps aux | grep [j]meter-server | awk '{print $2}' | xargs kill", verbose=verbose)
         self.connMngr.closeSlaves()
-        self.print("Slave Killed.", verbose)
+        self.print("Slave Terminated.", verbose)
 
     #  run jmeter with args
     #  1. -t jmx, jmx file you want to run under you upload path
