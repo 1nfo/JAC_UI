@@ -15,6 +15,6 @@ if __name__ == "__main__":
         #  the two commands below should be equivalent.
         #  wsgi.server(eventlet.listen(('', 80)), app)
         #  socketio.run(app,host="0.0.0.0",port=80)
-        socketio.run(app, host="0.0.0.0", port=80, debug=DEBUG)
+        socketio.run(app, host="0.0.0.0", port=80, debug=False)
     else:
         socketio.run(app, debug=DEBUG)
